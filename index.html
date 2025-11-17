@@ -186,9 +186,9 @@
             display: block;
         }
         .lottery-card-content { padding: 15px; }
-        .lottery-card-content h3 { margin-top: 0; margin-bottom: 8px; font-size: 1.1rem; text-align: center; }
-        .lottery-card-content p { color: var(--text-secondary-light); font-size: 0.8rem; margin-bottom: 8px; }
-        .lottery-card-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .lottery-card-content h3 { margin-top: 0; margin-bottom: 4px; font-size: 1.1rem; text-align: center; }
+        .lottery-card-content p { color: var(--text-secondary-light); font-size: 0.8rem; margin-bottom: 4px; text-align: center; }
+        .lottery-card-buttons { display: flex; gap: 10px; margin-top: 10px; }
         .lottery-card-buttons button { flex-grow: 1; }
 
         /* --- 4. Table Styles (Glassmorphism Style) --- */
@@ -672,12 +672,10 @@
                     </div>
                 </div>
 
-                <!-- [MODIFIED] Win Rule Text with English and Green Example -->
+
                 <div class="lottery-card" style="padding: 15px; margin-top: 20px; text-align: center;">
                     <h4>How Winning is Decided</h4>
                     <p style="font-size: 0.85rem; line-height: 1.6;">
-                        Our system automatically draws one participant at a time. The result ('WIN' or 'LOSS') for each participant is determined by a probability calculation based on the number of prizes remaining versus the number of participants left in the draw.
-                        <br><br>
                         The slot machine visually displays this result. If all three columns show 'WIN', the participant is a <strong>Winner</strong>.
                         <br>
                         <strong class="win-example">Example: [ WIN ] [ WIN ] [ WIN ] = Winner!</strong>
