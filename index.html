@@ -115,7 +115,7 @@
 
         .btn-primary { background: var(--primary-color); border-color: var(--primary-color); }
         .btn-secondary { background: var(--secondary-color); border-color: var(--secondary-color); color: #333; }
-        .btn-danger { background: var(--loss-color); border-color: var(--loss-color); }
+        .btn-danger { background: #d32f2f; border-color: #d32f2f; color: white; }
         
         .btn-icon {
             background: none; padding: 5px 8px; font-size: 1rem; box-shadow: none; color: var(--text-secondary-light); border: none;
@@ -824,6 +824,8 @@
                     <button id="show-manage-lottery" class="btn active">Manage Lottery</button>
                     <button id="show-manage-tickets" class="btn">Manage Tickets</button>
                     <button id="show-reports" class="btn">Book Details</button>
+                    <!-- NEW BUTTON FOR ADMIN SALES REPORT -->
+                    <button id="show-admin-sales" class="btn">Admin Sales</button>
                     <button id="logout-btn" class="btn btn-danger">Logout</button>
                 </div>
 
@@ -908,6 +910,28 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- NEW TAB 4: Admin Sales Report -->
+                <div id="admin-sales-tab" class="admin-tab-content">
+                    <h3>Admin Sales Report</h3>
+                    <p>This report shows sales attributed to each admin based on who confirmed or directly booked the tickets.</p>
+                    <div class="table-wrapper">
+                        <table id="admin-sales-table">
+                            <thead>
+                                <tr>
+                                    <th>Admin</th>
+                                    <th>Lottery</th>
+                                    <th>Tickets Sold</th>
+                                    <th>Total Collection (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -963,6 +987,20 @@
         </div>
     </div>
 
+    <!-- NEW: Delete Confirmation Modal -->
+    <div id="delete-ticket-confirm-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Confirm Deletion</h2>
+            <p id="delete-confirm-text" style="line-height: 1.6;"></p>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                <button id="delete-single-purchase-btn" class="btn btn-primary">This Purchase Only</button>
+                <button id="delete-all-owner-btn" class="btn btn-danger">All from this Owner</button>
+                <button id="delete-cancel-btn" class="btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Status Popup -->
     <div id="status-popup"></div>
@@ -1011,6 +1049,9 @@
         let autoDrawTimeout = null; 
         let ttsEnabled = false;
         let lastAnnouncementTimestamp = 0;
+        let currentPurchaseIdToDelete = null; // For delete confirmation modal
+        let currentOwnerToDelete = null; // For delete confirmation modal
+
 
         // --- DOM ELEMENTS ---
         const pages = document.querySelectorAll('.page');
@@ -1140,6 +1181,10 @@
                 loadAllTicketsManagementTable();
                 if (document.getElementById('reports-tab').classList.contains('active')) {
                     loadReportsData();
+                }
+                // NEW: Refresh admin sales report if it's the active tab
+                if (document.getElementById('admin-sales-tab').classList.contains('active')) {
+                    renderAdminSalesReport();
                 }
                 const adminTicketView = document.getElementById('admin-lottery-ticket-view');
                 if(adminTicketView.style.display === 'block' && adminTicketView.dataset.currentLottery) {
@@ -1290,13 +1335,17 @@
                 showPage('login-page');
                 return;
             }
+            // NEW: Get current admin's email for tracking
+            const adminEmail = auth.currentUser.email;
 
             db.ref('tickets').orderByChild('confirmationCode').equalTo(code).once('value', snapshot => {
                 if (snapshot.exists()) {
                     const [purchaseId, purchaseData] = Object.entries(snapshot.val())[0];
+                    // MODIFIED: Added adminEmail to the update
                     db.ref(`tickets/${purchaseId}`).update({
                         status: 'confirmed',
-                        confirmationCode: null // Invalidate the code
+                        confirmationCode: null, // Invalidate the code
+                        adminEmail: adminEmail // Store the admin who confirmed it
                     }).then(() => {
                         showStatus(`Ticket for ${purchaseData.name} confirmed successfully!`, true);
                     });
@@ -1827,6 +1876,10 @@
                 if (tabId === 'reports-tab') {
                     loadReportsData();
                 }
+                // NEW: Call render function for the new Admin Sales tab
+                if (tabId === 'admin-sales-tab') {
+                    renderAdminSalesReport();
+                }
             });
         });
 
@@ -1835,7 +1888,7 @@
             const container = document.getElementById('prize-inputs-container');
             const prizeDiv = document.createElement('div');
             prizeDiv.style.display = 'flex'; prizeDiv.style.gap = '10px'; prizeDiv.style.marginBottom = '10px';
-            prizeDiv.innerHTML = `<input type="text" class="lottery-prize-input" placeholder="Enter prize description" value="${value}" required style="margin-bottom: 0;"><button style="color: red;" type="button" class="btn btn-danger" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>`;
+            prizeDiv.innerHTML = `<input type="text" class="lottery-prize-input" placeholder="Enter prize description" value="${value}" required style="margin-bottom: 0;"><button style="color: white;" type="button" class="btn btn-danger" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>`;
             container.appendChild(prizeDiv);
         };
         document.getElementById('add-prize-btn').addEventListener('click', () => addPrizeInput());
@@ -2029,7 +2082,26 @@
              });
         };
         window.updateTicketStatus = (id, status) => db.ref(`tickets/${id}/status`).set(status);
-        window.removeTicket = (id) => { if (confirm('Delete this ticket purchase record? This cannot be undone.')) db.ref('tickets/' + id).remove(); };
+        
+        window.removeTicket = (id) => {
+            const purchase = allTicketsCache[id];
+            if (!purchase) {
+                showStatus("Could not find ticket data.", false);
+                return;
+            }
+
+            currentPurchaseIdToDelete = id;
+            currentOwnerToDelete = { name: purchase.name, mobile: purchase.mobile };
+
+            const confirmText = document.getElementById('delete-confirm-text');
+            confirmText.innerHTML = `You are about to delete a ticket for <strong>${purchase.name}</strong> (${purchase.mobile}).<br><br>Choose an option:`;
+            
+            const deleteAllBtn = document.getElementById('delete-all-owner-btn');
+            deleteAllBtn.textContent = `Delete ALL purchases by ${purchase.name}`;
+
+            openModal('delete-ticket-confirm-modal');
+        };
+
         window.editTicket = (id) => {
             const purchase = allTicketsCache[id];
             document.getElementById('edit-purchase-id').value = id;
@@ -2052,9 +2124,12 @@
         };
         document.getElementById('admin-book-ticket-form').addEventListener('submit', (e) => {
             e.preventDefault();
+            // NEW: Get current admin's email for tracking
+            const adminEmail = auth.currentUser ? auth.currentUser.email : 'Unknown Admin';
             const lotteryId = document.getElementById('admin-book-lottery-id').value;
             const quantity = parseInt(document.getElementById('admin-book-ticket-quantity').value, 10);
-            const purchaseDetails = { lotteryId: lotteryId, name: document.getElementById('admin-book-buyer-name').value, mobile: document.getElementById('admin-book-buyer-mobile').value, quantity: quantity, tickets: Array.from({ length: quantity }, () => Math.floor(100000 + Math.random() * 900000)), status: 'confirmed', timestamp: new Date().toISOString() };
+            // MODIFIED: Added adminEmail to the purchase details
+            const purchaseDetails = { lotteryId: lotteryId, name: document.getElementById('admin-book-buyer-name').value, mobile: document.getElementById('admin-book-buyer-mobile').value, quantity: quantity, tickets: Array.from({ length: quantity }, () => Math.floor(100000 + Math.random() * 900000)), status: 'confirmed', timestamp: new Date().toISOString(), adminEmail: adminEmail };
             db.ref('tickets').push(purchaseDetails).then(() => { closeModal(); showStatus(`${quantity} ticket(s) booked successfully for ${purchaseDetails.name}!`); document.getElementById('admin-book-ticket-form').reset(); }).catch(err => { showStatus(`Error: ${err.message}`, false); });
         });
 
@@ -2080,6 +2155,75 @@
             document.getElementById('report-lottery-list-view').style.display = 'block';
             document.getElementById('report-details-view').style.display = 'none';
         });
+
+        // NEW 15. ADMIN SALES REPORT LOGIC
+        const renderAdminSalesReport = () => {
+            const tableBody = document.querySelector('#admin-sales-table tbody');
+            tableBody.innerHTML = '<tr><td colspan="4">Generating report...</td></tr>';
+        
+            const salesData = {};
+        
+            // Iterate over all ticket purchases
+            Object.values(allTicketsCache).forEach(purchase => {
+                // Only consider confirmed tickets that have an admin associated with them
+                if (purchase.status === 'confirmed' && purchase.adminEmail) {
+                    const lottery = allLotteriesCache[purchase.lotteryId];
+                    // Ensure lottery data is available
+                    if (!lottery) {
+                        return; // Skip if lottery details are missing
+                    }
+        
+                    const adminEmail = purchase.adminEmail;
+                    const lotteryId = purchase.lotteryId;
+        
+                    // Initialize data structure if not present
+                    if (!salesData[adminEmail]) {
+                        salesData[adminEmail] = {};
+                    }
+                    if (!salesData[adminEmail][lotteryId]) {
+                        salesData[adminEmail][lotteryId] = {
+                            lotteryName: lottery.title,
+                            ticketsSold: 0,
+                            totalCollection: 0
+                        };
+                    }
+        
+                    // Aggregate data
+                    const ticketCount = purchase.tickets.length;
+                    salesData[adminEmail][lotteryId].ticketsSold += ticketCount;
+                    salesData[adminEmail][lotteryId].totalCollection += ticketCount * parseFloat(lottery.price);
+                }
+            });
+        
+            let tableHtml = '';
+            const sortedAdmins = Object.keys(salesData).sort(); // Sort admins alphabetically by email
+        
+            if (sortedAdmins.length === 0) {
+                tableHtml = '<tr><td colspan="4" style="text-align: center;">No sales data found for any admin.</td></tr>';
+            } else {
+                sortedAdmins.forEach(adminEmail => {
+                    const adminLotteries = salesData[adminEmail];
+                    const sortedLotteries = Object.keys(adminLotteries).sort((a, b) => {
+                        return adminLotteries[a].lotteryName.localeCompare(adminLotteries[b].lotteryName);
+                    });
+        
+                    sortedLotteries.forEach(lotteryId => {
+                        const data = adminLotteries[lotteryId];
+                        tableHtml += `
+                            <tr>
+                                <td>${adminEmail}</td>
+                                <td>${data.lotteryName}</td>
+                                <td>${data.ticketsSold}</td>
+                                <td>₹${data.totalCollection.toLocaleString('en-IN')}</td>
+                            </tr>
+                        `;
+                    });
+                });
+            }
+        
+            tableBody.innerHTML = tableHtml;
+        };
+
 
         // --- APP INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -2166,6 +2310,53 @@
                     liveSearchResultContainer.style.display = 'block';
                 }
             });
+
+            // --- NEW: DELETE TICKET MODAL LOGIC ---
+            const resetDeleteModalState = () => {
+                closeModal();
+                currentPurchaseIdToDelete = null;
+                currentOwnerToDelete = null;
+            };
+
+            document.getElementById('delete-single-purchase-btn').addEventListener('click', () => {
+                if (currentPurchaseIdToDelete) {
+                    db.ref('tickets/' + currentPurchaseIdToDelete).remove()
+                        .then(() => showStatus('Single purchase deleted successfully.', true))
+                        .catch(err => showStatus(err.message, false));
+                    resetDeleteModalState();
+                }
+            });
+
+            document.getElementById('delete-all-owner-btn').addEventListener('click', () => {
+                if (currentOwnerToDelete) {
+                    const ownerName = currentOwnerToDelete.name;
+                    const ownerMobile = currentOwnerToDelete.mobile;
+                    
+                    if (!confirm(`Are you absolutely sure you want to delete ALL purchase records for ${ownerName} (${ownerMobile})? This action cannot be undone.`)) {
+                        return;
+                    }
+
+                    const updates = {};
+                    let count = 0;
+                    Object.entries(allTicketsCache).forEach(([key, purchase]) => {
+                        if (purchase.name.toLowerCase() === ownerName.toLowerCase() && purchase.mobile === ownerMobile) {
+                            updates['/tickets/' + key] = null;
+                            count++;
+                        }
+                    });
+                    
+                    if (count > 0) {
+                        db.ref().update(updates)
+                            .then(() => showStatus(`Successfully deleted ${count} purchase records for ${ownerName}.`, true))
+                            .catch(err => showStatus(err.message, false));
+                    }
+                    
+                    resetDeleteModalState();
+                }
+            });
+
+            document.getElementById('delete-cancel-btn').addEventListener('click', resetDeleteModalState);
+            document.querySelector('#delete-ticket-confirm-modal .close-btn').addEventListener('click', resetDeleteModalState);
 
         });
     </script>
