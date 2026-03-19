@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cheiraoba Offer</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+
+body{
+  height:100vh;
+  background:linear-gradient(-45deg,#ff6a00,#ee0979,#00c6ff,#0072ff);
+  background-size:400% 400%;
+  animation:bg 10s infinite;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  overflow:hidden;
+}
+@keyframes bg{
+  0%{background-position:0%}
+  50%{background-position:100%}
+  100%{background-position:0%}
+}
+
+h1{
+  margin-bottom:10px;
+  animation:fadeDown 1s ease;
+}
+
+/* Wishes text */
+.wishes{
+  max-width:320px;
+  text-align:center;
+  margin-bottom:15px;
+  font-size:0.95rem;
+  line-height:1.4;
+  opacity:0.9;
+  animation:fadeIn 2s ease;
+}
+
+@keyframes fadeDown{
+  from{opacity:0;transform:translateY(-20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+/* Card */
+.card{
+  position:relative;
+  backdrop-filter:blur(20px);
+  background:rgba(255,255,255,0.1);
+  padding:25px;
+  border-radius:20px;
+  width:320px;
+  text-align:center;
+  box-shadow:0 10px 40px rgba(0,0,0,0.3);
+}
+
+/* Price */
+.price{
+  font-size:2.2rem;
+  font-weight:bold;
+  background:linear-gradient(45deg,#ffea00,#ff6a00,#ffea00);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shine 2s infinite linear,bounce 1.2s infinite;
+}
+@keyframes shine{0%{background-position:0%}100%{background-position:200%}}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+
+.old{text-decoration:line-through;opacity:0.7}
+
+/* Timer & slots */
+.timer{margin-top:8px;}
+.slots{color:#ffea00;animation:blink 1s infinite;}
+@keyframes blink{50%{opacity:0.5}}
+
+/* Button */
+.btn{
+  margin-top:12px;
+  padding:12px 25px;
+  border:none;
+  border-radius:30px;
+  background:linear-gradient(45deg,#ff006e,#8338ec);
+  color:white;
+  cursor:pointer;
+}
+.btn:hover{transform:scale(1.1);}
+
+/* Form */
+.form,.admin-page{display:none;margin-top:10px;}
+
+input{
+  width:90%;
+  padding:10px;
+  margin:6px;
+  border:none;
+  border-radius:10px;
+  outline:none;
+}
+
+/* Admin */
+.admin-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.admin-item:hover{background:rgba(255,255,255,0.2);}
+.admin-item img{
+  width:45px;height:45px;border-radius:50%;
+}
+
+/* Image modal */
+.image-modal{
+  display:none;
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.85);
+  justify-content:center;
+  align-items:center;
+}
+.image-modal img{
+  width:250px;
+  border-radius:15px;
+}
+.image-modal span{
+  position:absolute;top:20px;right:30px;
+  font-size:35px;color:white;cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌸 Happy Cheiraoba 🌸</h1>
+
+<div class="wishes">
+  May this beautiful New Year bring happiness, prosperity, good health, and success into your life.  
+  Celebrate new beginnings with joy and positivity. 🌿✨
+</div>
+
+<div class="card">
+  <h2>Housie Website Offer</h2>
+  <p class="old">₹4500</p>
+  <p class="price">₹2999 Only</p>
+
+  <div id="timer" class="timer"></div>
+  <div id="slots" class="slots">🔥 Only 11 slots left</div>
+
+  <button class="btn" onclick="showForm()">Buy Website</button>
+
+  <!-- FORM -->
+  <div class="form" id="form">
+    <input id="nameInput" placeholder="Your Name">
+    <input id="websiteInput" placeholder="Website Name">
+    <input id="mobileInput" placeholder="Mobile Number">
+    <input id="emailInput" placeholder="Email">
+    <button class="btn" onclick="showAdmins()">Continue</button>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="admin-page" id="adminPage">
+    <div class="admin-item" onclick="selectAdmin('Anand Khuman','9366293440')">
+      <img src="https://github.com/Anandkhuman/Photo/raw/main/anand1.jpg" onclick="showImage(event,this.src)">
+      <span>Anand Khuman</span>
+    </div>
+
+    <div class="admin-item" onclick="selectAdmin('Pari Thokchom','8415934211')">
+      <img src="https://github.com/Anandkhuman/Photo/raw/main/pari.jpg" onclick="showImage(event,this.src)">
+      <span>Pari Thokchom</span>
+    </div>
+
+    <div class="admin-item" onclick="selectAdmin('Sadananda Mangang','916009020876')">
+      <img src="https://github.com/Anandkhuman/Photo/raw/main/sadananda1.jpg" onclick="showImage(event,this.src)">
+      <span>Sadananda Mangang</span>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="image-modal" id="imageModal">
+  <span onclick="closeImage()">×</span>
+  <img id="modalImg">
+</div>
+
+<script>
+/* Show Form */
+function showForm(){
+  document.getElementById("form").style.display="block";
+}
+
+/* Show Admins */
+function showAdmins(){
+  let n=document.getElementById("nameInput").value;
+  let w=document.getElementById("websiteInput").value;
+  let m=document.getElementById("mobileInput").value;
+  let e=document.getElementById("emailInput").value;
+
+  if(!n||!w||!m||!e){
+    alert("Please fill all fields!");
+    return;
+  }
+
+  document.getElementById("form").style.display="none";
+  document.getElementById("adminPage").style.display="block";
+}
+
+/* WhatsApp */
+function selectAdmin(admin,number){
+  let n=document.getElementById("nameInput").value;
+  let w=document.getElementById("websiteInput").value;
+  let m=document.getElementById("mobileInput").value;
+  let e=document.getElementById("emailInput").value;
+
+  let msg=`Hello ${admin}%0AName:${n}%0AWebsite:${w}%0AMobile:${m}%0AEmail:${e}%0AOffer ₹2999`;
+
+  window.open(`https://wa.me/${number}?text=${msg}`);
+}
+
+/* Image Preview */
+function showImage(event,src){
+  event.stopPropagation();
+  document.getElementById("imageModal").style.display="flex";
+  document.getElementById("modalImg").src=src;
+}
+function closeImage(){
+  document.getElementById("imageModal").style.display="none";
+}
+
+/* Timer Fix */
+setInterval(()=>{
+ let now=new Date();
+ let end=new Date();
+ end.setHours(23,59,59,999);
+
+ let diff=end-now;
+ if(diff<0)return;
+
+ let h=Math.floor(diff/1000/60/60);
+ let m=Math.floor(diff/1000/60)%60;
+ let s=Math.floor(diff/1000)%60;
+
+ document.getElementById("timer").innerHTML=`⏳ ${h}h ${m}m ${s}s left today`;
+},1000);
+
+/* Slots */
+let slots=11;
+setInterval(()=>{
+ if(slots>1){
+   slots--;
+   document.getElementById("slots").innerHTML=`🔥 Only ${slots} slots left`;
+ }
+},8000);
+</script>
+
+</body>
+</html>
