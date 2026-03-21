@@ -114,6 +114,29 @@
             color: var(--dark);
         }
 
+        /* --- Modern Scanner Styling --- */
+        #readerAdd, #readerSell {
+            border: none !important;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        #readerAdd__dashboard_section_csr button, #readerSell__dashboard_section_csr button {
+            background: var(--primary) !important;
+            color: white !important;
+            border: none !important;
+            padding: 10px 20px !important;
+            border-radius: 8px !important;
+            font-size: 0.9rem !important;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        #readerAdd video, #readerSell video {
+            border-radius: 12px;
+        }
+
         /* --- Dashboard Stats --- */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .stat-box { 
@@ -160,6 +183,49 @@
         .btn-warning { background: var(--warning); color: white; }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
         .btn:active { transform: scale(0.98); }
+
+        /* --- Confirmation Popup Styles --- */
+        .confirm-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+        }
+        .confirm-box {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .confirm-box i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        .confirm-box h3 { margin: 0 0 10px 0; font-size: 1.2rem; }
+        .scanned-id {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 15px 0;
+            word-break: break-all;
+        }
+        .confirm-btns { display: grid; grid-template-columns: 1fr; gap: 10px; }
 
         /* --- Table Styling --- */
         .table-container { overflow-x: auto; margin-top: 10px; }
@@ -362,6 +428,24 @@
 
 </div>
 
+<!-- SCAN CONFIRMATION MODAL -->
+<div id="confirmModal" class="confirm-overlay">
+    <div class="confirm-box">
+        <i class="fas fa-qrcode"></i>
+        <h3>Product Found!</h3>
+        <p>Yeh ID mili hai:</p>
+        <div id="displayScannedId" class="scanned-id">---</div>
+        <div class="confirm-btns">
+            <button class="btn btn-primary" id="btnConfirmAdd">
+                <i class="fas fa-plus"></i> Add Product
+            </button>
+            <button class="btn btn-outline" onclick="closeConfirmPopup()">
+                <i class="fas fa-sync"></i> Dubara Scan Karu
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- BOTTOM NAVIGATION -->
 <div class="bottom-nav no-print">
     <a href="javascript:void(0)" class="nav-item active" onclick="showPage('dashPage', this)">
@@ -415,20 +499,48 @@
     let inventory = JSON.parse(localStorage.getItem('sintha_inv')) || {};
     let sales = JSON.parse(localStorage.getItem('sintha_sales')) || [];
     let cart = [];
+    let isScanning = true;
 
     // Initialize Scanner
     let scannerAdd = new Html5QrcodeScanner("readerAdd", { fps: 15, qrbox: 200 });
     let scannerSell = new Html5QrcodeScanner("readerSell", { fps: 15, qrbox: 200 });
 
+    // Handle Scan for Stock
     scannerAdd.render((code) => {
-        document.getElementById('invBarcode').value = code;
-        if(inventory[code]) {
-            document.getElementById('invName').value = inventory[code].name;
-            document.getElementById('invPrice').value = inventory[code].price;
-        }
+        if(!isScanning) return;
+        showConfirmPopup(code, 'add');
     });
 
-    scannerSell.render((code) => { handleSaleScan(code); });
+    // Handle Scan for Selling
+    scannerSell.render((code) => { 
+        if(!isScanning) return;
+        showConfirmPopup(code, 'sell');
+    });
+
+    // Confirmation Popup Logic
+    function showConfirmPopup(code, type) {
+        isScanning = false;
+        document.getElementById('displayScannedId').innerText = code;
+        document.getElementById('confirmModal').style.display = 'flex';
+        
+        document.getElementById('btnConfirmAdd').onclick = function() {
+            if(type === 'add') {
+                document.getElementById('invBarcode').value = code;
+                if(inventory[code]) {
+                    document.getElementById('invName').value = inventory[code].name;
+                    document.getElementById('invPrice').value = inventory[code].price;
+                }
+            } else {
+                handleSaleScan(code);
+            }
+            closeConfirmPopup();
+        };
+    }
+
+    function closeConfirmPopup() {
+        document.getElementById('confirmModal').style.display = 'none';
+        setTimeout(() => { isScanning = true; }, 1000);
+    }
 
     function showPage(pageId, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
