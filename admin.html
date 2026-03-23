@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,6 +21,7 @@
             --white: #FFFFFF;
             --danger: #d63031;
             --success: #00b894;
+            --info: #0984e3;
         }
 
         body {
@@ -209,6 +211,7 @@
             background: var(--primary-gradient); color: white;
             padding: 10px 18px; border-radius: 10px; border: none; font-weight: 600;
             box-shadow: 0 4px 12px rgba(255, 159, 28, 0.3); font-size: 0.9em;
+            cursor: pointer;
         }
         
         .menu-grid {
@@ -227,12 +230,23 @@
         .admin-card-body { padding: 12px; }
         .admin-card h4 { margin: 0; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .admin-card .price { color: var(--primary-color); font-weight: 700; margin-top: 5px; display: block; font-size: 0.9em;}
+        
         .delete-btn {
             position: absolute; top: 8px; right: 8px;
             background: rgba(255,255,255,0.9); color: var(--danger);
             width: 28px; height: 28px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; border: none; font-size: 0.8em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .edit-btn {
+            position: absolute; top: 8px; right: 42px;
+            background: rgba(255,255,255,0.9); color: var(--info);
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; border: none; font-size: 0.8em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .modal {
@@ -367,7 +381,7 @@
     <div id="dishModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" data-modal="dishModal">&times;</span>
-            <h2 style="margin-top:0;">Add New Dish</h2>
+            <h2 id="dishModalTitle" style="margin-top:0;">Add New Dish</h2>
             <div class="form-group">
                 <label>Dish Name</label>
                 <input type="text" id="dishName" placeholder="e.g. Cheese Pizza">
@@ -395,7 +409,7 @@
     <div id="restModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" data-modal="restModal">&times;</span>
-            <h2 style="margin-top:0;">Add Restaurant</h2>
+            <h2 id="restModalTitle" style="margin-top:0;">Add Restaurant</h2>
             <div class="form-group">
                 <label>Restaurant Name</label>
                 <input type="text" id="restName">
@@ -415,12 +429,11 @@
     <div id="categoryModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" data-modal="categoryModal">&times;</span>
-            <h2 style="margin-top:0;">Add New Category</h2>
+            <h2 id="catModalTitle" style="margin-top:0;">Add New Category</h2>
             <div class="form-group">
                 <label>Category Name</label>
                 <input type="text" id="categoryName" placeholder="e.g. Pizza, Burgers">
             </div>
-            <!-- UPDATED: Added Image URL input for category -->
             <div class="form-group">
                 <label>Image URL</label>
                 <input type="text" id="categoryImage" placeholder="https://image-link.com">
@@ -463,6 +476,16 @@
         const db = firebase.database();
 
         let orderIdToVerify = null;
+
+        // Edit Mode Trackers
+        let editingDishId = null;
+        let editingRestId = null;
+        let editingCategoryId = null;
+
+        // Local Data Stores
+        let localDishes = {};
+        let localRestaurants = {};
+        let localCategories = {};
 
         const authOverlay = document.getElementById('authOverlay');
         const loginBtn = document.getElementById('loginBtn');
@@ -509,6 +532,7 @@
             fetchCategories();
         }
 
+        // ---------- Orders Logic ----------
         function fetchOrders() {
             db.ref('orders').on('value', snapshot => {
                 const tbody = document.getElementById('ordersTableBody');
@@ -575,19 +599,26 @@
             });
         };
 
+        // ---------- Dishes Logic ----------
         function fetchDishes() {
             db.ref('dishes').on('value', snapshot => {
                 const container = document.getElementById('dishesGrid');
                 container.innerHTML = '';
+                localDishes = {};
                 let count = 0;
+                
                 snapshot.forEach(child => {
                     count++;
                     const dish = child.val();
+                    const dishId = child.key;
+                    localDishes[dishId] = dish;
+                    
                     const card = document.createElement('div');
                     card.className = 'admin-card';
                     card.innerHTML = `
                         <img src="${dish.imageUrl}">
-                        <button class="delete-btn" onclick="deleteItem('dishes', '${child.key}')"><i class="fas fa-trash"></i></button>
+                        <button class="edit-btn" onclick="openEditDish('${dishId}')"><i class="fas fa-pen"></i></button>
+                        <button class="delete-btn" onclick="deleteItem('dishes', '${dishId}')"><i class="fas fa-trash"></i></button>
                         <div class="admin-card-body">
                             <h4>${dish.name}</h4>
                             <span class="price">₹${dish.price}</span>
@@ -599,6 +630,64 @@
             });
         }
 
+        window.openEditDish = (id) => {
+            editingDishId = id;
+            const dish = localDishes[id];
+            
+            document.getElementById('dishName').value = dish.name;
+            document.getElementById('dishPrice').value = dish.price;
+            document.getElementById('dishImage').value = dish.imageUrl;
+            document.getElementById('dishShopSelect').value = dish.shopId || '';
+            document.getElementById('dishCategorySelect').value = dish.categoryId || '';
+            
+            document.getElementById('dishModalTitle').innerText = 'Edit Dish';
+            document.getElementById('saveDishBtn').innerText = 'Update Dish';
+            document.getElementById('dishModal').style.display = 'flex';
+        };
+
+        document.getElementById('openDishModal').onclick = () => {
+            editingDishId = null;
+            document.getElementById('dishName').value = '';
+            document.getElementById('dishPrice').value = '';
+            document.getElementById('dishImage').value = '';
+            document.getElementById('dishShopSelect').selectedIndex = 0;
+            document.getElementById('dishCategorySelect').selectedIndex = 0;
+            
+            document.getElementById('dishModalTitle').innerText = 'Add New Dish';
+            document.getElementById('saveDishBtn').innerText = 'Save to Menu';
+            document.getElementById('dishModal').style.display = 'flex';
+        };
+
+        document.getElementById('saveDishBtn').onclick = () => {
+            const name = document.getElementById('dishName').value;
+            const price = document.getElementById('dishPrice').value;
+            const image = document.getElementById('dishImage').value;
+            const shopSelect = document.getElementById('dishShopSelect');
+            const categorySelect = document.getElementById('dishCategorySelect');
+            
+            const shopId = shopSelect.value;
+            const shopName = shopSelect.options[shopSelect.selectedIndex]?.text || '';
+            const categoryId = categorySelect.value;
+            const categoryName = categorySelect.options[categorySelect.selectedIndex]?.text || '';
+
+            if(name && price && image && shopId && categoryId) {
+                const dishData = { 
+                    name, price, imageUrl: image, shopId, shopName, categoryId, categoryName
+                };
+
+                if (editingDishId) {
+                    db.ref('dishes/' + editingDishId).update(dishData).then(() => {
+                        document.getElementById('dishModal').style.display = 'none';
+                    });
+                } else {
+                    db.ref('dishes').push(dishData).then(() => {
+                        document.getElementById('dishModal').style.display = 'none';
+                    });
+                }
+            } else { alert("Please fill all fields, including shop and category"); }
+        };
+
+        // ---------- Restaurants/Shops Logic ----------
         function fetchRestaurants() {
             const restGrid = document.getElementById('restaurantsGrid');
             const dishShopSelect = document.getElementById('dishShopSelect');
@@ -606,14 +695,18 @@
             db.ref('restaurants').on('value', snapshot => {
                 restGrid.innerHTML = '';
                 dishShopSelect.innerHTML = '<option value="" disabled selected>Select a shop</option>';
+                localRestaurants = {};
                 
                 snapshot.forEach(child => {
                     const rest = child.val();
                     const restId = child.key;
+                    localRestaurants[restId] = rest;
+                    
                     const card = document.createElement('div');
                     card.className = 'admin-card';
                     card.innerHTML = `
                         <img src="${rest.imageUrl}">
+                        <button class="edit-btn" onclick="openEditRest('${restId}')"><i class="fas fa-pen"></i></button>
                         <button class="delete-btn" onclick="deleteItem('restaurants', '${restId}')"><i class="fas fa-trash"></i></button>
                         <div class="admin-card-body">
                             <h4>${rest.name}</h4>
@@ -630,7 +723,51 @@
             });
         }
 
-        // --- UPDATED: Functions to manage Categories with Images ---
+        window.openEditRest = (id) => {
+            editingRestId = id;
+            const rest = localRestaurants[id];
+            
+            document.getElementById('restName').value = rest.name;
+            document.getElementById('restRating').value = rest.rating;
+            document.getElementById('restImage').value = rest.imageUrl;
+            
+            document.getElementById('restModalTitle').innerText = 'Edit Shop';
+            document.getElementById('saveRestBtn').innerText = 'Update Shop';
+            document.getElementById('restModal').style.display = 'flex';
+        };
+
+        document.getElementById('openRestModal').onclick = () => {
+            editingRestId = null;
+            document.getElementById('restName').value = '';
+            document.getElementById('restRating').value = '';
+            document.getElementById('restImage').value = '';
+            
+            document.getElementById('restModalTitle').innerText = 'Add Restaurant';
+            document.getElementById('saveRestBtn').innerText = 'Save Restaurant';
+            document.getElementById('restModal').style.display = 'flex';
+        };
+
+        document.getElementById('saveRestBtn').onclick = () => {
+            const name = document.getElementById('restName').value;
+            const rating = document.getElementById('restRating').value;
+            const image = document.getElementById('restImage').value;
+            
+            if(name && rating && image) {
+                const restData = { name, rating, imageUrl: image };
+                
+                if (editingRestId) {
+                    db.ref('restaurants/' + editingRestId).update(restData).then(() => {
+                        document.getElementById('restModal').style.display = 'none';
+                    });
+                } else {
+                    db.ref('restaurants').push(restData).then(() => {
+                        document.getElementById('restModal').style.display = 'none';
+                    });
+                }
+            } else { alert("Please fill all fields"); }
+        };
+
+        // ---------- Categories Logic ----------
         function fetchCategories() {
             const catGrid = document.getElementById('categoriesGrid');
             const dishCatSelect = document.getElementById('dishCategorySelect');
@@ -638,16 +775,18 @@
             db.ref('categories').on('value', snapshot => {
                 catGrid.innerHTML = '';
                 dishCatSelect.innerHTML = '<option value="" disabled selected>Select a category</option>';
+                localCategories = {};
                 
                 snapshot.forEach(child => {
                     const cat = child.val();
                     const catId = child.key;
+                    localCategories[catId] = cat;
                     
                     const card = document.createElement('div');
                     card.className = 'admin-card';
-                    // UPDATED: Show image in category card
                     card.innerHTML = `
                         <img src="${cat.imageUrl}" alt="${cat.name}">
+                        <button class="edit-btn" onclick="openEditCategory('${catId}')"><i class="fas fa-pen"></i></button>
                         <button class="delete-btn" onclick="deleteItem('categories', '${catId}')"><i class="fas fa-trash"></i></button>
                         <div class="admin-card-body" style="text-align:center;">
                             <h4>${cat.name}</h4>
@@ -663,72 +802,58 @@
             });
         }
 
-        // UPDATED: Save both name and image for category
+        window.openEditCategory = (id) => {
+            editingCategoryId = id;
+            const cat = localCategories[id];
+            
+            document.getElementById('categoryName').value = cat.name;
+            document.getElementById('categoryImage').value = cat.imageUrl;
+            
+            document.getElementById('catModalTitle').innerText = 'Edit Category';
+            document.getElementById('saveCategoryBtn').innerText = 'Update Category';
+            document.getElementById('categoryModal').style.display = 'flex';
+        };
+
+        document.getElementById('openCategoryModal').onclick = () => {
+            editingCategoryId = null;
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryImage').value = '';
+            
+            document.getElementById('catModalTitle').innerText = 'Add New Category';
+            document.getElementById('saveCategoryBtn').innerText = 'Save Category';
+            document.getElementById('categoryModal').style.display = 'flex';
+        };
+
         document.getElementById('saveCategoryBtn').onclick = () => {
             const name = document.getElementById('categoryName').value.trim();
             const imageUrl = document.getElementById('categoryImage').value.trim();
+            
             if(name && imageUrl) {
-                db.ref('categories').push({ name, imageUrl }).then(() => {
-                    document.getElementById('categoryModal').style.display = 'none';
-                    document.getElementById('categoryName').value = '';
-                    document.getElementById('categoryImage').value = '';
-                });
+                const catData = { name, imageUrl };
+                
+                if (editingCategoryId) {
+                    db.ref('categories/' + editingCategoryId).update(catData).then(() => {
+                        document.getElementById('categoryModal').style.display = 'none';
+                    });
+                } else {
+                    db.ref('categories').push(catData).then(() => {
+                        document.getElementById('categoryModal').style.display = 'none';
+                    });
+                }
             } else { alert("Please provide both a category name and an image URL."); }
         };
 
-        window.deleteItem = (coll, id) => { if(confirm('Delete this item permanently?')) db.ref(coll + '/' + id).remove(); };
-        
-        document.getElementById('openDishModal').onclick = () => document.getElementById('dishModal').style.display = 'flex';
-        document.getElementById('openRestModal').onclick = () => document.getElementById('restModal').style.display = 'flex';
-        document.getElementById('openCategoryModal').onclick = () => document.getElementById('categoryModal').style.display = 'flex';
-        
-        document.querySelectorAll('.close-modal').forEach(btn => btn.onclick = () => document.getElementById(btn.dataset.modal).style.display = 'none');
-
-        document.getElementById('saveDishBtn').onclick = () => {
-            const name = document.getElementById('dishName').value;
-            const price = document.getElementById('dishPrice').value;
-            const image = document.getElementById('dishImage').value;
-            const shopSelect = document.getElementById('dishShopSelect');
-            const categorySelect = document.getElementById('dishCategorySelect');
-            
-            const shopId = shopSelect.value;
-            const shopName = shopSelect.options[shopSelect.selectedIndex].text;
-            const categoryId = categorySelect.value;
-            const categoryName = categorySelect.options[categorySelect.selectedIndex].text;
-
-            if(name && price && image && shopId && categoryId) {
-                db.ref('dishes').push({ 
-                    name, 
-                    price, 
-                    imageUrl: image,
-                    shopId,
-                    shopName,
-                    categoryId,
-                    categoryName
-                }).then(() => {
-                    document.getElementById('dishModal').style.display = 'none';
-                    document.getElementById('dishName').value = '';
-                    document.getElementById('dishPrice').value = '';
-                    document.getElementById('dishImage').value = '';
-                    shopSelect.selectedIndex = 0;
-                    categorySelect.selectedIndex = 0;
-                });
-            } else { alert("Please fill all fields, including shop and category"); }
+        // ---------- General Utilities ----------
+        window.deleteItem = (coll, id) => { 
+            if(confirm('Delete this item permanently?')) {
+                db.ref(coll + '/' + id).remove(); 
+            }
         };
 
-        document.getElementById('saveRestBtn').onclick = () => {
-            const name = document.getElementById('restName').value;
-            const rating = document.getElementById('restRating').value;
-            const image = document.getElementById('restImage').value;
-            if(name && rating && image) {
-                db.ref('restaurants').push({ name, rating, imageUrl: image }).then(() => {
-                    document.getElementById('restModal').style.display = 'none';
-                    document.getElementById('restName').value = '';
-                    document.getElementById('restRating').value = '';
-                    document.getElementById('restImage').value = '';
-                });
-            } else { alert("Please fill all fields"); }
-        };
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.onclick = () => document.getElementById(btn.dataset.modal).style.display = 'none';
+        });
+
     </script>
 </body>
 </html>
