@@ -612,7 +612,7 @@
             </div>
         </div>
 
-        <!-- THANK YOU -->
+        <!-- THANK YOU PAGE -->
         <div id="thankYouPage" class="page">
             <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; text-align:center;">
                 <div style="width:100px; height:100px; background:#e0f0ff; border-radius:50%; display:flex; justify-content:center; align-items:center; margin-bottom:20px;">
@@ -620,6 +620,13 @@
                 </div>
                 <h2 style="color:#2d3436;">Order Placed!</h2>
                 <p style="color:#636e72;">Your food is being prepared.</p>
+
+                <!-- NEW: Show Delivery Code instantly after order -->
+                <div style="background:#fff5e6; padding:15px; border-radius:12px; margin-top:20px; border:2px dashed var(--primary-color); width: 100%;">
+                    <p style="margin:0; font-size:0.85em; color:#333; font-weight:600;">YOUR DELIVERY CODE</p>
+                    <h1 style="margin:5px 0 0 0; letter-spacing:5px; color:var(--primary-color);" id="thankYouDeliveryCode">------</h1>
+                </div>
+
                 <button class="btn-main" id="trackOrderBtn" style="margin-top:30px;">Track Order</button>
                 <a href="#" id="backToHomeBtn" style="margin-top:20px; display:block; color:var(--light-text); text-decoration:none;">Back to Home</a>
             </div>
@@ -843,7 +850,7 @@
             document.getElementById('map-container').style.display = 'block';
             if(!map) {
                 map = L.map('map').setView([24.8170, 93.9368], 13); 
-                // Updated to Google Satellite View (Hybrid view to show roads/labels too)
+                // Google Satellite (Hybrid) View
                 L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }).addTo(map);
                 map.on('click', (e) => handleLocationUpdate(e.latlng.lat, e.latlng.lng));
             }
@@ -1158,6 +1165,13 @@
                 pushNotification("Order Placed", `Order #${snap.key.substring(1,6)} has been placed successfully.`);
                 cart =[];
                 updateCartUI();
+                
+                // Show delivery code on the thank you screen
+                const codeElement = document.getElementById('thankYouDeliveryCode');
+                if (codeElement) {
+                    codeElement.textContent = dCode;
+                }
+                
                 showPage('thankYouPage');
             }).catch(err => {
                 alert('Failed to save order. Please try again or contact support.');
@@ -1238,6 +1252,9 @@
                     else if (st === 'Out for Delivery') { s1 = 'passed'; s2 = 'passed'; s3 = 'active'; }
                     else if (st === 'Delivered') { s1 = 'passed'; s2 = 'passed'; s3 = 'passed'; s4 = 'active'; }
 
+                    // Delivery code with fallback logic in case old orders didn't have it
+                    let displayDCode = o.deliveryCode ? o.deliveryCode : "N/A";
+
                     html += `
                         <div class="order-card" id="order-${o.k}">
                             <div style="display:flex;justify-content:space-between;font-weight:600;">
@@ -1250,7 +1267,7 @@
                             ${st !== 'Delivered' ? `
                                 <div style="background:#e0f0ff; padding:10px; border-radius:10px; text-align:center; margin:15px 0;">
                                     <p style="margin:0; font-size:0.8em; color:#0984e3; font-weight:600;">DELIVERY CODE</p>
-                                    <h2 style="margin:0; letter-spacing:5px; color:#2d3436;">${o.deliveryCode}</h2>
+                                    <h2 style="margin:0; letter-spacing:5px; color:#2d3436;">${displayDCode}</h2>
                                 </div>
                             ` : ''}
 
