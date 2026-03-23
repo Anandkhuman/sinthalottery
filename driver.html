@@ -164,7 +164,7 @@
     // Driver Details & Global Variables
     let myDriverPhone = localStorage.getItem('my_driver_phone') || null;
     let myDriverName = localStorage.getItem('my_driver_name') || null;
-    let currentOrderId = null; // Stored in Firebase, loaded instantly
+    let currentOrderId = null; // This will be synced with Firebase state
     let watchId = null;
     let customerLoc = null;
     let map = null; 
@@ -185,14 +185,11 @@
 
         activeBtn.addEventListener('click', () => {
             historyList.classList.add('hidden');
-            
-            // Fix: Keep showing all active orders even if one is accepted
             ordersList.classList.remove('hidden'); 
             
             // Show active tracking screen if currently delivering
             if (currentOrderId) {
                 activeDelivery.classList.remove('hidden');
-                // Fix map render issue when unhidden
                 setTimeout(() => { if(map) map.invalidateSize(); }, 100);
             } else {
                 activeDelivery.classList.add('hidden');
@@ -232,7 +229,6 @@
         localStorage.setItem('my_driver_phone', dPhone);
         localStorage.setItem('my_driver_name', dName);
         
-        // Save to Firebase Drivers Node
         db.ref('drivers/' + myDriverPhone).update({ name: dName }).then(() => {
             document.getElementById('driverAuthModal').style.display = 'none';
             listenToMyFirebaseState();
@@ -243,31 +239,30 @@
     function listenToMyFirebaseState() {
         document.getElementById('driverStatus').textContent = `Welcome, ${myDriverName}!`;
         
+        // This listener is the single source of truth for the driver's state.
         db.ref('drivers/' + myDriverPhone).on('value', snap => {
             const driverData = snap.val() || {};
             
-            // Check if driver has an active order in Firebase
+            // Check if driver has an active order stored in Firebase
             if (driverData.activeOrderId) {
                 currentOrderId = driverData.activeOrderId;
-                fetchActiveOrderAndShow(currentOrderId);
+                fetchActiveOrderAndShow(currentOrderId); // This will display the active delivery details
             } else {
-                // No active order, logic to show regular dashboard
+                // If no active order, hide the delivery details UI
                 currentOrderId = null;
                 if(watchId) navigator.geolocation.clearWatch(watchId);
                 
                 document.getElementById('activeDelivery').classList.add('hidden');
                 
-                // Keep the currently clicked tab open
+                // Ensure the correct tab content is visible
                 if(document.getElementById('activeBtn').classList.contains('active')){
                     document.getElementById('ordersList').classList.remove('hidden');
                     document.getElementById('historyList').classList.add('hidden');
-                } else {
-                    document.getElementById('ordersList').classList.add('hidden');
-                    document.getElementById('historyList').classList.remove('hidden');
                 }
             }
             
-            // Call loadActiveOrders consistently so other remaining orders don't disappear
+            // This function is now called every time the driver's state changes
+            // to ensure the list of other available orders is always up to date.
             loadActiveOrders();
         });
     }
@@ -282,6 +277,7 @@
             snap.forEach(child => {
                 const o = child.val();
                 const id = child.key;
+                // Only show orders that are ready to be picked up
                 if (o.status === 'Placed' || o.status === 'Preparing') {
                     hasOrders = true;
                     let itemsHtml = buildItemsHtml(o.items);
@@ -301,6 +297,7 @@
             });
             
             if(hasOrders) {
+                // If currently delivering, add a header to differentiate
                 list.innerHTML = (currentOrderId ? '<h3 style="color:#2c3e50; margin-bottom:15px; text-align:center;">Other Available Orders</h3>' : '') + htmlContent;
             } else {
                 list.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-mug-hot" style="font-size:3em; color:#ccc;"></i><p style="color:#777; margin-top:10px;">No other active orders right now.</p></div>';
@@ -312,7 +309,7 @@
     window.acceptOrder = function(id) {
         if(currentOrderId) { alert("You are already delivering an order! Please complete it first."); return; }
         
-        // Update both the order status and the driver's active state simultaneously
+        // Atomically update the order and driver states in Firebase
         const updates = {};
         updates['orders/' + id + '/status'] = 'Out for Delivery';
         updates['orders/' + id + '/driverName'] = myDriverName;
@@ -320,7 +317,8 @@
         updates['drivers/' + myDriverPhone + '/activeOrderId'] = id;
 
         db.ref().update(updates).then(() => {
-            // The Firebase listener `listenToMyFirebaseState()` will automatically trigger and show the delivery screen
+            // The Firebase listener `listenToMyFirebaseState` will automatically
+            // handle the UI update, making the active delivery visible.
         }).catch(err => alert("Error accepting order: " + err.message));
     }
 
@@ -328,37 +326,33 @@
     function fetchActiveOrderAndShow(id) {
         db.ref('orders/' + id).once('value', snap => {
             const orderData = snap.val();
+            // If order data is gone or status is delivered, clean up driver state
             if(!orderData || orderData.status === 'Delivered') {
-                // Cleanup if order was deleted or already delivered
                 db.ref('drivers/' + myDriverPhone).update({ activeOrderId: null });
                 return;
             }
 
             customerLoc = orderData.location;
             
-            // Fix: Keep orders list visible if active tab is selected
-            if (document.getElementById('activeBtn').classList.contains('active')) {
-                document.getElementById('ordersList').classList.remove('hidden');
-            }
+            // Make sure the active delivery container and the main orders list are visible
+            document.getElementById('ordersList').classList.remove('hidden');
             document.getElementById('historyList').classList.add('hidden');
             document.getElementById('activeDelivery').classList.remove('hidden');
             
-            // Sync tabs to highlight Active
+            // Sync tabs to ensure 'Active Orders' is selected
             document.getElementById('activeBtn').classList.add('active');
             document.getElementById('historyBtn').classList.remove('active');
             
-            // Populate Data
+            // Populate delivery data
             document.getElementById('custName').textContent = orderData.userName || 'Guest';
             document.getElementById('custAddress').textContent = orderData.address;
             document.getElementById('custPhone').textContent = orderData.phone || 'N/A';
             document.getElementById('activeItemsList').innerHTML = buildItemsHtml(orderData.items);
             document.getElementById('driverStatus').textContent = `Currently Delivering Order #${id.substring(1,6)}`;
 
-            // Set Call & WhatsApp Links Dynamically
+            // Set dynamic links for Call & WhatsApp
             let phoneStr = orderData.phone || '';
             document.getElementById('callCustomerBtn').href = phoneStr ? `tel:${phoneStr}` : '#';
-            
-            // Extract numbers and attach country code if needed for WA
             let waPhone = phoneStr.replace(/\D/g, '');
             if(waPhone.length === 10) waPhone = '91' + waPhone;
             document.getElementById('waCustomerBtn').href = waPhone ? `https://wa.me/${waPhone}` : '#';
@@ -382,7 +376,7 @@
         db.ref('orders/' + currentOrderId + '/deliveryCode').once('value', snap => {
             const realCode = snap.val();
             if(userInput == realCode) {
-                // Verification successful! Update Firebase
+                // On successful verification, update the database
                 const updates = {};
                 updates['orders/' + currentOrderId + '/status'] = 'Delivered';
                 updates['orders/' + currentOrderId + '/deliveredAt'] = firebase.database.ServerValue.TIMESTAMP;
@@ -391,7 +385,7 @@
                 db.ref().update(updates).then(() => {
                     document.getElementById('deliveryCodeModal').style.display = 'none';
                     alert("Delivery Complete! Verified Successfully.");
-                    // Screen will automatically switch back to home via listenToMyFirebaseState()
+                    // The screen will revert to the main dashboard via `listenToMyFirebaseState`
                 });
             } else {
                 alert("WRONG DELIVERY CODE! PLEASE ASK CUSTOMER AGAIN.");
@@ -406,14 +400,14 @@
         const list = document.getElementById('historyList');
         list.innerHTML = '<p style="text-align:center; color:#777; margin-top:50px;">Fetching history...</p>';
         
-        db.ref('orders').once('value', snap => {
+        db.ref('orders').orderByChild('driverPhone').equalTo(myDriverPhone).once('value', snap => {
             list.innerHTML = '';
             let hasHistory = false;
             const historyOrders =[];
             
             snap.forEach(child => {
                  const o = child.val();
-                 if (o.status === 'Delivered' && o.driverPhone === myDriverPhone) {
+                 if (o.status === 'Delivered') {
                     hasHistory = true;
                     historyOrders.push({ key: child.key, ...o });
                 }
@@ -424,8 +418,8 @@
                  return;
             }
 
-            // Sort by latest delivery first
-            historyOrders.sort((a, b) => (b.deliveredAt || b.timestamp || 0) - (a.deliveredAt || a.timestamp || 0));
+            // Sort by most recent delivery
+            historyOrders.sort((a, b) => (b.deliveredAt || 0) - (a.deliveredAt || 0));
 
             historyOrders.forEach(o => {
                 const id = o.key;
@@ -466,16 +460,14 @@
     function initMap(dest) {
         document.getElementById('activeMap').style.display = 'block';
         if (map !== null) map.remove();
-        map = L.map('activeMap').setView([dest.lat, dest.lng], 16); // Increased zoom for satellite view
+        map = L.map('activeMap').setView([dest.lat, dest.lng], 16);
         
-        // FIX: Changed map to Google Maps Satellite View with labels
         L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { 
             maxZoom: 20,
             attribution: '© Google'
         }).addTo(map);
 
         L.marker([dest.lat, dest.lng]).addTo(map).bindPopup("Customer Location").openPopup();
-        // Fix for grey areas in map due to hidden containers
         setTimeout(() => map.invalidateSize(), 300);
     }
 
