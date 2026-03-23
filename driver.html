@@ -1,0 +1,477 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sintha Keithel Driver</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <style>
+        :root { --primary: #ff9f1c; --dark: #2c3e50; --success: #27ae60; --grey: #f3f4f6; }
+        body { margin:0; font-family: 'Poppins', sans-serif; background: var(--grey); color: #333; }
+        .header { background: var(--dark); color: white; padding: 20px; text-align: center; position: sticky; top:0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+        .order-card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75em; font-weight: 600; text-transform: uppercase; color: white; }
+        .badge-placed { background: #f39c12; }
+        .badge-preparing { background: #3498db; }
+        .badge-delivered { background: var(--success); }
+        .item-list { background: #fafafa; border-radius: 10px; padding: 10px; margin: 15px 0; }
+        .item-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .item-row:last-child { border-bottom: none; }
+        .item-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 15px; border: 1px solid #ddd; }
+        .item-details { flex: 1; }
+        .item-name { font-weight: 600; font-size: 0.95em; color: var(--dark); }
+        .item-meta { font-size: 0.85em; color: #7f8c8d; }
+        .item-price { font-weight: 600; color: var(--success); }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 1em; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-accept { background: var(--success); color: white; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+        .btn-nav { background: #2980b9; color: white; }
+        .btn-street { background: #8e44ad; color: white; }
+        .btn-deliver { background: #c0392b; color: white; margin-top: 20px; }
+        
+        /* Contact Buttons Styles */
+        .contact-btn-group { display: flex; gap: 10px; margin-bottom: 15px; margin-top: 10px;}
+        .btn-call { background: var(--success); color: white; text-decoration: none; flex: 1; }
+        .btn-wa { background: #25D366; color: white; text-decoration: none; flex: 1; }
+
+        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modern-modal { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 0.85em; font-weight: 600; color: #666; margin-bottom: 5px; }
+        .modern-input { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
+        .btn-save { background: var(--primary); color: white; }
+        .code-input { font-size: 1.8em; text-align: center; letter-spacing: 8px; padding: 15px; margin: 15px 0; }
+        #activeMap { height: 250px; width: 100%; border-radius: 10px; margin-top: 15px; display: none; border: 2px solid var(--dark); }
+        .hidden { display: none !important; }
+        .info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; color: #555; font-size: 0.95em; }
+        .sv-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 9999; flex-direction: column; }
+        .sv-modal-header { padding: 15px; background: rgba(0,0,0,0.9); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { background: none; border:none; color: white; font-size: 1.5em; cursor: pointer; }
+        .nav-tabs { display: flex; justify-content: center; gap: 10px; margin-top: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px; }
+        .nav-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid white; background: transparent; color: white; cursor: pointer; transition: all 0.3s; font-weight: 500;}
+        .nav-btn.active { background: var(--primary); border-color: var(--primary); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>☕ Sintha Keithel Driver</h2>
+    <p id="driverStatus" style="font-size: 0.9em; opacity: 0.9; margin-top: 5px;">Identifying Driver...</p>
+    <div class="nav-tabs" id="mainNavTabs">
+        <button id="activeBtn" class="nav-btn active">Active Orders</button>
+        <button id="historyBtn" class="nav-btn">Delivery History</button>
+    </div>
+</div>
+
+<div class="container" id="ordersList">
+    <p style="text-align:center; color:#777; margin-top:50px;">Connecting to server...</p>
+</div>
+
+<div class="container hidden" id="historyList">
+     <p style="text-align:center; color:#777; margin-top:50px;">Loading delivery history...</p>
+</div>
+
+<!-- Initial Driver Login Modal -->
+<div class="modal-overlay" id="driverAuthModal">
+    <div class="modern-modal">
+        <h3>Driver Registration</h3>
+        <p>Enter your details once to start receiving orders.</p>
+        <div class="input-group">
+            <label>FULL NAME</label>
+            <input type="text" id="authNameInput" class="modern-input" placeholder="e.g. John Doe">
+        </div>
+        <div class="input-group">
+            <label>MOBILE NUMBER</label>
+            <input type="tel" id="authPhoneInput" class="modern-input" placeholder="e.g. 9876543210">
+        </div>
+        <button class="btn btn-save" id="saveDriverBtn">Save & Continue</button>
+    </div>
+</div>
+
+<!-- Delivery Code Modal -->
+<div class="modal-overlay" id="deliveryCodeModal">
+    <div class="modern-modal">
+        <h3>Complete Delivery</h3>
+        <p>Ask customer for the 6-digit delivery code.</p>
+        <div class="input-group">
+            <input type="number" id="deliveryCodeInput" class="modern-input code-input" placeholder="______">
+        </div>
+        <button class="btn btn-accept" id="verifyCodeBtn">Verify Code</button>
+        <button onclick="document.getElementById('deliveryCodeModal').style.display='none'" style="background:none; border:none; color:#777; margin-top:10px; cursor:pointer;">Cancel</button>
+    </div>
+</div>
+
+<!-- Active Delivery View -->
+<div class="container hidden" id="activeDelivery">
+    <div class="order-card">
+        <div class="card-header"><h3 style="margin:0">Current Delivery</h3><span class="status-badge" style="background:#2980b9">IN PROGRESS</span></div>
+        <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>Name:</strong> <span id="custName"></span></div>
+        <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> <span id="custPhone"></span></div>
+        
+        <!-- Call & WhatsApp Action Buttons -->
+        <div class="contact-btn-group">
+            <a href="#" id="callCustomerBtn" class="btn btn-call"><i class="fas fa-phone-alt"></i> Call</a>
+            <a href="#" id="waCustomerBtn" class="btn btn-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        </div>
+
+        <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>Address:</strong> <span id="custAddress"></span></div>
+        
+        <div class="item-list" id="activeItemsList"></div>
+        <div id="activeMap"></div>
+        <button class="btn btn-street" onclick="openStreetViewModal()"><i class="fas fa-street-view"></i> See House (Street View)</button>
+        <button class="btn btn-nav" onclick="openGoogleMapsNav()"><i class="fas fa-location-arrow"></i> Google Maps Navigation</button>
+        
+        <button class="btn btn-deliver" onclick="showDeliveryCodeModal()">
+            <i class="fas fa-check-circle"></i> Complete Delivery
+        </button>
+    </div>
+</div>
+
+<!-- Street View Modal -->
+<div class="sv-modal" id="svModal">
+    <div class="sv-modal-header"><span><i class="fas fa-home"></i> House Preview</span><button class="close-btn" onclick="closeStreetView()"><i class="fas fa-times"></i></button></div>
+    <div style="flex:1;" id="iframe-holder"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    const firebaseConfig = {
+      "apiKey": "AIzaSyDkOrw5HnHE8rp0-rnmUJnzh1KjZPpFXEY",
+      "authDomain": "sinthakeithel-ccb49.firebaseapp.com",
+      "databaseURL": "https://sinthakeithel-ccb49-default-rtdb.firebaseio.com",
+      "projectId": "sinthakeithel-ccb49",
+      "storageBucket": "sinthakeithel-ccb49.firebasestorage.app",
+      "messagingSenderId": "575832888579",
+      "appId": "1:575832888579:web:ac8111abfba799256c0536",
+      "measurementId": "G-XESZZF5J7L"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Driver Details & Global Variables
+    let myDriverPhone = localStorage.getItem('my_driver_phone') || null;
+    let myDriverName = localStorage.getItem('my_driver_name') || null;
+    let currentOrderId = null; // Stored in Firebase, loaded instantly
+    let watchId = null;
+    let customerLoc = null;
+    let map = null; 
+    let driverMarker = null;
+    const driverIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/741/741407.png', iconSize:[40, 40], iconAnchor:[20, 20] });
+
+    window.onload = () => {
+        setupNavTabs();
+        authenticateDriver();
+    };
+
+    function setupNavTabs() {
+        const activeBtn = document.getElementById('activeBtn');
+        const historyBtn = document.getElementById('historyBtn');
+        const ordersList = document.getElementById('ordersList');
+        const historyList = document.getElementById('historyList');
+        const activeDelivery = document.getElementById('activeDelivery');
+
+        activeBtn.addEventListener('click', () => {
+            historyList.classList.add('hidden');
+            
+            // If delivering show active tracking screen, otherwise show normal orders list
+            if (currentOrderId) {
+                activeDelivery.classList.remove('hidden');
+                ordersList.classList.add('hidden');
+                // Fix map render issue when unhidden
+                setTimeout(() => { if(map) map.invalidateSize(); }, 100);
+            } else {
+                activeDelivery.classList.add('hidden');
+                ordersList.classList.remove('hidden');
+            }
+            
+            activeBtn.classList.add('active');
+            historyBtn.classList.remove('active');
+        });
+
+        historyBtn.addEventListener('click', () => {
+            ordersList.classList.add('hidden');
+            activeDelivery.classList.add('hidden');
+            historyList.classList.remove('hidden');
+            
+            activeBtn.classList.remove('active');
+            historyBtn.classList.add('active');
+            loadDeliveryHistory(); 
+        });
+    }
+
+    // 1. Driver Authentication / Identification
+    function authenticateDriver() {
+        if (!myDriverPhone) {
+            document.getElementById('driverAuthModal').style.display = 'flex';
+        } else {
+            listenToMyFirebaseState();
+        }
+    }
+
+    document.getElementById('saveDriverBtn').onclick = () => {
+        const dName = document.getElementById('authNameInput').value.trim();
+        const dPhone = document.getElementById('authPhoneInput').value.trim();
+        if(!dName || !dPhone) { alert("Please enter both Name and Phone Number."); return; }
+        
+        myDriverPhone = dPhone;
+        myDriverName = dName;
+        localStorage.setItem('my_driver_phone', dPhone);
+        localStorage.setItem('my_driver_name', dName);
+        
+        // Save to Firebase Drivers Node
+        db.ref('drivers/' + myDriverPhone).update({ name: dName }).then(() => {
+            document.getElementById('driverAuthModal').style.display = 'none';
+            listenToMyFirebaseState();
+        });
+    };
+
+    // 2. Main Firebase Driver State Listener (Handles Re-opening the App perfectly)
+    function listenToMyFirebaseState() {
+        document.getElementById('driverStatus').textContent = `Welcome, ${myDriverName}!`;
+        
+        db.ref('drivers/' + myDriverPhone).on('value', snap => {
+            const driverData = snap.val() || {};
+            
+            // Check if driver has an active order in Firebase
+            if (driverData.activeOrderId) {
+                currentOrderId = driverData.activeOrderId;
+                fetchActiveOrderAndShow(currentOrderId);
+            } else {
+                // No active order, logic to show regular dashboard
+                currentOrderId = null;
+                if(watchId) navigator.geolocation.clearWatch(watchId);
+                
+                document.getElementById('activeDelivery').classList.add('hidden');
+                
+                // Keep the currently clicked tab open
+                if(document.getElementById('activeBtn').classList.contains('active')){
+                    document.getElementById('ordersList').classList.remove('hidden');
+                    document.getElementById('historyList').classList.add('hidden');
+                } else {
+                    document.getElementById('ordersList').classList.add('hidden');
+                    document.getElementById('historyList').classList.remove('hidden');
+                }
+                
+                loadActiveOrders();
+            }
+        });
+    }
+
+    // 3. Load Available Orders
+    function loadActiveOrders() {
+        db.ref('orders').on('value', snap => {
+            if(currentOrderId) return; // Don't refresh main list if currently delivering
+            
+            const list = document.getElementById('ordersList');
+            list.innerHTML = '';
+            let hasOrders = false;
+            
+            snap.forEach(child => {
+                const o = child.val();
+                const id = child.key;
+                if (o.status === 'Placed' || o.status === 'Preparing') {
+                    hasOrders = true;
+                    let itemsHtml = buildItemsHtml(o.items);
+                    let badgeClass = (o.status === 'Placed') ? 'badge-placed' : 'badge-preparing';
+                    const card = document.createElement('div');
+                    card.className = 'order-card';
+                    card.innerHTML = `
+                        <div class="card-header"><h4 style="margin:0">Order #${id.substring(1,6)}</h4><span class="status-badge ${badgeClass}">${o.status}</span></div>
+                        <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>Customer:</strong> ${o.userName || 'Guest'}</div>
+                        <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> ${o.phone || 'N/A'}</div>
+                        <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>To:</strong> ${o.address}</div>
+                        <div class="item-list">${itemsHtml}</div>
+                        <button class="btn btn-accept" onclick="acceptOrder('${id}')"><i class="fas fa-shipping-fast"></i> Accept & Deliver</button>
+                    `;
+                    list.appendChild(card);
+                }
+            });
+            if(!hasOrders) list.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-mug-hot" style="font-size:3em; color:#ccc;"></i><p style="color:#777; margin-top:10px;">No active orders right now.</p></div>';
+        });
+    }
+
+    // 4. Accept Order logic (Uses Firebase atomic updates)
+    window.acceptOrder = function(id) {
+        if(currentOrderId) { alert("You are already delivering an order!"); return; }
+        
+        // Update both the order status and the driver's active state simultaneously
+        const updates = {};
+        updates['orders/' + id + '/status'] = 'Out for Delivery';
+        updates['orders/' + id + '/driverName'] = myDriverName;
+        updates['orders/' + id + '/driverPhone'] = myDriverPhone;
+        updates['drivers/' + myDriverPhone + '/activeOrderId'] = id;
+
+        db.ref().update(updates).then(() => {
+            // The Firebase listener `listenToMyFirebaseState()` will automatically trigger and show the delivery screen
+        }).catch(err => alert("Error accepting order: " + err.message));
+    }
+
+    // 5. Setup Active Delivery UI
+    function fetchActiveOrderAndShow(id) {
+        db.ref('orders/' + id).once('value', snap => {
+            const orderData = snap.val();
+            if(!orderData || orderData.status === 'Delivered') {
+                // Cleanup if order was deleted or already delivered
+                db.ref('drivers/' + myDriverPhone).update({ activeOrderId: null });
+                return;
+            }
+
+            customerLoc = orderData.location;
+            
+            // Hide standard lists, show active delivery
+            document.getElementById('ordersList').classList.add('hidden');
+            document.getElementById('historyList').classList.add('hidden');
+            document.getElementById('activeDelivery').classList.remove('hidden');
+            
+            // Sync tabs to highlight Active
+            document.getElementById('activeBtn').classList.add('active');
+            document.getElementById('historyBtn').classList.remove('active');
+            
+            // Populate Data
+            document.getElementById('custName').textContent = orderData.userName || 'Guest';
+            document.getElementById('custAddress').textContent = orderData.address;
+            document.getElementById('custPhone').textContent = orderData.phone || 'N/A';
+            document.getElementById('activeItemsList').innerHTML = buildItemsHtml(orderData.items);
+            document.getElementById('driverStatus').textContent = `Currently Delivering Order #${id.substring(1,6)}`;
+
+            // Set Call & WhatsApp Links Dynamically
+            let phoneStr = orderData.phone || '';
+            document.getElementById('callCustomerBtn').href = phoneStr ? `tel:${phoneStr}` : '#';
+            
+            // Extract numbers and attach country code if needed for WA
+            let waPhone = phoneStr.replace(/\D/g, '');
+            if(waPhone.length === 10) waPhone = '91' + waPhone;
+            document.getElementById('waCustomerBtn').href = waPhone ? `https://wa.me/${waPhone}` : '#';
+
+            initMap(customerLoc); 
+            startTracking();
+        });
+    }
+
+    // 6. Complete Delivery Logic
+    function showDeliveryCodeModal() {
+        document.getElementById('deliveryCodeModal').style.display = 'flex';
+        document.getElementById('deliveryCodeInput').value = '';
+        document.getElementById('deliveryCodeInput').focus();
+    }
+
+    document.getElementById('verifyCodeBtn').onclick = () => {
+        const userInput = document.getElementById('deliveryCodeInput').value;
+        if(!userInput || userInput.length !== 6) { alert("Please enter the 6-digit code."); return; }
+
+        db.ref('orders/' + currentOrderId + '/deliveryCode').once('value', snap => {
+            const realCode = snap.val();
+            if(userInput == realCode) {
+                // Verification successful! Update Firebase
+                const updates = {};
+                updates['orders/' + currentOrderId + '/status'] = 'Delivered';
+                updates['orders/' + currentOrderId + '/deliveredAt'] = firebase.database.ServerValue.TIMESTAMP;
+                updates['drivers/' + myDriverPhone + '/activeOrderId'] = null; // Free up driver
+
+                db.ref().update(updates).then(() => {
+                    document.getElementById('deliveryCodeModal').style.display = 'none';
+                    alert("Delivery Complete! Verified Successfully.");
+                    // Screen will automatically switch back to home via listenToMyFirebaseState()
+                });
+            } else {
+                alert("WRONG DELIVERY CODE! PLEASE ASK CUSTOMER AGAIN.");
+                document.getElementById('deliveryCodeInput').value = "";
+                document.getElementById('deliveryCodeInput').focus();
+            }
+        });
+    };
+
+    // 7. Delivery History (Fetches direct from Firebase based on phone number)
+    function loadDeliveryHistory() {
+        const list = document.getElementById('historyList');
+        list.innerHTML = '<p style="text-align:center; color:#777; margin-top:50px;">Fetching history...</p>';
+        
+        db.ref('orders').once('value', snap => {
+            list.innerHTML = '';
+            let hasHistory = false;
+            const historyOrders =[];
+            
+            snap.forEach(child => {
+                 const o = child.val();
+                 if (o.status === 'Delivered' && o.driverPhone === myDriverPhone) {
+                    hasHistory = true;
+                    historyOrders.push({ key: child.key, ...o });
+                }
+            });
+
+            if (!hasHistory) {
+                 list.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-history" style="font-size:3em; color:#ccc;"></i><p style="color:#777; margin-top:10px;">You have no completed deliveries yet.</p></div>';
+                 return;
+            }
+
+            // Sort by latest delivery first
+            historyOrders.sort((a, b) => (b.deliveredAt || b.timestamp || 0) - (a.deliveredAt || a.timestamp || 0));
+
+            historyOrders.forEach(o => {
+                const id = o.key;
+                const deliveryDate = new Date(o.deliveredAt || o.timestamp).toLocaleString();
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h4 style="margin:0">Order #${id.substring(1,6)}</h4>
+                        <span class="status-badge badge-delivered">Delivered</span>
+                    </div>
+                    <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>To:</strong> ${o.userName || 'Guest'}</div>
+                    <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> ${o.phone || 'N/A'}</div>
+                    <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>At:</strong> ${o.address}</div>
+                    <div class="info-row"><i class="fas fa-calendar-check fa-fw" style="color:#2980b9;"></i> <strong>On:</strong> ${deliveryDate}</div>
+                `;
+                list.appendChild(card);
+            });
+        });
+    }
+
+    // Utils & Map Logic
+    function buildItemsHtml(items) {
+        if(!items) return '<p>No items</p>';
+        return items.map(i => `<div class="item-row"><img src="${i.img || 'https://via.placeholder.com/50'}" class="item-img"><div class="item-details"><div class="item-name">${i.name}</div><div class="item-meta">Qty: ${i.quantity}</div></div><div class="item-price">₹${(i.price * i.quantity)}</div></div>`).join('');
+    }
+
+    function startTracking() {
+        if(navigator.geolocation) {
+            watchId = navigator.geolocation.watchPosition(pos => {
+                const lat = pos.coords.latitude; const lng = pos.coords.longitude;
+                if(map) { if(driverMarker) driverMarker.setLatLng([lat, lng]); else driverMarker = L.marker([lat, lng], {icon: driverIcon}).addTo(map); }
+                if(currentOrderId) db.ref(`orders/${currentOrderId}/driverLocation`).set({ lat, lng, timestamp: Date.now() });
+            }, err => console.error(err), { enableHighAccuracy: true });
+        }
+    }
+
+    function initMap(dest) {
+        document.getElementById('activeMap').style.display = 'block';
+        if (map !== null) map.remove();
+        map = L.map('activeMap').setView([dest.lat, dest.lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.marker([dest.lat, dest.lng]).addTo(map).bindPopup("Customer Location").openPopup();
+        // Fix for grey areas in map due to hidden containers
+        setTimeout(() => map.invalidateSize(), 300);
+    }
+
+    window.openStreetViewModal = () => {
+        document.getElementById('svModal').style.display = 'flex';
+        document.getElementById('iframe-holder').innerHTML = `<iframe src="https://maps.google.com/maps?layer=c&cbll=${customerLoc.lat},${customerLoc.lng}&cbp=12,0,0,0,0&output=svembed" width="100%" height="100%" frameborder="0"></iframe>`;
+    }
+    window.closeStreetView = () => { document.getElementById('svModal').style.display = 'none'; document.getElementById('iframe-holder').innerHTML = ''; }
+    window.openGoogleMapsNav = () => { window.open(`https://www.google.com/maps/dir/?api=1&destination=${customerLoc.lat},${customerLoc.lng}`, '_blank'); };
+
+</script>
+</body>
+</html>
