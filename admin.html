@@ -350,14 +350,6 @@
             <div class="menu-grid" id="dishesGrid"></div>
         </div>
 
-        <div id="restaurants" class="section">
-             <div class="action-bar">
-                <div class="header-title" style="margin:0;">Shops</div>
-                <button class="btn-add" id="openRestModal">+ Add Shop</button>
-            </div>
-            <div class="menu-grid" id="restaurantsGrid"></div>
-        </div>
-
         <div id="categories" class="section">
             <div class="action-bar">
                <div class="header-title" style="margin:0;">Categories</div>
@@ -372,7 +364,6 @@
         <div class="nav-item active" data-target="dashboard"><i class="fas fa-chart-pie"></i><span>Home</span></div>
         <div class="nav-item" data-target="orders"><i class="fas fa-receipt"></i><span>Orders</span></div>
         <div class="nav-item" data-target="menu"><i class="fas fa-utensils"></i><span>Menu</span></div>
-        <div class="nav-item" data-target="restaurants"><i class="fas fa-store"></i><span>Shops</span></div>
         <div class="nav-item" data-target="categories"><i class="fas fa-tags"></i><span>Categories</span></div>
         <div class="nav-item logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Exit</span></div>
     </div>
@@ -390,10 +381,6 @@
                 <label>Price (₹)</label>
                 <input type="number" id="dishPrice" placeholder="0.00">
             </div>
-            <div class="form-group">
-                <label>Select Shop</label>
-                <select id="dishShopSelect"><option value="">Loading shops...</option></select>
-            </div>
              <div class="form-group">
                 <label>Select Category</label>
                 <select id="dishCategorySelect"><option value="">Loading categories...</option></select>
@@ -403,26 +390,6 @@
                 <input type="text" id="dishImage" placeholder="https://image-link.com">
             </div>
             <button class="btn-primary" id="saveDishBtn">Save to Menu</button>
-        </div>
-    </div>
-
-    <div id="restModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" data-modal="restModal">&times;</span>
-            <h2 id="restModalTitle" style="margin-top:0;">Add Restaurant</h2>
-            <div class="form-group">
-                <label>Restaurant Name</label>
-                <input type="text" id="restName">
-            </div>
-            <div class="form-group">
-                <label>Rating (1-5)</label>
-                <input type="number" step="0.1" max="5" id="restRating">
-            </div>
-            <div class="form-group">
-                <label>Image URL</label>
-                <input type="text" id="restImage">
-            </div>
-            <button class="btn-primary" id="saveRestBtn">Save Restaurant</button>
         </div>
     </div>
 
@@ -476,15 +443,15 @@
         const db = firebase.database();
 
         let orderIdToVerify = null;
+        let orderSelectElementToRevert = null;
+        let orderPreviousStatus = null;
 
         // Edit Mode Trackers
         let editingDishId = null;
-        let editingRestId = null;
         let editingCategoryId = null;
 
         // Local Data Stores
         let localDishes = {};
-        let localRestaurants = {};
         let localCategories = {};
 
         const authOverlay = document.getElementById('authOverlay');
@@ -528,7 +495,6 @@
         function initAdmin() {
             fetchOrders();
             fetchDishes();
-            fetchRestaurants();
             fetchCategories();
         }
 
@@ -546,13 +512,14 @@
                     const itemsString = order.items ? order.items.map(i => `${i.quantity}x ${i.name}`).join(', ') : 'No items';
                     
                     const row = document.createElement('tr');
+                    // We pass 'this' to get the select element and the current 'order.status' as the fallback status.
                     row.innerHTML = `
                         <td style="font-weight:600; color:var(--primary-color);">#${order.id.substring(1, 6)}</td>
                         <td style="font-weight:600;">${order.userName || 'N/A'}</td>
                         <td style="font-size:0.8em;">${itemsString}</td>
                         <td style="font-weight:600;">₹${order.total}</td>
                         <td>
-                            <select class="status-select" onchange="updateStatus('${order.id}', this.value)">
+                            <select class="status-select" onchange="updateStatus('${order.id}', this, '${order.status || 'Placed'}')">
                                 <option value="Placed" ${order.status === 'Placed' ? 'selected' : ''}>Placed</option>
                                 <option value="Preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
                                 <option value="Out for Delivery" ${order.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
@@ -567,9 +534,15 @@
             });
         }
         
-        window.updateStatus = (id, status) => {
+        window.updateStatus = (id, selectElement, previousStatus) => {
+            const status = selectElement.value;
             if(status === 'Delivered') {
+                // Save element and status details to revert if verification fails or cancels
                 orderIdToVerify = id;
+                orderSelectElementToRevert = selectElement;
+                orderPreviousStatus = previousStatus;
+                
+                document.getElementById('deliveryCodeInput').value = '';
                 document.getElementById('deliveryCodeModal').style.display = 'flex';
                 document.getElementById('deliveryCodeInput').focus();
             } else {
@@ -580,21 +553,29 @@
         document.getElementById('verifyCodeBtn').onclick = () => {
             const userInput = document.getElementById('deliveryCodeInput').value;
             if(!userInput || !orderIdToVerify) {
-                alert("Invalid operation.");
+                alert("Please enter the delivery code.");
                 return;
             }
             
             db.ref('orders/' + orderIdToVerify + '/deliveryCode').once('value', snap => {
                 const realCode = snap.val();
                 if(userInput == realCode) {
+                    // Update Database only if code is correct
                     db.ref('orders/' + orderIdToVerify).update({ status: 'Delivered' });
                     alert("Code Verified! Status updated.");
+                    
                     document.getElementById('deliveryCodeModal').style.display = 'none';
                     document.getElementById('deliveryCodeInput').value = '';
+                    
+                    // Code verified successfully, so reset our tracking variables
                     orderIdToVerify = null;
+                    orderSelectElementToRevert = null;
+                    orderPreviousStatus = null;
                 } else {
                     alert("Incorrect Code! Please try again.");
                     document.getElementById('deliveryCodeInput').value = '';
+                    // The modal remains open allowing the user to try again
+                    // If they close the modal, it will revert to the previous status
                 }
             });
         };
@@ -637,7 +618,6 @@
             document.getElementById('dishName').value = dish.name;
             document.getElementById('dishPrice').value = dish.price;
             document.getElementById('dishImage').value = dish.imageUrl;
-            document.getElementById('dishShopSelect').value = dish.shopId || '';
             document.getElementById('dishCategorySelect').value = dish.categoryId || '';
             
             document.getElementById('dishModalTitle').innerText = 'Edit Dish';
@@ -650,7 +630,6 @@
             document.getElementById('dishName').value = '';
             document.getElementById('dishPrice').value = '';
             document.getElementById('dishImage').value = '';
-            document.getElementById('dishShopSelect').selectedIndex = 0;
             document.getElementById('dishCategorySelect').selectedIndex = 0;
             
             document.getElementById('dishModalTitle').innerText = 'Add New Dish';
@@ -662,17 +641,14 @@
             const name = document.getElementById('dishName').value;
             const price = document.getElementById('dishPrice').value;
             const image = document.getElementById('dishImage').value;
-            const shopSelect = document.getElementById('dishShopSelect');
             const categorySelect = document.getElementById('dishCategorySelect');
             
-            const shopId = shopSelect.value;
-            const shopName = shopSelect.options[shopSelect.selectedIndex]?.text || '';
             const categoryId = categorySelect.value;
             const categoryName = categorySelect.options[categorySelect.selectedIndex]?.text || '';
 
-            if(name && price && image && shopId && categoryId) {
+            if(name && price && image && categoryId) {
                 const dishData = { 
-                    name, price, imageUrl: image, shopId, shopName, categoryId, categoryName
+                    name, price, imageUrl: image, categoryId, categoryName
                 };
 
                 if (editingDishId) {
@@ -684,87 +660,7 @@
                         document.getElementById('dishModal').style.display = 'none';
                     });
                 }
-            } else { alert("Please fill all fields, including shop and category"); }
-        };
-
-        // ---------- Restaurants/Shops Logic ----------
-        function fetchRestaurants() {
-            const restGrid = document.getElementById('restaurantsGrid');
-            const dishShopSelect = document.getElementById('dishShopSelect');
-
-            db.ref('restaurants').on('value', snapshot => {
-                restGrid.innerHTML = '';
-                dishShopSelect.innerHTML = '<option value="" disabled selected>Select a shop</option>';
-                localRestaurants = {};
-                
-                snapshot.forEach(child => {
-                    const rest = child.val();
-                    const restId = child.key;
-                    localRestaurants[restId] = rest;
-                    
-                    const card = document.createElement('div');
-                    card.className = 'admin-card';
-                    card.innerHTML = `
-                        <img src="${rest.imageUrl}">
-                        <button class="edit-btn" onclick="openEditRest('${restId}')"><i class="fas fa-pen"></i></button>
-                        <button class="delete-btn" onclick="deleteItem('restaurants', '${restId}')"><i class="fas fa-trash"></i></button>
-                        <div class="admin-card-body">
-                            <h4>${rest.name}</h4>
-                            <p>⭐ ${rest.rating}</p>
-                        </div>
-                    `;
-                    restGrid.appendChild(card);
-
-                    const option = document.createElement('option');
-                    option.value = restId;
-                    option.textContent = rest.name;
-                    dishShopSelect.appendChild(option);
-                });
-            });
-        }
-
-        window.openEditRest = (id) => {
-            editingRestId = id;
-            const rest = localRestaurants[id];
-            
-            document.getElementById('restName').value = rest.name;
-            document.getElementById('restRating').value = rest.rating;
-            document.getElementById('restImage').value = rest.imageUrl;
-            
-            document.getElementById('restModalTitle').innerText = 'Edit Shop';
-            document.getElementById('saveRestBtn').innerText = 'Update Shop';
-            document.getElementById('restModal').style.display = 'flex';
-        };
-
-        document.getElementById('openRestModal').onclick = () => {
-            editingRestId = null;
-            document.getElementById('restName').value = '';
-            document.getElementById('restRating').value = '';
-            document.getElementById('restImage').value = '';
-            
-            document.getElementById('restModalTitle').innerText = 'Add Restaurant';
-            document.getElementById('saveRestBtn').innerText = 'Save Restaurant';
-            document.getElementById('restModal').style.display = 'flex';
-        };
-
-        document.getElementById('saveRestBtn').onclick = () => {
-            const name = document.getElementById('restName').value;
-            const rating = document.getElementById('restRating').value;
-            const image = document.getElementById('restImage').value;
-            
-            if(name && rating && image) {
-                const restData = { name, rating, imageUrl: image };
-                
-                if (editingRestId) {
-                    db.ref('restaurants/' + editingRestId).update(restData).then(() => {
-                        document.getElementById('restModal').style.display = 'none';
-                    });
-                } else {
-                    db.ref('restaurants').push(restData).then(() => {
-                        document.getElementById('restModal').style.display = 'none';
-                    });
-                }
-            } else { alert("Please fill all fields"); }
+            } else { alert("Please fill all fields, including category"); }
         };
 
         // ---------- Categories Logic ----------
@@ -851,7 +747,22 @@
         };
 
         document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.onclick = () => document.getElementById(btn.dataset.modal).style.display = 'none';
+            btn.onclick = () => {
+                const modalId = btn.dataset.modal;
+                document.getElementById(modalId).style.display = 'none';
+                
+                // If the delivery verification modal is closed before code is successfully entered
+                if (modalId === 'deliveryCodeModal' && orderSelectElementToRevert) {
+                    // Revert UI dropdown to the previous status 
+                    orderSelectElementToRevert.value = orderPreviousStatus;
+                    
+                    // Reset variables
+                    orderIdToVerify = null;
+                    orderSelectElementToRevert = null;
+                    orderPreviousStatus = null;
+                    document.getElementById('deliveryCodeInput').value = '';
+                }
+            };
         });
 
     </script>
