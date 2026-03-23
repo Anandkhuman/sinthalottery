@@ -1,483 +1,1189 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sintha — Game Website Enquiry</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sintha Keithel</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
-  <!-- Font Awesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  <!-- AOS -->
-  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff9f1c; /* Orange */
+            --primary-gradient: linear-gradient(135deg, #ff9f1c 0%, #ff5e00 100%);
+            --secondary-color: #f4f6f8; /* Soft Grey Background */
+            --text-color: #2d3436;
+            --light-text: #636e72;
+            --border-color: #dfe6e9;
+            --white: #ffffff;
+            --danger: #d63031;
+            --success: #00b894;
+        }
 
-  <style>
-    /* ==========================================================================
-       1. Base & Variables
-       ========================================================================== */
-    :root{
-      --bg1: #0f1724;
-      --bg2: #071226;
-      --glass: rgba(255,255,255,0.06);
-      --accent-start: #7c3aed;
-      --accent-end: #06b6d4;
-      --accent-gradient: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-      --card-shadow: 0 10px 30px rgba(2,6,23,0.6);
-      --glass-border: rgba(255,255,255,0.06);
-      --text-primary: #e6eef6;
-      --text-secondary: #9fb3c9;
-      --radius-md: 12px;
-      --radius-lg: 18px;
-      color-scheme: dark;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #dfe6e9;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; color: var(--text-color);
+        }
 
-    body{
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent),
-                  radial-gradient(900px 500px at 90% 90%, rgba(6,182,212,0.06), transparent),
-                  var(--bg1);
-      overflow-x:hidden;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      color: var(--text-secondary);
-    }
-    
-    h1, h2, h3 { color: var(--text-primary); }
+        .mobile-container {
+            width: 100%; max-width: 414px; height: 100vh; max-height: 896px;
+            background-color: var(--secondary-color);
+            border-radius: 0px;
+            overflow: hidden; position: relative; display: flex; flex-direction: column;
+        }
+        
+        @media (min-width: 420px) {
+            .mobile-container {
+                border-radius: 30px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+                height: 90vh;
+            }
+        }
 
-    /* ==========================================================================
-       2. Layout & Structure (Mobile First)
-       ========================================================================== */
-    #heroCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+        .page {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            background-color: var(--secondary-color);
+            display: flex; flex-direction: column; z-index: 1;
+            padding-bottom: 70px;
+        }
+        .page.active { opacity: 1; visibility: visible; z-index: 5; }
 
-    .wrapper{
-      position:relative;
-      z-index:1;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 24px 16px;
-    }
+        .auth-content {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background: #ecf0f1;
+        }
 
-    .container{
-      position: relative;
-      width:100%;
-      max-width: 500px;
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius: var(--radius-lg);
-      padding:24px;
-      backdrop-filter:blur(10px) saturate(120%);
-      border:1px solid var(--glass-border);
-      box-shadow:var(--card-shadow);
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:28px;
-    }
+        .auth-card {
+            background: white;
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+            position: relative;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .container::before {
-      content: '';
-      position: absolute;
-      z-index: -1;
-      inset: -2px;
-      border-radius: inherit;
-      background: radial-gradient(300px at var(--x, 50%) var(--y, 50%), var(--accent-start), transparent 70%);
-      opacity: 0.2;
-      transition: opacity 0.4s ease;
-    }
-    .container:hover::before { opacity: 0.35; }
+        .auth-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 6px; background: var(--primary-gradient);
+        }
 
+        .auth-header {
+            text-align: center; padding: 40px 30px 10px 30px;
+        }
+        .logo-circle {
+            width: 70px; height: 70px; margin: 0 auto 15px auto;
+            background: #fff5e6; color: var(--primary-color);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 2em;
+            box-shadow: 0 5px 15px rgba(255, 159, 28, 0.2);
+        }
+        .auth-header h1 { font-size: 1.8em; margin: 0; color: #2d3436; font-weight: 700; }
+        .auth-header p { color: #b2bec3; font-size: 0.9em; margin-top: 5px; }
 
-    .panel{ order: 2; padding:12px; border-radius:var(--radius-md); background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); display:flex;flex-direction:column;gap:16px;align-items:flex-start; }
-    .right{ order: 1; display:flex; flex-direction:column; gap:18px; }
+        .auth-body { padding: 30px; }
 
-    /* ==========================================================================
-       3. Components
-       ========================================================================== */
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{ width:56px;height:56px;border-radius:var(--radius-md);background:var(--accent-gradient);display:grid;place-items:center;color:white;font-weight:800;font-size:20px;box-shadow:0 6px 20px rgba(124,58,237,0.2); }
-    h1{margin:0;font-size:22px;line-height:1.2;color:var(--text-primary)}
-    p.lead{margin:4px 0 0;color:var(--text-secondary)}
-    .typed-line{color:#cfe9f5;font-weight:600;min-height:21px;}
+        .input-label { font-size: 0.8em; color: #636e72; font-weight: 600; margin-bottom: 5px; display: block; margin-left: 5px;}
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i {
+            position: absolute; top: 45px; left: 15px; transform: translateY(-50%);
+            color: #b2bec3; transition: color 0.3s;
+        }
+        
+        .auth-input {
+            width: 100%; padding: 15px 15px 15px 45px;
+            background: #f8f9fa; border: 2px solid #f1f2f6;
+            border-radius: 12px; font-size: 1em;
+            outline: none; transition: all 0.3s; box-sizing: border-box; font-family: 'Poppins', sans-serif; color: #333;
+        }
+        .auth-input:focus {
+            background: #fff; border-color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(255, 159, 28, 0.1);
+        }
 
-    /* Form Styles */
-    form.contact{width:100%;display:flex;flex-direction:column;gap:14px;margin-top:8px}
-    .form-group { display: flex; flex-direction: column; gap: 4px; }
-    .input, textarea, select {
-      width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text-primary);outline:none;font-size:14px;transition: box-shadow 0.2s; font-family: inherit;
-    }
-    textarea{min-height:90px;resize:vertical}
-    .input:focus, textarea:focus, select:focus {
-      border-color: rgba(124,58,237,0.5);
-      box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
-    }
-    select {
-      -webkit-appearance: none; -moz-appearance: none; appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239fb3c9' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 14px center; background-size: 16px;
-    }
-    select option { background-color: var(--bg2); color: var(--text-primary); }
+        .btn-main {
+            width: 100%; padding: 16px;
+            background: var(--primary-gradient);
+            color: var(--white); border: none; border-radius: 12px;
+            font-size: 1.1em; font-weight: 600; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 94, 0, 0.25);
+            margin-bottom: 15px; transition: transform 0.2s, background 0.3s, opacity 0.3s;
+        }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-main:disabled { background: #bdc3c7; cursor: not-allowed; box-shadow: none; opacity: 0.8; }
 
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px;border-radius:10px;border:0;background:var(--accent-gradient);color:white;font-weight:700;cursor:pointer;box-shadow:0 10px 30px rgba(6,182,212,0.08);transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(6,182,212,0.15); }
-    
-    /* Right Panel: Agents List */
-    .right-header { text-align: center; }
-    .right-header h2 { margin: 0 0 4px 0; font-size: 20px; }
-    .agents-grid{display:grid;grid-template-columns:1fr;gap:16px}
-    .agent{ display:flex;gap:12px;align-items:center;padding:12px;border-radius:var(--radius-md);background:linear-gradient(180deg,rgba(255,255,255,0.015),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s;cursor:pointer;overflow:hidden }
-    .agent:hover{ transform:translateY(-8px) scale(1.02); box-shadow:0 18px 40px rgba(2,6,23,0.6); border-color: rgba(124,58,237,0.3); }
-    .agent .avatar{width:64px;height:64px;border-radius:var(--radius-md);flex-shrink:0;overflow:hidden;box-shadow:0 6px 18px rgba(2,6,23,0.5)}
-    .agent img{width:100%;height:100%;object-fit:cover;display:block; transition: transform 0.3s ease;}
-    .agent:hover .avatar img { transform: scale(1.05); }
-    .meta{display:flex;flex-direction:column}
-    .meta .name{font-weight:700;color:var(--text-primary)}
-    .meta .phone{font-size:13px;color:var(--text-secondary);margin-top:6px}
+        .btn-google {
+            background: white; color: #333; border: 1px solid #dfe6e9;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        
+        .auth-switch { text-align: center; margin-top: 10px; font-size: 0.9em; color: #636e72; }
+        .auth-switch a { color: var(--primary-color); font-weight: 600; text-decoration: none; }
+        
+        #auth-error { 
+            color: var(--danger); text-align: center; margin-bottom: 15px; 
+            font-size: 0.9em; background: rgba(214, 48, 49, 0.1); padding: 10px; border-radius: 8px;
+            display: none; 
+        }
 
-    .footer{display:flex;flex-direction: column; align-items: flex-start; gap: 8px; padding-top:12px;border-top:1px dashed rgba(255,255,255,0.02);color:var(--text-secondary);font-size:13px}
-    
-    /* --- Modal Styles --- */
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
-    .modal.active { opacity: 1; pointer-events: auto; }
-    .modal-content { background: var(--bg2); border-radius: 16px; padding: 24px; width: 90%; max-width: 400px; box-shadow: var(--card-shadow); color: var(--text-primary); text-align: center; transform: scale(0.95); transition: transform 0.3s ease; }
-    .modal.active .modal-content { transform: scale(1); }
-    
-    .modal-agent-detail { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .modal-avatar-large { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.4); margin-bottom: 12px; }
-    .modal-agent-name { font-size: 22px; font-weight: 700; margin: 0; color: var(--text-primary); }
-    .modal-agent-phone { font-size: 16px; color: var(--text-secondary); }
-    .modal-agent-about { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin-top: 12px; }
-    
-    .action-btn-group { display: flex; gap: 12px; margin-top: 16px; width: 100%; }
-    .action-btn {
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-        flex: 1; padding: 12px 8px; border-radius: 10px; background: rgba(255,255,255,0.05);
-        color: var(--text-secondary); text-decoration: none; font-size: 12px; font-weight: 600;
-        border: none; font-family: inherit;
-        transition: background 0.2s, color 0.2s, transform 0.2s; cursor: pointer;
-    }
-    .action-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); transform: translateY(-2px); }
-    .action-btn i { font-size: 20px; margin-bottom: 4px; }
-    .action-btn.whatsapp { color: #25D366; }
-    .action-btn.call { color: #34B7F1; }
+        .app-header {
+            background: var(--primary-gradient);
+            padding: 20px 10px 10px 10px; color: var(--white);
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 10px 20px rgba(255, 94, 0, 0.15);
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .header-top h1 { font-size: 1.5em; margin: 0; font-weight: 700; display:flex; align-items:center;}
+        .user-greeting { font-size: 0.9em; font-weight: 500; opacity: 0.9; text-align: right;}
+        
+        .search-bar { margin-top: 15px; position: relative; }
+        .search-bar input {
+            width: 100%; padding: 15px 20px 15px 45px; border: none;
+            border-radius: 30px; font-size: 1em; box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); outline: none;
+        }
+        .search-bar .fa-search {
+            position: absolute; left: 20px; top: 50%;
+            transform: translateY(-50%); color: var(--light-text);
+        }
 
-    .close-btn { margin-top: 24px; display: inline-block; padding: 8px 14px; background: var(--accent-start); border-radius: 8px; cursor: pointer; }
-    .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-    
-    /* --- NEW: Image Viewer Modal Styles --- */
-    .agent .avatar img, .modal-avatar-large {
-        cursor: zoom-in;
-    }
-    #imageViewerModal {
-        z-index: 1000; /* Ensure it's on top of other modals */
-    }
-    #imageViewerModal .modal-content {
-        background: transparent;
-        box-shadow: none;
-        padding: 0;
-        width: auto;
-        max-width: 90vw;
-        max-height: 90vh;
-        overflow: hidden;
-    }
-    .fullscreen-image {
-        max-width: 100%;
-        max-height: 100%;
-        border-radius: 12px;
-        display: block;
-        object-fit: contain;
-    }
-    .close-image-viewer {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        color: #fff;
-        font-size: 35px;
-        font-weight: bold;
-        cursor: pointer;
-        background: rgba(0,0,0,0.4);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
-        transition: transform 0.2s;
-        z-index: 1001; /* Ensure it's above the image */
-        text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-    }
-    .close-image-viewer:hover { transform: scale(1.1); }
+        main { flex: 1; overflow-y: auto; padding: 0 20px 100px 20px; }
+        
+        .category-card {
+            flex-shrink: 0;
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 18px;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+        .category-card.active {
+            border-color: var(--primary-color);
+            background-color: #fff5e6;
+        }
+        .category-card img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .category-card p {
+            margin-top: 8px;
+            font-size: 0.8em;
+            font-weight: 500;
+            color: var(--text-color);
+            white-space: nowrap;
+        }
 
-    /* ==========================================================================
-       4. Responsive Design (Tablet and up)
-       ========================================================================== */
-    @media (min-width:768px){
-      .wrapper { padding: 48px 32px; }
-      .container { max-width: 900px; }
-      .agents-grid{grid-template-columns:repeat(2,1fr)}
-      .footer { flex-direction: row; justify-content: space-between; align-items: center; }
-    }
+        .section-title { font-size: 1.2em; font-weight: 700; margin: 5px 0 2px 0; color: #2d3436; }
+        .horizontal-scroll { display: flex; overflow-x: auto; padding: 1px 0 1px 0; gap: 10px; scroll-behavior: smooth; }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
 
-    @media (min-width:1024px){
-      .container{ grid-template-columns:420px 1fr; max-width: 1200px; padding: 28px; }
-      .panel{ order: 1; }
-      .right{ order: 2; }
-      .right-header { text-align: left; }
-    }
-  </style>
+        .promo-banner {
+            width: 100%; height: 140px; 
+            background: linear-gradient(90deg, #2d3436, #636e72);
+            border-radius: 20px; margin-top: 15px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 25px; box-sizing: border-box; color: white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15); position: relative; overflow: hidden;
+        }
+        .promo-content h3 { margin: 0; font-size: 1.4em; font-weight: 700;}
+        .promo-content p { margin: 5px 0 0 0; font-size: 0.9em; opacity: 0.9; }
+        .promo-banner img { height: 130%; position: absolute; right: -15px; bottom: -20px; transform: rotate(-15deg); }
+
+        .card {
+            flex-shrink: 0; width: 150px; background-color: var(--white);
+            border-radius: 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            overflow: hidden; position: relative;
+        }
+        .card img { width: 100%; height: 110px; object-fit: cover; }
+        .card-content { padding: 12px; }
+        .card-content h3 { margin: 0 0 4px 0; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;}
+        .card-content p { color: var(--primary-color); font-weight: 700; font-size: 0.95em; margin: 0;}
+        
+        .add-btn {
+            background-color: var(--primary-color); color: var(--white);
+            border: none; border-radius: 50%; width: 32px; height: 32px;
+            cursor: pointer; position: absolute; bottom: 10px; right: 10px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(255, 159, 28, 0.4);
+        }
+
+        nav {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 70px; 
+            background: var(--primary-gradient); 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 -5px 20px rgba(255, 159, 28, 0.3);
+            border-radius: 30px 30px 0 0; z-index: 100;
+            padding: 0 30px; 
+        }
+        
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: rgba(255, 255, 255, 0.6); 
+            cursor: pointer; position: relative;
+            transition: all 0.3s;
+        }
+        
+        .nav-item.active { 
+            color: #ffffff; 
+            transform: translateY(-5px); 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        } 
+        
+        .nav-item i { font-size: 1.4em; margin-bottom: 2px;}
+        .nav-item p { margin: 0; font-size: 0.7em; font-weight: 500;}
+
+        #cart-fab-container {
+            position: absolute;
+            bottom: 85px; 
+            right: 20px;
+            z-index: 101;
+        }
+        .fab-btn {
+            width: 60px; height: 60px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--primary-color); font-size: 1.4em;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            cursor: pointer; position: relative;
+            transition: transform 0.2s;
+        }
+        .fab-btn:active { transform: scale(0.9); }
+        
+        #cart-count {
+            position: absolute; top: -2px; right: -2px;
+            background-color: var(--danger); color: white;
+            border-radius: 50%; width: 22px; height: 22px;
+            font-size: 0.8em; display: flex; justify-content: center; align-items: center; font-weight: 800;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: 2px solid white;
+        }
+
+        body.auth-screen nav, body.auth-screen #cart-fab-container { display: none; }
+
+        .page-header { padding: 40px 20px 20px 20px; text-align: center; position: relative; background: var(--secondary-color); }
+        .page-header h2 { margin: 0; font-size: 1.3em; color: #2d3436; font-weight: 700; }
+        .back-btn { position: absolute; left: 20px; top: 43px; font-size: 1.3em; cursor: pointer; color: #2d3436; padding: 5px;}
+
+        .cart-item {
+            display: flex; align-items: center; background: var(--white);
+            padding: 12px; border-radius: 15px; margin-bottom: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+        .cart-item img { width: 65px; height: 65px; border-radius: 12px; object-fit: cover; margin-right: 15px; }
+        .qty-controls { display: flex; align-items: center; gap: 8px; background: #f5f6fa; padding: 5px 10px; border-radius: 20px;}
+        .qty-controls button {
+            background: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--primary-color); font-weight: bold;
+        }
+
+        #map-container {
+            height: 200px; width: 100%; border-radius: 15px;
+            overflow: hidden; margin-top: 15px; margin-bottom: 15px;
+            border: 2px solid var(--primary-color); display: none;
+        }
+        .location-btn {
+            background-color: #0984e3; color: var(--white);
+            width: 100%; padding: 12px; border-radius: 12px; border: none;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+            font-weight: 500; margin-bottom: 10px; transition: background 0.3s;
+        }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 0.9em; }
+        .form-control {
+            width: 100%; padding: 14px; border: 1px solid #dfe6e9;
+            border-radius: 12px; box-sizing: border-box; font-family: inherit; background: #fff;
+        }
+        
+        .payment-option {
+            padding: 15px; background:white; border:2px solid #dfe6e9; 
+            border-radius:12px; display:flex; align-items:center; margin-bottom: 10px;
+            cursor: pointer; transition: all 0.3s; position: relative;
+        }
+        .payment-option input[type="radio"] {
+            position: absolute; opacity: 0;
+        }
+        .payment-option .radio-check {
+            width: 20px; height: 20px; border: 2px solid #dfe6e9; border-radius: 50%;
+            margin-right: 15px; transition: all 0.3s;
+        }
+        .payment-option input[type="radio"]:checked + .radio-check {
+            border-color: var(--primary-color); background-color: var(--primary-color);
+            box-shadow: 0 0 0 3px white inset;
+        }
+        .payment-option:has(input[type="radio"]:checked) {
+            border-color: var(--primary-color);
+            background-color: #fffaf0;
+        }
+
+        .order-card {
+            background: var(--white); border-radius: 18px; padding: 20px;
+            margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        .track-bar { display: flex; justify-content: space-between; position: relative; margin-top: 25px; }
+        .track-bar::before {
+            content: ''; position: absolute; top: 8px; left: 0; right: 0;
+            height: 4px; background: #f1f2f6; z-index: 1; border-radius: 2px;
+        }
+        .track-step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 25%; }
+        .dot {
+            width: 16px; height: 16px; background: #dfe6e9; border-radius: 50%;
+            border: 2px solid var(--white); transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .track-step p { font-size: 0.65em; margin-top: 8px; color: #b2bec3; font-weight: 600; text-transform: uppercase; }
+        .track-step.active .dot { background: var(--primary-color); transform: scale(1.4); border-color: #fff; }
+        .track-step.active p { color: var(--primary-color); }
+        .track-step.passed .dot { background: var(--primary-color); }
+        .track-step.passed p { color: var(--primary-color); }
+
+        .notification-card {
+            background: white; border-radius: 15px; padding: 15px;
+            margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: flex; align-items: flex-start;
+        }
+        .notif-icon-box {
+            width: 40px; height: 40px; background: #fff0d4;
+            color: var(--primary-color); border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            margin-right: 15px; font-size: 1.1em; flex-shrink: 0;
+        }
+
+    </style>
 </head>
-<body>
+<body class="auth-screen">
 
-  <canvas id="heroCanvas"></canvas>
+    <div class="mobile-container">
 
-  <div class="wrapper">
-    <div class="container" data-aos="fade-up" data-aos-duration="900">
+        <!-- LOGIN PAGE -->
+        <div id="loginPage" class="page active">
+            <div class="auth-content">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="logo-circle"><i class="fas fa-mug-hot"></i></div>
+                        <h1>Welcome Back</h1>
+                        <p>Sign in to continue to Sintha Keithel</p>
+                    </div>
+                    
+                    <div class="auth-body">
+                        <p id="auth-error"></p>
+                        
+                        <div class="input-group">
+                            <label class="input-label">EMAIL ADDRESS</label>
+                            <input type="email" id="loginEmail" class="auth-input" placeholder="name@example.com">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">PASSWORD</label>
+                            <input type="password" id="loginPassword" class="auth-input" placeholder="••••••••">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        
+                        <button class="btn-main" id="loginBtn">Login</button>
+                        <button class="btn-main btn-google" id="googleBtn">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="20"> 
+                            Sign in with Google
+                        </button>
+                        
+                        <div class="auth-switch">
+                            Don't have an account? <a href="#" id="gotoRegister">Register</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-      <div class="panel">
-        <div class="brand">
-          <div class="logo">S</div>
-          <div>
-            <h1>Get a Quote for Your Game</h1>
-            <p class="lead">Select a game and send us an enquiry on WhatsApp.</p>
-          </div>
+        <!-- REGISTER PAGE -->
+        <div id="registerPage" class="page">
+             <div class="auth-content">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="logo-circle"><i class="fas fa-user-plus"></i></div>
+                        <h1>Create Account</h1>
+                        <p>Join the Sintha Keithel</p>
+                    </div>
+                    
+                    <div class="auth-body">
+                        <div class="input-group">
+                            <label class="input-label">FULL NAME</label>
+                            <input type="text" id="regName" class="auth-input" placeholder="John Doe">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">EMAIL ADDRESS</label>
+                            <input type="email" id="registerEmail" class="auth-input" placeholder="name@example.com">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">PASSWORD</label>
+                            <input type="password" id="registerPassword" class="auth-input" placeholder="••••••••">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        
+                        <button class="btn-main" id="registerBtn">Sign Up</button>
+                        
+                        <div class="auth-switch">
+                            Already have an account? <a href="#" id="gotoLogin">Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="typed-line" id="typed"></div>
-        <form class="contact" id="contactForm" data-aos="fade-right" data-aos-duration="800" data-aos-delay="150" novalidate>
-          <div class="form-group">
-            <label for="interest" class="visually-hidden">I'm interested in</label>
-            <select id="interest" name="interest" class="input" required>
-              <option value="" disabled selected>I'm interested in...</option>
-              <option value="Tambola / Housie Website">Tambola / Housie Website</option>
-              <option value="Jhandi Munda Website">Jhandi Munda Website</option>
-              <option value="Other Game Project">Other Game Project</option>
-              <option value="General Enquiry">General Enquiry</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="name" class="visually-hidden">Your Name</label>
-            <input class="input" id="name" placeholder="Your name" required />
-          </div>
-          <div class="form-group">
-            <label for="email" class="visually-hidden">Your Email</label>
-            <input class="input" id="email" placeholder="Your email (optional)" type="email" />
-          </div>
-          <div class="form-group">
-            <label for="message" class="visually-hidden">Your Message</label>
-            <textarea id="message" class="input" placeholder="Tell us more about your project..."></textarea>
-          </div>
-          <div>
-            <button type="submit" class="btn" id="submitBtn">
-                <i class="fab fa-whatsapp"></i>
-              <span>Choose Expert & Send Message</span>
-            </button>
-          </div>
-        </form>
-        <div class="footer">
-          <div>© <strong>Sintha</strong> Team</div>
-          <div>Game Development Studio</div>
-        </div>
-      </div>
 
-      <div class="right">
-        <div class="right-header" data-aos="fade-down">
-          <h2>Meet Our Experts Sintha Team</h2>
-          <p class="lead">Click a card to see contact options.</p>
+        <!-- HOME -->
+        <div id="appContainer" class="page">
+            <header class="app-header">
+                <div class="header-top">
+                    <h1><i class="fas fa-mug-hot" style="margin-right:10px;"></i> Sintha Keithel</h1>
+                    <div class="user-greeting" id="userGreeting">Hello, Guest</div>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="What are you craving?">
+                </div>
+            </header>
+
+            <main>
+                <h2 class="section-title">Categories</h2>
+                <div class="horizontal-scroll" id="category-section-dynamic">
+                    <!-- Dynamic categories will be loaded here -->
+                </div>
+                
+                <h2 class="section-title">Popular Shops</h2>
+                <div class="horizontal-scroll" id="restaurantsContainer"></div>
+
+                <div class="promo-banner">
+                    <div class="promo-content">
+                        <h3>50% OFF</h3>
+                        <p>On your first order today!</p>
+                    </div>
+                    <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Burger">
+                </div>
+
+                <h2 class="section-title" id="dishesListTitle">Recommended Dishes</h2>
+                <div class="horizontal-scroll" id="dishesContainer"></div>
+            </main>
         </div>
-        <div class="agents-grid" id="agentsGrid">
-          <!-- agent cards inserted by JS -->
+
+        <!-- CART -->
+        <div id="cartPage" class="page">
+            <header class="page-header">
+                <i class="fas fa-arrow-left back-btn" data-target="appContainer"></i>
+                <h2>My Cart</h2>
+            </header>
+            <div style="flex:1; padding:20px; overflow-y:auto;" id="cart-content-area">
+                <div id="cartItemsContainer"></div>
+                <div id="cart-summary" style="margin-top:30px; border-top:1px solid var(--border-color); padding-top:20px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Subtotal</span><span id="subtotal-price">₹0.00</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Delivery Fee</span><span>₹50.00</span></div>
+                    <div style="display:flex; justify-content:space-between; font-weight:700; font-size:1.4em; color:#2d3436; margin-top:10px;"><span>Total</span><span id="total-price">₹50.00</span></div>
+                    <button class="btn-main" id="goToCheckoutBtn" style="margin-top:25px;">Proceed to Checkout</button>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- CHECKOUT -->
+        <div id="checkoutPage" class="page">
+            <header class="page-header">
+                <i class="fas fa-arrow-left back-btn" data-target="cartPage"></i>
+                <h2>Checkout</h2>
+            </header>
+            <div style="flex:1; padding:20px; overflow-y:auto;">
+                
+                <div class="form-group">
+                    <label>Delivery Location</label>
+                    <button class="location-btn" id="geoBtn">
+                        <i class="fas fa-location-arrow"></i> Use My Current Location
+                    </button>
+                    <div id="map-container"><div id="map" style="height:100%; width:100%;"></div></div>
+                    <input type="text" id="addressText" class="form-control" placeholder="House/Flat No., Landmark, City">
+                    <input type="hidden" id="lat"><input type="hidden" id="lng">
+                </div>
+
+                 <div class="form-group">
+                    <label>Contact Phone Number</label>
+                    <input type="tel" id="contactPhone" class="form-control" placeholder="10-digit Mobile Number" maxlength="10">
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="razorpay">
+                        <span class="radio-check"></span>
+                        <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 25px; margin-right: 15px; margin-left: 10px;">
+                        <span style="font-weight:600; color: #2d3436;">Pay Online</span>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="cod">
+                        <span class="radio-check"></span>
+                        <i class="fas fa-money-bill-wave" style="color:var(--success); margin-right:15px; font-size:1.4em; margin-left: 10px;"></i>
+                        <span style="font-weight:600; color: #2d3436;">Cash on Delivery</span>
+                    </label>
+                </div>
+
+                <button class="btn-main" id="placeOrderBtn" disabled>Complete Your Details</button>
+            </div>
+        </div>
+
+        <!-- ORDERS -->
+        <div id="ordersPage" class="page">
+            <header class="page-header">
+                <i class="fas fa-arrow-left back-btn" data-target="appContainer"></i>
+                <h2>My Orders</h2>
+            </header>
+            <div style="flex:1; padding:20px; overflow-y:auto;" id="ordersListContainer"></div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div id="notificationsPage" class="page">
+            <header class="page-header">
+                <i class="fas fa-arrow-left back-btn" data-target="appContainer"></i>
+                <h2>Notifications</h2>
+            </header>
+            <div style="flex:1; padding:20px; overflow-y:auto;" id="notificationListContainer">
+                <p style="text-align:center; color:#777; margin-top:50px;">Loading...</p>
+            </div>
+        </div>
+
+        <!-- THANK YOU -->
+        <div id="thankYouPage" class="page">
+            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; text-align:center;">
+                <div style="width:100px; height:100px; background:#e0f0ff; border-radius:50%; display:flex; justify-content:center; align-items:center; margin-bottom:20px;">
+                    <i class="fas fa-check" style="font-size:3em; color:var(--primary-color);"></i>
+                </div>
+                <h2 style="color:#2d3436;">Order Placed!</h2>
+                <p style="color:#636e72;">Your food is being prepared.</p>
+                <button class="btn-main" id="trackOrderBtn" style="margin-top:30px;">Track Order</button>
+                <a href="#" id="backToHomeBtn" style="margin-top:20px; display:block; color:var(--light-text); text-decoration:none;">Back to Home</a>
+            </div>
+        </div>
+
+        <!-- --- GLOBAL NAV BAR (OUTSIDE PAGES) --- -->
+        <div id="cart-fab-container">
+            <div class="fab-btn" data-page="cartPage">
+                <i class="fas fa-shopping-basket"></i>
+                <div id="cart-count">0</div>
+            </div>
+        </div>
+
+        <nav>
+            <div class="nav-item active" data-page="appContainer"><i class="fas fa-home"></i><p>Home</p></div>
+            <div class="nav-item" data-page="ordersPage" id="ordersNavBtn"><i class="fas fa-receipt"></i><p>Orders</p></div>
+            <div class="nav-item" data-page="notificationsPage" id="notifNavBtn"><i class="fas fa-bell"></i><p>Alerts</p></div>
+            <div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><p>Logout</p></div>
+        </nav>
 
     </div>
-  </div>
 
-  <!-- Agent List Modal (For Form Submission) -->
-  <div class="modal" id="teamModal">
-    <div class="modal-content" style="max-width: 500px;">
-      <h3 style="margin-top:0;">Choose who to message</h3>
-      <p style="margin-top:-10px; margin-bottom: 20px; color: var(--text-secondary);">Your enquiry will be sent to the team member you select.</p>
-      <div id="modalTeam">
-        <!-- JS injects team list here -->
-      </div>
-      <div class="close-btn" data-close-modal>Close</div>
-    </div>
-  </div>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-  <!-- Agent Detail Modal (For Grid Click) -->
-  <div class="modal" id="agentDetailModal">
-    <div class="modal-content">
-      <div class="modal-agent-detail">
-        <img src="" alt="Agent Avatar" class="modal-avatar-large" id="modal-avatar">
-        <h3 class="modal-agent-name" id="modal-name">Agent Name</h3>
-        <p class="modal-agent-phone" id="modal-phone">+00 00000 00000</p>
-        <p class="modal-agent-about" id="modal-about">Agent bio goes here.</p>
 
-        <div class="action-btn-group">
-          <a href="#" class="action-btn whatsapp" id="modal-wa-btn" target="_blank">
-            <i class="fab fa-whatsapp"></i>
-            WhatsApp
-          </a>
-          <a href="#" class="action-btn call" id="modal-call-btn">
-            <i class="fas fa-phone"></i>
-            Call
-          </a>
-          <button class="action-btn" id="modal-copy-btn">
-            <i class="fas fa-copy"></i>
-            Copy
-          </button>
-        </div>
-      </div>
-      <div class="close-btn" data-close-modal>Close</div>
-    </div>
-  </div>
-  
-  <!-- NEW: Full Image Viewer Modal -->
-  <div class="modal" id="imageViewerModal">
-    <div class="modal-content">
-      <span class="close-image-viewer" data-close-modal>&times;</span>
-      <img class="fullscreen-image" id="fullscreenImage" src="" alt="Full size agent image">
-    </div>
-  </div>
-
-  <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
-  <script src="https://unpkg.com/gsap@3.12.2/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
-  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-
-      const agents = [
-         { name: "Anand Khuman", phone: "+919366193440", image: "https://github.com/Anandkhuman/Photo/raw/main/anand4.jpg", about: "Lead Developer with 8+ years of experience specializing in real-time gaming applications and secure backend architecture." },
-         { name: "Pari Thokchom", phone: "+918415934211", image: "https://github.com/Anandkhuman/Photo/raw/main/pari.jpg", about: "Project Manager and UI/UX expert, ensuring every game is not only functional but also intuitive and engaging for players." },
-         { name: "Kenedy khuman", phone: "+916009063472", image: "https://github.com/Anandkhuman/Photo/raw/main/kenedy.jpg", about: "Frontend Specialist focused on creating smooth, responsive, and visually stunning game interfaces with modern web technologies." },
-         { name: "Sadananda Mangang", phone: "+916009020876", image: "https://github.com/Anandkhuman/Photo/raw/main/sadananda1.jpg", about: "Business Development head. Contact Sadananda for partnerships, sales inquiries, and project cost estimations." }
-      ];
-
-      AOS.init({ once: true });
-
-      if (document.getElementById('typed')) {
-        new Typed('#typed', { strings: ['Custom game features.', 'Secure payment gateways.', 'Ready to launch your platform?'], typeSpeed:40,backSpeed:18,backDelay:1500,loop:true });
-      }
-
-      const contactForm = document.getElementById('contactForm');
-      contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (!contactForm.checkValidity()) { contactForm.reportValidity(); return; }
-        const interest = document.getElementById('interest').value;
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const message = document.getElementById('message').value;
-        let msg = `*New Game Website Enquiry* 🚀\n\n*Interested In:* ${interest}\n*Name:* ${name}\n`;
-        if (email) msg += `*Email:* ${email}\n`;
-        if (message) msg += `*Message:* ${message}\n`;
-        openEnquiryModal(encodeURIComponent(msg));
-      });
-
-      const grid = document.getElementById('agentsGrid');
-      const imageViewerModal = document.getElementById('imageViewerModal');
-      const fullscreenImage = document.getElementById('fullscreenImage');
-
-      function showFullscreenImage(src) {
-        fullscreenImage.src = src;
-        imageViewerModal.classList.add('active');
-      }
-
-      agents.forEach((agent, idx) => {
-        const div = document.createElement('div');
-        div.className = 'agent';
-        div.setAttribute('data-aos','fade-up');
-        div.setAttribute('data-aos-delay', String(80 * idx));
-        div.innerHTML = `<div class="avatar"><img src="${agent.image}" alt="${agent.name}" loading="lazy"></div><div class="meta"><div class="name">${agent.name}</div><div class="phone">${agent.phone}</div></div>`;
+    <script>
+        const firebaseConfig = {
+          "apiKey": "AIzaSyDkOrw5HnHE8rp0-rnmUJnzh1KjZPpFXEY",
+          "authDomain": "sinthakeithel-ccb49.firebaseapp.com",
+          "databaseURL": "https://sinthakeithel-ccb49-default-rtdb.firebaseio.com",
+          "projectId": "sinthakeithel-ccb49",
+          "storageBucket": "sinthakeithel-ccb49.firebasestorage.app",
+          "messagingSenderId": "575832888579",
+          "appId": "1:575832888579:web:ac8111abfba799256c0536",
+          "measurementId": "G-XESZZF5J7L"
+        };
         
-        // Open detail modal when clicking the whole card
-        div.addEventListener('click', () => openAgentDetailModal(agent));
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+        let cart =[];
+        let currentUser = null;
+        let map, marker;
+        let allDishesData =[]; 
+        let ordersListener = null;
+        let notificationsListener = null;
+        let selectedPaymentMethod = null;
+
+        const showPage = (id) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.toggle('active', nav.dataset.page === id);
+            });
+            if(id === 'loginPage' || id === 'registerPage') {
+                document.body.classList.add('auth-screen');
+            } else {
+                document.body.classList.remove('auth-screen');
+            }
+            if(id === 'checkoutPage') {
+                setTimeout(() => { if(map) map.invalidateSize(); }, 300);
+                checkOrderValidity(); // Validate when screen loads
+            }
+            if(id === 'ordersPage') loadOrders();
+            if(id === 'notificationsPage') loadNotifications();
+        };
+
+        document.querySelectorAll('[data-target], [data-page]').forEach(b => 
+            b.addEventListener('click', (e) => {
+                const target = e.currentTarget.dataset.target || e.currentTarget.dataset.page;
+                if(target) showPage(target);
+            })
+        );
+        document.getElementById('gotoRegister').onclick = () => showPage('registerPage');
+        document.getElementById('gotoLogin').onclick = () => showPage('loginPage');
+        document.getElementById('logoutBtn').onclick = () => { auth.signOut(); cart=[]; updateCartUI(); };
         
-        // NEW: Open image viewer when clicking just the avatar image
-        const avatarImg = div.querySelector('.avatar img');
-        avatarImg.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevents the card's click event from firing
-            showFullscreenImage(agent.image);
-        });
+        // Prevent going to checkout if cart is empty
+        document.getElementById('goToCheckoutBtn').onclick = () => {
+            if(cart.length === 0) {
+                alert("Please add items to your cart before proceeding to checkout.");
+                return;
+            }
+            showPage('checkoutPage');
+        };
+        
+        document.getElementById('trackOrderBtn').onclick = () => showPage('ordersPage');
+        document.getElementById('backToHomeBtn').onclick = () => showPage('appContainer');
 
-        grid.appendChild(div);
-      });
-      
-      // NEW: Add click listener for the avatar in the detail modal
-      document.getElementById('modal-avatar').addEventListener('click', (e) => {
-          showFullscreenImage(e.target.src);
-      });
-
-      const teamModal = document.getElementById('teamModal');
-      const agentDetailModal = document.getElementById('agentDetailModal');
-      const modals = document.querySelectorAll('.modal');
-
-      function openEnquiryModal(encodedMessage) {
-        const modalTeam = document.getElementById('modalTeam');
-        modalTeam.innerHTML = ''; // Clear previous content
-        agents.forEach(a => {
-            const cleanPhone = a.phone.replace(/[^+\d]/g, '');
-            const waLink = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-            const item = document.createElement('div');
-            item.style = 'display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px; margin-bottom: 10px;';
-            item.innerHTML = `<div style="display:flex;align-items:center; text-align: left;"><img src="${a.image}" alt="${a.name}" style="width: 42px; height: 42px; border-radius: 8px; margin-right: 12px; object-fit: cover;"><div><div style="font-weight:600">${a.name}</div><div style="font-size:13px;color:var(--text-secondary)">${a.phone}</div></div></div><a href="${waLink}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #25D366; color: white; border-radius: 8px; text-decoration: none; font-size: 22px; transition: transform 0.2s;"><i class="fab fa-whatsapp"></i></a>`;
-            modalTeam.appendChild(item);
-        });
-        teamModal.classList.add('active');
-      }
-
-      function openAgentDetailModal(agent) {
-        const cleanPhone = agent.phone.replace(/[^+\d]/g, '');
-        document.getElementById('modal-avatar').src = agent.image;
-        document.getElementById('modal-name').textContent = agent.name;
-        document.getElementById('modal-phone').textContent = agent.phone;
-        document.getElementById('modal-about').textContent = agent.about; // Set about text
-        document.getElementById('modal-wa-btn').href = `https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(agent.name)}`;
-        document.getElementById('modal-call-btn').href = `tel:${cleanPhone}`;
-        agentDetailModal.dataset.phone = agent.phone;
-        agentDetailModal.classList.add('active');
-      }
-
-      modals.forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target.matches('.modal') || e.target.closest('[data-close-modal]')) {
-                modal.classList.remove('active');
+        auth.onAuthStateChanged(u => {
+            if(u) { 
+                currentUser = u; 
+                showPage('appContainer'); 
+                fetchData();
+                fetchAndRenderCategories();
+                listenForStatusUpdates();
+                const name = u.displayName ? u.displayName.split(' ')[0] : 'Guest';
+                document.getElementById('userGreeting').innerHTML = `Hello, ${name}`;
+            } else { 
+                currentUser = null; 
+                showPage('loginPage'); 
+                if (ordersListener) ordersListener.off();
+                if (notificationsListener) notificationsListener.off();
             }
         });
-      });
-      
-      const copyBtn = document.getElementById('modal-copy-btn');
-      copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(agentDetailModal.dataset.phone).then(() => {
-              copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-              setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
-          });
-      });
 
-      // NEW: Add Escape key functionality to close any active modal
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.modal.active').forEach(modal => {
-                modal.classList.remove('active');
+        const showError = (msg) => {
+            const err = document.getElementById('auth-error');
+            err.textContent = msg;
+            err.style.display = 'block';
+        }
+
+        document.getElementById('loginBtn').onclick = () => auth.signInWithEmailAndPassword(
+            document.getElementById('loginEmail').value, document.getElementById('loginPassword').value
+        ).catch(e => showError(e.message));
+
+        document.getElementById('googleBtn').onclick = () => auth.signInWithPopup(googleProvider).catch(e => showError(e.message));
+
+        document.getElementById('registerBtn').onclick = () => {
+            const email = document.getElementById('registerEmail').value;
+            const pass = document.getElementById('registerPassword').value;
+            const name = document.getElementById('regName').value;
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then((userCred) => userCred.user.updateProfile({ displayName: name }))
+                .catch(e => showError(e.message));
+        };
+
+        const phoneInput = document.getElementById('contactPhone');
+        const addressInput = document.getElementById('addressText');
+        const orderBtn = document.getElementById('placeOrderBtn');
+        document.querySelectorAll('input[name="paymentMethod"]').forEach(elem => {
+            elem.addEventListener("change", function(event) {
+                selectedPaymentMethod = event.target.value;
+                checkOrderValidity();
+            });
+        });
+
+        phoneInput.addEventListener('input', checkOrderValidity);
+        addressInput.addEventListener('input', checkOrderValidity);
+
+        // Validating fields PLUS checking cart contents length before enabling the order button
+        function checkOrderValidity() {
+            const phoneVal = phoneInput.value.trim();
+            const addressVal = addressInput.value.trim();
+            
+            if (phoneVal.length >= 10 && addressVal.length > 5 && selectedPaymentMethod && cart.length > 0) {
+                orderBtn.disabled = false;
+                orderBtn.style.opacity = '1';
+                if(selectedPaymentMethod === 'razorpay') {
+                    orderBtn.textContent = "Proceed to Pay";
+                } else if (selectedPaymentMethod === 'cod') {
+                    orderBtn.textContent = "Place Order";
+                }
+            } else {
+                orderBtn.disabled = true;
+                orderBtn.style.opacity = '0.6';
+                if (cart.length === 0) {
+                    orderBtn.textContent = "Cart is Empty";
+                } else {
+                    orderBtn.textContent = "Complete Your Details";
+                }
+            }
+        }
+
+        document.getElementById('geoBtn').addEventListener('click', () => {
+            const btn = document.getElementById('geoBtn');
+            document.getElementById('map-container').style.display = 'block';
+            if(!map) {
+                map = L.map('map').setView([24.8170, 93.9368], 13); // Default to Imphal
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                map.on('click', (e) => handleLocationUpdate(e.latlng.lat, e.latlng.lng));
+            }
+            map.invalidateSize();
+            if (navigator.geolocation) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+                navigator.geolocation.getCurrentPosition(
+                    (p) => {
+                        handleLocationUpdate(p.coords.latitude, p.coords.longitude);
+                        map.setView([p.coords.latitude, p.coords.longitude], 16);
+                        btn.innerHTML = '<i class="fas fa-check"></i> Location Set';
+                    },
+                    (e) => { alert("Geolocation permission denied. Please click on the map or enter your address manually."); btn.innerHTML = 'Use My Current Location'; }
+                );
+            }
+        });
+
+        function handleLocationUpdate(lat, lng) {
+            if(marker) map.removeLayer(marker);
+            marker = L.marker([lat, lng]).addTo(map);
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+            const addr = document.getElementById('addressText');
+            addr.value = "Fetching address...";
+            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`)
+                .then(r => r.json())
+                .then(d => {
+                     addr.value = `${d.locality || ''}, ${d.principalSubdivision || ''}, ${d.countryName || ''}`;
+                     checkOrderValidity();
+                }).catch(() => addr.value = "Could not fetch address. Please enter manually.");
+        }
+
+        function fetchData() {
+            db.ref('restaurants').once('value', s => {
+                const c = document.getElementById('restaurantsContainer'); 
+                c.innerHTML='';
+                s.forEach(r => {
+                    const data = r.val();
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `<img src="${data.imageUrl}"><div class="card-content"><h3>${data.name}</h3><p><i class="fas fa-star" style="color:#ff9f1c"></i> ${data.rating}</p></div>`;
+                    c.appendChild(card);
+                });
+            });
+            db.ref('dishes').once('value', s => {
+                allDishesData =[]; 
+                s.forEach(d => { allDishesData.push({ key: d.key, ...d.val() }); });
+                renderDishes(allDishesData);
             });
         }
-      });
+        
+        function fetchAndRenderCategories() {
+            const container = document.getElementById('category-section-dynamic');
+            db.ref('categories').on('value', snap => {
+                container.innerHTML = ''; 
+                
+                const allCat = document.createElement('div');
+                allCat.className = 'category-card active';
+                allCat.dataset.categoryId = 'all';
+                allCat.dataset.categoryName = 'All';
+                allCat.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/5787/5787098.png" alt="All"><p>All</p>`;
+                container.appendChild(allCat);
 
-      const canvas = document.getElementById('heroCanvas');
-      if (canvas) {
-        const renderer = new THREE.WebGLRenderer({canvas, alpha:true});
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 1000);
-        camera.position.z = 70; const particleCount = 1600; const positions = new Float32Array(particleCount * 3); const colors = new Float32Array(particleCount * 3); const c1 = new THREE.Color(0x7c3aed); const c2 = new THREE.Color(0x06b6d4); for(let i=0;i<particleCount;i++){ const i3 = i*3; positions[i3] = (Math.random()-0.5) * 220; positions[i3+1] = (Math.random()-0.5) * 120; positions[i3+2] = (Math.random()-0.5) * 60; const col = c1.clone().lerp(c2, Math.random()*0.8); colors[i3] = col.r; colors[i3+1] = col.g; colors[i3+2] = col.b; } const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(positions,3)); geometry.setAttribute('color', new THREE.BufferAttribute(colors,3)); const material = new THREE.PointsMaterial({size:0.9, transparent:true, opacity:0.6, vertexColors: true}); const particles = new THREE.Points(geometry, material); scene.add(particles); gsap.to(particles.rotation, {z: Math.PI*0.06, x: -0.08, duration:40, repeat:-1, ease:'none'}); const resize = () => { const dpr = Math.min(window.devicePixelRatio || 1, 2); renderer.setPixelRatio(dpr); renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); }; window.addEventListener('resize', resize); resize(); const animate = () => { requestAnimationFrame(animate); const t = Date.now() * 0.0002; particles.position.x = Math.sin(t) * 6; particles.position.y = Math.cos(t*0.9) * 4; renderer.render(scene, camera); }; animate();
-      }
-      const container = document.querySelector('.container');
-      document.addEventListener('mousemove', (e)=>{ const rect = container.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; container.style.setProperty('--x', `${x}px`); container.style.setProperty('--y', `${y}px`); const rotX = (e.clientY / innerHeight - 0.5) * 2; const rotY = (e.clientX / innerWidth - 0.5) * 2; gsap.to(container, {rotationY: rotY * 3, rotationX: -rotX * 2, transformOrigin:'center', ease:'power1', duration:0.8}); });
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const cat = child.val();
+                        const catCard = document.createElement('div');
+                        catCard.className = 'category-card';
+                        catCard.dataset.categoryId = child.key;
+                        catCard.dataset.categoryName = cat.name;
+                        catCard.innerHTML = `<img src="${cat.imageUrl}" alt="${cat.name}"><p>${cat.name}</p>`;
+                        container.appendChild(catCard);
+                    });
+                }
+                
+                document.querySelectorAll('.category-card').forEach(card => {
+                    card.addEventListener('click', handleCategoryClick);
+                });
+            });
+        }
+        
+        function handleCategoryClick(event) {
+            const clickedCard = event.currentTarget;
+            const categoryId = clickedCard.dataset.categoryId;
+            const categoryName = clickedCard.dataset.categoryName;
+            const dishesTitle = document.getElementById('dishesListTitle');
 
-    });
-  </script>
+            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
+            clickedCard.classList.add('active');
+            
+            if (categoryId === 'all') {
+                renderDishes(allDishesData);
+                dishesTitle.textContent = 'Recommended Dishes';
+            } else {
+                const filteredDishes = allDishesData.filter(dish => dish.categoryId === categoryId);
+                renderDishes(filteredDishes);
+                dishesTitle.textContent = `Dishes in ${categoryName}`;
+            }
+        }
+
+        // Creating nodes correctly to prevent JS execution breakages on String names
+        function renderDishes(dishesList) {
+            const c = document.getElementById('dishesContainer');
+            c.innerHTML = '';
+            if(dishesList.length === 0) { 
+                c.innerHTML = '<p style="padding:10px; color:#666; width:100%; text-align:center;">No dishes found in this category.</p>'; 
+                return; 
+            }
+            dishesList.forEach(d => {
+                const price = parseFloat(d.price) || 0;
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <img src="${d.imageUrl}" alt="Dish">
+                    <div class="card-content">
+                        <h3>${d.name}</h3>
+                        <p>₹${price.toFixed(2)}</p>
+                    </div>
+                `;
+                
+                // Construct button using DOM to avoid any inline parameter errors
+                const addBtn = document.createElement('button');
+                addBtn.className = 'add-btn';
+                addBtn.innerHTML = '<i class="fas fa-plus"></i>';
+                addBtn.onclick = () => addToCart(d.key, d.name, price, d.imageUrl);
+                
+                card.appendChild(addBtn);
+                c.appendChild(card);
+            });
+        }
+
+        document.querySelector('.search-bar input').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredDishes = allDishesData.filter(dish => dish.name.toLowerCase().includes(searchTerm));
+            renderDishes(filteredDishes);
+            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
+            document.querySelector('.category-card[data-category-id="all"]').classList.add('active');
+            document.getElementById('dishesListTitle').textContent = 'Search Results';
+        });
+
+        window.addToCart = (id,name,price,img) => {
+            price = parseFloat(price); // Ensures pricing logic never fails down the line
+            const ex = cart.find(i=>i.id===id);
+            ex ? ex.quantity++ : cart.push({id,name,price,img,quantity:1});
+            updateCartUI();
+        };
+
+        // Constructing DOM elements dynamically prevents inline-HTML breaking bugs and renders properly
+        function updateCartUI() {
+            document.getElementById('cart-count').textContent = cart.reduce((a,b)=>a+b.quantity,0);
+            const c = document.getElementById('cartItemsContainer');
+            
+            if(cart.length===0) { 
+                c.innerHTML='<p style="text-align:center;">Your cart is empty.</p>'; 
+                document.getElementById('cart-summary').style.display='none'; 
+                checkOrderValidity(); // Check checkout capability safely
+                return; 
+            }
+            
+            document.getElementById('cart-summary').style.display='block';
+            c.innerHTML='';
+            let sub=0;
+            
+            cart.forEach(i => {
+                sub += i.price * i.quantity;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'cart-item';
+                
+                const img = document.createElement('img');
+                img.src = i.img;
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.style.flex = '1';
+                infoDiv.innerHTML = `<h4>${i.name}</h4><p>₹${i.price.toFixed(2)}</p>`;
+                
+                const qtyControls = document.createElement('div');
+                qtyControls.className = 'qty-controls';
+                
+                const btnMinus = document.createElement('button');
+                btnMinus.textContent = '-';
+                btnMinus.onclick = () => modQty(i.id, -1);
+                
+                const spanQty = document.createElement('span');
+                spanQty.textContent = i.quantity;
+                
+                const btnPlus = document.createElement('button');
+                btnPlus.textContent = '+';
+                btnPlus.onclick = () => modQty(i.id, 1);
+                
+                qtyControls.appendChild(btnMinus);
+                qtyControls.appendChild(spanQty);
+                qtyControls.appendChild(btnPlus);
+                
+                itemDiv.appendChild(img);
+                itemDiv.appendChild(infoDiv);
+                itemDiv.appendChild(qtyControls);
+                
+                c.appendChild(itemDiv);
+            });
+            
+            document.getElementById('subtotal-price').textContent = `₹${sub.toFixed(2)}`;
+            document.getElementById('total-price').textContent = `₹${(sub+50).toFixed(2)}`;
+            checkOrderValidity(); // Continually update checkout state based on quantity changes
+        }
+
+        window.modQty = (id,n) => {
+            const i = cart.find(x=>x.id===id);
+            if(i) { i.quantity+=n; if(i.quantity<=0) cart=cart.filter(x=>x.id!==id); updateCartUI(); }
+        };
+
+        function pushNotification(title, body) {
+            if(!currentUser) return;
+            db.ref(`notifications/${currentUser.uid}`).push({
+                title: title, body: body, timestamp: Date.now(), read: false
+            });
+        }
+
+        function listenForStatusUpdates() {
+            if(!currentUser) return;
+            const ordersRef = db.ref('orders').orderByChild('userId').equalTo(currentUser.uid);
+            ordersRef.on('child_changed', (snapshot) => {
+                const order = snapshot.val();
+                const orderId = snapshot.key.substring(1, 6);
+                if (order.status !== 'Placed' && order.status) { 
+                    pushNotification(`Order #${orderId} Update`, `Your order is now: ${order.status}`);
+                }
+            });
+        }
+
+        function loadNotifications() {
+            if(!currentUser) return;
+            if (notificationsListener) notificationsListener.off();
+            const container = document.getElementById('notificationListContainer');
+            container.innerHTML = '<p style="text-align:center; padding:20px;">Loading alerts...</p>';
+            notificationsListener = db.ref(`notifications/${currentUser.uid}`).orderByChild('timestamp').limitToLast(20);
+            notificationsListener.on('value', snap => {
+                container.innerHTML = '';
+                if(!snap.exists()) {
+                    container.innerHTML = '<div style="text-align:center; margin-top:50px; color:#999;"><i class="fas fa-bell-slash" style="font-size:3em; margin-bottom:15px;"></i><p>No notifications yet</p></div>';
+                    return;
+                }
+                const alerts =[];
+                snap.forEach(c => alerts.push(c.val()));
+                alerts.reverse(); 
+                alerts.forEach(n => {
+                    const date = new Date(n.timestamp).toLocaleString();
+                    let icon = 'fa-info-circle';
+                    if(n.title.includes('Placed')) icon = 'fa-check-circle';
+                    if(n.title.includes('Update')) icon = 'fa-shipping-fast';
+                    container.innerHTML += `
+                        <div class="notification-card">
+                            <div class="notif-icon-box"><i class="fas ${icon}"></i></div>
+                            <div class="notif-content">
+                                <h4>${n.title}</h4>
+                                <p>${n.body}</p>
+                                <span class="notif-time" style="font-size:0.7em; color:#999;">${date}</span>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+        
+        function saveOrderToFirebase(paymentMethod, paymentId = null) {
+            const phone = phoneInput.value.trim();
+            const address = addressInput.value.trim();
+            const lat = document.getElementById('lat').value;
+            const lng = document.getElementById('lng').value;
+            const totalAmount = (cart.reduce((a, b) => a + b.price * b.quantity, 0) + 50);
+            const dCode = Math.floor(100000 + Math.random() * 900000);
+            
+            const order = {
+                userId: currentUser.uid,
+                userName: currentUser.displayName || "Customer",
+                email: currentUser.email,
+                phone: phone, address: address,
+                location: { lat: lat, lng: lng },
+                items: cart,
+                total: totalAmount.toFixed(2),
+                status: 'Placed',
+                method: paymentMethod,
+                paymentId: paymentId,
+                deliveryCode: dCode,
+                timestamp: new Date().toISOString()
+            };
+
+            db.ref('orders').push(order).then((snap) => {
+                pushNotification("Order Placed", `Order #${snap.key.substring(1,6)} has been placed successfully.`);
+                cart =[];
+                updateCartUI();
+                showPage('thankYouPage');
+            }).catch(err => {
+                alert('Failed to save order. Please try again or contact support.');
+                console.error("Firebase write error: ", err);
+            });
+        }
+        
+        orderBtn.onclick = () => {
+            // Failsafe implementation stopping execution if disabled or cart contents missing
+            if(orderBtn.disabled || cart.length === 0) return;
+
+            if (selectedPaymentMethod === 'cod') {
+                saveOrderToFirebase('Cash on Delivery');
+            } else if (selectedPaymentMethod === 'razorpay') {
+                const totalAmount = (cart.reduce((a, b) => a + b.price * b.quantity, 0) + 50);
+                const totalAmountInPaise = Math.round(totalAmount * 100);
+                
+                const options = {
+                    "key": "7gZ208TlUjfVd3YCsSIsVnTW",
+                    "amount": totalAmountInPaise,
+                    "currency": "INR",
+                    "name": "Sintha Keithel",
+                    "description": "Food Order Payment",
+                    "image": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
+                    "handler": function (response) {
+                        saveOrderToFirebase('Razorpay', response.razorpay_payment_id);
+                    },
+                    "prefill": {
+                        "name": currentUser.displayName || "Valued Customer",
+                        "email": currentUser.email,
+                        "contact": phoneInput.value.trim()
+                    },
+                    "notes": {
+                        "address": addressInput.value.trim()
+                    },
+                    "theme": {
+                        "color": "#ff9f1c"
+                    }
+                };
+
+                const rzp1 = new Razorpay(options);
+                rzp1.on('payment.failed', function (response){
+                    alert("Payment Failed: " + response.error.description);
+                    console.error("Razorpay Error:", response.error);
+                });
+                rzp1.open();
+            }
+        };
+
+        function loadOrders() {
+            const container = document.getElementById('ordersListContainer');
+            if (ordersListener) { ordersListener.off(); }
+            if (!currentUser) return;
+
+            container.innerHTML = '<p style="text-align:center; padding:20px;">Loading...</p>';
+            ordersListener = db.ref('orders').orderByChild('userId').equalTo(currentUser.uid);
+            
+            ordersListener.on('value', s => {
+                container.innerHTML = '';
+                if (!s.exists()) { container.innerHTML = '<p style="text-align:center; color:#777; padding:20px;">No active orders.</p>'; return; }
+                
+                const arr =[];
+                s.forEach(childSnap => arr.push({ k: childSnap.key, ...childSnap.val() }));
+                
+                arr.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                let html = '';
+                arr.forEach(o => {
+                    let st = o.status;
+                    let s1 = '', s2 = '', s3 = '', s4 = '';
+                    if (st === 'Placed') s1 = 'active';
+                    else if (st === 'Preparing') { s1 = 'passed'; s2 = 'active'; }
+                    else if (st === 'Out for Delivery') { s1 = 'passed'; s2 = 'passed'; s3 = 'active'; }
+                    else if (st === 'Delivered') { s1 = 'passed'; s2 = 'passed'; s3 = 'passed'; s4 = 'active'; }
+
+                    html += `
+                        <div class="order-card" id="order-${o.k}">
+                            <div style="display:flex;justify-content:space-between;font-weight:600;">
+                                <span>#${o.k.substring(1, 6)}</span>
+                                <span style="color:var(--primary-color)">${st}</span>
+                            </div>
+                            <p style="font-size:0.9em; color:#636e72;">${o.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</p>
+                             <p style="text-align:right; font-weight:700; font-size:1.1em; margin-bottom: 20px;">Total: ₹${o.total}</p>
+
+                            ${st !== 'Delivered' ? `
+                                <div style="background:#e0f0ff; padding:10px; border-radius:10px; text-align:center; margin:15px 0;">
+                                    <p style="margin:0; font-size:0.8em; color:#0984e3; font-weight:600;">DELIVERY CODE</p>
+                                    <h2 style="margin:0; letter-spacing:5px; color:#2d3436;">${o.deliveryCode}</h2>
+                                </div>
+                            ` : ''}
+
+                            ${o.status === 'Out for Delivery' && o.driverName ? `
+                                <div style="background:#fff5e6; padding:12px; border-radius:12px; margin-top:10px; border:1px dashed var(--primary-color);">
+                                    <p style="margin:0; font-size:0.85em; color:#333;"><strong>Driver:</strong> ${o.driverName}</p>
+                                    <p style="margin:0; font-size:0.85em; color:#333;"><strong>Contact:</strong> <a href="tel:${o.driverPhone}" style="color:var(--primary-color); text-decoration:none;">${o.driverPhone}</a></p>
+                                </div>
+                            ` : ''}
+
+                            <div class="track-bar">
+                                <div class="track-step ${s1}"><div class="dot"></div><p>Placed</p></div>
+                                <div class="track-step ${s2}"><div class="dot"></div><p>Prep</p></div>
+                                <div class="track-step ${s3}"><div class="dot"></div><p>On Way</p></div>
+                                <div class="track-step ${s4}"><div class="dot"></div><p>Done</p></div>
+                            </div>
+                            <div id="track-map-${o.k}" style="height:200px; width:100%; margin-top:15px; border-radius:10px; display:none; border:2px solid #ff9f1c;"></div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                
+                setTimeout(() => {
+                    arr.forEach(o => {
+                        if (o.status === 'Out for Delivery' && o.location && o.location.lat) {
+                            const mapId = `track-map-${o.k}`;
+                            const mapEl = document.getElementById(mapId);
+                            if(mapEl) {
+                                mapEl.style.display = 'block';
+                                try {
+                                    const trackMap = L.map(mapId).setView([o.location.lat, o.location.lng], 14);
+                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(trackMap);
+                                    L.marker([o.location.lat, o.location.lng]).addTo(trackMap);
+                                    
+                                    const carIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/741/741407.png', iconSize: [30, 30] });
+                                    let driverMarker = L.marker([o.location.lat, o.location.lng], {icon: carIcon}).addTo(trackMap);
+                                    
+                                    db.ref(`orders/${o.k}/driverLocation`).on('value', dSnap => {
+                                        if(dSnap.exists()) {
+                                            const dLoc = dSnap.val();
+                                            driverMarker.setLatLng([dLoc.lat, dLoc.lng]);
+                                            trackMap.setView([dLoc.lat, dLoc.lng]); 
+                                        }
+                                    });
+                                } catch(e) { console.error('Tracking Map Error', e); }
+                            }
+                        }
+                    });
+                }, 300);
+            });
+        }
+    </script>
 </body>
 </html>
