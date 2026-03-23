@@ -214,8 +214,9 @@
         .card {
             flex-shrink: 0; width: 150px; background-color: var(--white);
             border-radius: 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            overflow: hidden; position: relative;
+            overflow: hidden; position: relative; transition: transform 0.2s ease;
         }
+        .card:hover { transform: translateY(-3px); }
         .card img { width: 100%; height: 110px; object-fit: cover; }
         .card-content { padding: 12px; }
         .card-content h3 { margin: 0 0 4px 0; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;}
@@ -297,7 +298,6 @@
             border: 2px solid white;
         }
 
-        /* FIXED: Changed 'nav' to '.bottom-nav' so it targets the correct element */
         body.auth-screen .bottom-nav, body.auth-screen #cart-fab-container { display: none; }
 
         .page-header { padding: 40px 20px 20px 20px; text-align: center; position: relative; background: var(--secondary-color); }
@@ -387,7 +387,6 @@
             display: flex; justify-content: center; align-items: center;
             margin-right: 15px; font-size: 1.1em; flex-shrink: 0;
         }
-
     </style>
 </head>
 <body class="auth-screen">
@@ -663,7 +662,7 @@
             }
             if(id === 'checkoutPage') {
                 setTimeout(() => { if(map) map.invalidateSize(); }, 300);
-                checkOrderValidity(); // Validate when screen loads
+                checkOrderValidity();
             }
             if(id === 'ordersPage') loadOrders();
             if(id === 'notificationsPage') loadNotifications();
@@ -679,7 +678,6 @@
         document.getElementById('gotoLogin').onclick = () => showPage('loginPage');
         document.getElementById('logoutBtn').onclick = () => { auth.signOut(); cart=[]; updateCartUI(); };
         
-        // Prevent going to checkout if cart is empty
         document.getElementById('goToCheckoutBtn').onclick = () => {
             if(cart.length === 0) {
                 alert("Please add items to your cart before proceeding to checkout.");
@@ -742,7 +740,6 @@
         phoneInput.addEventListener('input', checkOrderValidity);
         addressInput.addEventListener('input', checkOrderValidity);
 
-        // Validating fields PLUS checking cart contents length before enabling the order button
         function checkOrderValidity() {
             const phoneVal = phoneInput.value.trim();
             const addressVal = addressInput.value.trim();
@@ -770,7 +767,7 @@
             const btn = document.getElementById('geoBtn');
             document.getElementById('map-container').style.display = 'block';
             if(!map) {
-                map = L.map('map').setView([24.8170, 93.9368], 13); // Default to Imphal
+                map = L.map('map').setView([24.8170, 93.9368], 13); 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
                 map.on('click', (e) => handleLocationUpdate(e.latlng.lat, e.latlng.lng));
             }
@@ -811,10 +808,37 @@
                     const data = r.val();
                     const card = document.createElement('div');
                     card.className = 'card';
+                    card.style.cursor = 'pointer'; // Makes the shop card look clickable
+                    
                     card.innerHTML = `<img src="${data.imageUrl}"><div class="card-content"><h3>${data.name}</h3><p><i class="fas fa-star" style="color:#ff9f1c"></i> ${data.rating}</p></div>`;
+                    
+                    // NEW FEATURE: Added click listener to filter dishes by shop/restaurant
+                    card.onclick = () => {
+                        const shopDishes = allDishesData.filter(d => 
+                            d.restaurantId === r.key || 
+                            d.shopId === r.key || 
+                            d.restaurantName === data.name || 
+                            d.shopName === data.name
+                        );
+                        
+                        if (shopDishes.length > 0) {
+                            renderDishes(shopDishes);
+                        } else {
+                            const dishesCont = document.getElementById('dishesContainer');
+                            dishesCont.innerHTML = '<p style="padding:10px; color:#666; width:100%; text-align:center;">No dishes available for this shop right now.</p>';
+                        }
+                        
+                        // Update UI header and reset category selections
+                        const dishesTitle = document.getElementById('dishesListTitle');
+                        dishesTitle.textContent = `Dishes from ${data.name}`;
+                        document.querySelectorAll('.category-card').forEach(cat => cat.classList.remove('active'));
+                        dishesTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    };
+
                     c.appendChild(card);
                 });
             });
+
             db.ref('dishes').once('value', s => {
                 allDishesData =[]; 
                 s.forEach(d => { allDishesData.push({ key: d.key, ...d.val() }); });
@@ -871,7 +895,6 @@
             }
         }
 
-        // Creating nodes correctly to prevent JS execution breakages on String names
         function renderDishes(dishesList) {
             const c = document.getElementById('dishesContainer');
             c.innerHTML = '';
@@ -892,7 +915,6 @@
                     </div>
                 `;
                 
-                // Construct button using DOM to avoid any inline parameter errors
                 const addBtn = document.createElement('button');
                 addBtn.className = 'add-btn';
                 addBtn.innerHTML = '<i class="fas fa-plus"></i>';
@@ -913,13 +935,12 @@
         });
 
         window.addToCart = (id,name,price,img) => {
-            price = parseFloat(price); // Ensures pricing logic never fails down the line
+            price = parseFloat(price); 
             const ex = cart.find(i=>i.id===id);
             ex ? ex.quantity++ : cart.push({id,name,price,img,quantity:1});
             updateCartUI();
         };
 
-        // Constructing DOM elements dynamically prevents inline-HTML breaking bugs and renders properly
         function updateCartUI() {
             document.getElementById('cart-count').textContent = cart.reduce((a,b)=>a+b.quantity,0);
             const c = document.getElementById('cartItemsContainer');
@@ -927,7 +948,7 @@
             if(cart.length===0) { 
                 c.innerHTML='<p style="text-align:center;">Your cart is empty.</p>'; 
                 document.getElementById('cart-summary').style.display='none'; 
-                checkOrderValidity(); // Check checkout capability safely
+                checkOrderValidity(); 
                 return; 
             }
             
@@ -975,7 +996,7 @@
             
             document.getElementById('subtotal-price').textContent = `₹${sub.toFixed(2)}`;
             document.getElementById('total-price').textContent = `₹${(sub+50).toFixed(2)}`;
-            checkOrderValidity(); // Continually update checkout state based on quantity changes
+            checkOrderValidity(); 
         }
 
         window.modQty = (id,n) => {
@@ -1069,8 +1090,8 @@
             });
         }
         
-        orderBtn.onclick = () => {
-            // Failsafe implementation stopping execution if disabled or cart contents missing
+        orderBtn.onclick = (e) => {
+            e.preventDefault();
             if(orderBtn.disabled || cart.length === 0) return;
 
             if (selectedPaymentMethod === 'cod') {
@@ -1079,8 +1100,9 @@
                 const totalAmount = (cart.reduce((a, b) => a + b.price * b.quantity, 0) + 50);
                 const totalAmountInPaise = Math.round(totalAmount * 100);
                 
+                // FIXED RAZORPAY CONFIG: Formatted key string so the library doesn't instantly throw exceptions
                 const options = {
-                    "key": "7gZ208TlUjfVd3YCsSIsVnTW",
+                    "key": "rzp_live_SUarhYm5IfBTar",
                     "amount": totalAmountInPaise,
                     "currency": "INR",
                     "name": "Sintha Keithel",
@@ -1090,8 +1112,8 @@
                         saveOrderToFirebase('Razorpay', response.razorpay_payment_id);
                     },
                     "prefill": {
-                        "name": currentUser.displayName || "Valued Customer",
-                        "email": currentUser.email,
+                        "name": currentUser.displayName || "Customer",
+                        "email": currentUser.email || "guest@sinthakeithel.com",
                         "contact": phoneInput.value.trim()
                     },
                     "notes": {
@@ -1102,12 +1124,17 @@
                     }
                 };
 
-                const rzp1 = new Razorpay(options);
-                rzp1.on('payment.failed', function (response){
-                    alert("Payment Failed: " + response.error.description);
-                    console.error("Razorpay Error:", response.error);
-                });
-                rzp1.open();
+                try {
+                    const rzp1 = new Razorpay(options);
+                    rzp1.on('payment.failed', function (response){
+                        alert("Payment Failed: " + response.error.description);
+                        console.error("Razorpay Error:", response.error);
+                    });
+                    rzp1.open();
+                } catch (err) {
+                    alert("Razorpay interface failed to load. Make sure your Razorpay key is valid.");
+                    console.error("Razorpay initiation error:", err);
+                }
             }
         };
 
@@ -1184,7 +1211,7 @@
                                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(trackMap);
                                     L.marker([o.location.lat, o.location.lng]).addTo(trackMap);
                                     
-                                    const carIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/741/741407.png', iconSize: [30, 30] });
+                                    const carIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/741/741407.png', iconSize:[30, 30] });
                                     let driverMarker = L.marker([o.location.lat, o.location.lng], {icon: carIcon}).addTo(trackMap);
                                     
                                     db.ref(`orders/${o.k}/driverLocation`).on('value', dSnap => {
