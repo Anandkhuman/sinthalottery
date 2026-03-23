@@ -17,7 +17,10 @@
         body { margin:0; font-family: 'Poppins', sans-serif; background: var(--grey); color: #333; }
         .header { background: var(--dark); color: white; padding: 20px; text-align: center; position: sticky; top:0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .container { padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 30px; }
-        #ordersList { padding-bottom: 80px; } /* Extra padding for bottom */
+        
+        /* यह आपकी ऑर्डर लिस्ट है जो सभी को दिखेगी */
+        #ordersList { padding-bottom: 80px; } 
+
         .order-card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -58,6 +61,8 @@
         .sv-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 9999; flex-direction: column; }
         .sv-modal-header { padding: 15px; background: rgba(0,0,0,0.9); color: white; display: flex; justify-content: space-between; align-items: center; }
         .close-btn { background: none; border:none; color: white; font-size: 1.5em; cursor: pointer; }
+        
+        /* यह आपका मेनू है */
         .nav-tabs { display: flex; justify-content: center; gap: 10px; margin-top: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px; }
         .nav-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid white; background: transparent; color: white; cursor: pointer; transition: all 0.3s; font-weight: 500;}
         .nav-btn.active { background: var(--primary); border-color: var(--primary); font-weight: 600; }
@@ -68,20 +73,22 @@
 <div class="header">
     <h2>☕ Sintha Keithel Driver</h2>
     <p id="driverStatus" style="font-size: 0.9em; opacity: 0.9; margin-top: 5px;">Identifying Driver...</p>
+    
+    <!-- यह मेनू है जिसमें 'एक्टिव ऑर्डर्स' (जिसमें लिस्ट और एक्टिव ऑर्डर दोनों दिखेंगे) और 'हिस्ट्री' का ऑप्शन है -->
     <div class="nav-tabs" id="mainNavTabs">
-        <button id="activeBtn" class="nav-btn active">Active Orders</button>
+        <button id="ordersBtn" class="nav-btn active">Order List</button>
+        <button id="activeBtn" class="nav-btn">Active Order</button>
         <button id="historyBtn" class="nav-btn">Delivery History</button>
     </div>
 </div>
 
-<!-- Active Delivery View -->
+<!-- यह 'एक्टिव ऑर्डर' का सेक्शन है, जो सिर्फ ऑर्डर स्वीकार करने वाले ड्राइवर को दिखेगा -->
 <div class="container hidden" id="activeDelivery">
     <div class="order-card" style="border: 2px solid var(--primary);">
         <div class="card-header"><h3 style="margin:0">Current Delivery</h3><span class="status-badge" style="background:#2980b9">IN PROGRESS</span></div>
         <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>Name:</strong> <span id="custName"></span></div>
         <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> <span id="custPhone"></span></div>
         
-        <!-- Call & WhatsApp Action Buttons -->
         <div class="contact-btn-group">
             <a href="#" id="callCustomerBtn" class="btn btn-call"><i class="fas fa-phone-alt"></i> Call</a>
             <a href="#" id="waCustomerBtn" class="btn btn-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
@@ -100,16 +107,18 @@
     </div>
 </div>
 
+<!-- यह 'ऑर्डर लिस्ट' का सेक्शन है, जो सभी ड्राइवर्स को दिखेगा -->
 <div class="container" id="ordersList">
     <p style="text-align:center; color:#777; margin-top:50px;">Connecting to server...</p>
 </div>
 
+<!-- यह डिलीवरी हिस्ट्री का सेक्शन है -->
 <div class="container hidden" id="historyList">
      <p style="text-align:center; color:#777; margin-top:50px;">Loading delivery history...</p>
 </div>
 
-<!-- Initial Driver Login Modal -->
-<div class="modal-overlay" id="driverAuthModal">
+<!-- Modals (Login, Delivery Code, Street View) -->
+<div class="modal-overlay" id="driverAuthModal" style="display:flex">
     <div class="modern-modal">
         <h3>Driver Registration</h3>
         <p>Enter your details once to start receiving orders.</p>
@@ -125,7 +134,6 @@
     </div>
 </div>
 
-<!-- Delivery Code Modal -->
 <div class="modal-overlay" id="deliveryCodeModal">
     <div class="modern-modal">
         <h3>Complete Delivery</h3>
@@ -138,7 +146,6 @@
     </div>
 </div>
 
-<!-- Street View Modal -->
 <div class="sv-modal" id="svModal">
     <div class="sv-modal-header"><span><i class="fas fa-home"></i> House Preview</span><button class="close-btn" onclick="closeStreetView()"><i class="fas fa-times"></i></button></div>
     <div style="flex:1;" id="iframe-holder"></div>
@@ -161,10 +168,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // Driver Details & Global Variables
     let myDriverPhone = localStorage.getItem('my_driver_phone') || null;
     let myDriverName = localStorage.getItem('my_driver_name') || null;
-    let currentOrderId = null; // This will be synced with Firebase state
+    let currentOrderId = null;
     let watchId = null;
     let customerLoc = null;
     let map = null; 
@@ -177,26 +183,37 @@
     };
 
     function setupNavTabs() {
+        const ordersBtn = document.getElementById('ordersBtn');
         const activeBtn = document.getElementById('activeBtn');
         const historyBtn = document.getElementById('historyBtn');
+        
         const ordersList = document.getElementById('ordersList');
-        const historyList = document.getElementById('historyList');
         const activeDelivery = document.getElementById('activeDelivery');
+        const historyList = document.getElementById('historyList');
+
+        ordersBtn.addEventListener('click', () => {
+            ordersList.classList.remove('hidden');
+            activeDelivery.classList.add('hidden');
+            historyList.classList.add('hidden');
+            
+            ordersBtn.classList.add('active');
+            activeBtn.classList.remove('active');
+            historyBtn.classList.remove('active');
+        });
 
         activeBtn.addEventListener('click', () => {
-            historyList.classList.add('hidden');
-            ordersList.classList.remove('hidden'); 
-            
-            // Show active tracking screen if currently delivering
-            if (currentOrderId) {
-                activeDelivery.classList.remove('hidden');
-                setTimeout(() => { if(map) map.invalidateSize(); }, 100);
-            } else {
-                activeDelivery.classList.add('hidden');
+            if (!currentOrderId) {
+                alert("You do not have an active order.");
+                return;
             }
-            
+            ordersList.classList.add('hidden');
+            activeDelivery.classList.remove('hidden');
+            historyList.classList.add('hidden');
+
+            ordersBtn.classList.remove('active');
             activeBtn.classList.add('active');
             historyBtn.classList.remove('active');
+            setTimeout(() => { if(map) map.invalidateSize(); }, 100);
         });
 
         historyBtn.addEventListener('click', () => {
@@ -204,18 +221,19 @@
             activeDelivery.classList.add('hidden');
             historyList.classList.remove('hidden');
             
+            ordersBtn.classList.remove('active');
             activeBtn.classList.remove('active');
             historyBtn.classList.add('active');
             loadDeliveryHistory(); 
         });
     }
 
-    // 1. Driver Authentication / Identification
     function authenticateDriver() {
         if (!myDriverPhone) {
             document.getElementById('driverAuthModal').style.display = 'flex';
         } else {
-            listenToMyFirebaseState();
+            document.getElementById('driverAuthModal').style.display = 'none';
+            listenToDriverState();
         }
     }
 
@@ -229,46 +247,40 @@
         localStorage.setItem('my_driver_phone', dPhone);
         localStorage.setItem('my_driver_name', dName);
         
-        db.ref('drivers/' + myDriverPhone).update({ name: dName }).then(() => {
+        db.ref('drivers/' + myDriverPhone).update({ name: dName, phone: dPhone }).then(() => {
             document.getElementById('driverAuthModal').style.display = 'none';
-            listenToMyFirebaseState();
+            listenToDriverState();
         });
     };
 
-    // 2. Main Firebase Driver State Listener
-    function listenToMyFirebaseState() {
+    function listenToDriverState() {
         document.getElementById('driverStatus').textContent = `Welcome, ${myDriverName}!`;
         
-        // This listener is the single source of truth for the driver's state.
+        // यह फंक्शन ड्राइवर के अपने डेटा को सुनता है
         db.ref('drivers/' + myDriverPhone).on('value', snap => {
             const driverData = snap.val() || {};
             
-            // Check if driver has an active order stored in Firebase
             if (driverData.activeOrderId) {
                 currentOrderId = driverData.activeOrderId;
-                fetchActiveOrderAndShow(currentOrderId); // This will display the active delivery details
+                fetchActiveOrderAndShow(currentOrderId);
             } else {
-                // If no active order, hide the delivery details UI
                 currentOrderId = null;
                 if(watchId) navigator.geolocation.clearWatch(watchId);
                 
+                // अगर कोई एक्टिव ऑर्डर नहीं है, तो एक्टिव डिलीवरी व्यू को छिपाएं और ऑर्डर लिस्ट दिखाएं
                 document.getElementById('activeDelivery').classList.add('hidden');
-                
-                // Ensure the correct tab content is visible
-                if(document.getElementById('activeBtn').classList.contains('active')){
-                    document.getElementById('ordersList').classList.remove('hidden');
-                    document.getElementById('historyList').classList.add('hidden');
-                }
+                document.getElementById('ordersList').classList.remove('hidden');
+                document.getElementById('ordersBtn').classList.add('active');
+                document.getElementById('activeBtn').classList.remove('active');
             }
-            
-            // This function is now called every time the driver's state changes
-            // to ensure the list of other available orders is always up to date.
-            loadActiveOrders();
         });
+
+        // यह फंक्शन सभी उपलब्ध ऑर्डर्स को सुनता है
+        loadAvailableOrders();
     }
 
-    // 3. Load Available Orders (All active unassigned orders)
-    function loadActiveOrders() {
+    // यह फंक्शन सभी ड्राइवरों के लिए उपलब्ध ऑर्डर लोड करता है
+    function loadAvailableOrders() {
         db.ref('orders').on('value', snap => {
             const list = document.getElementById('ordersList');
             let htmlContent = '';
@@ -277,7 +289,8 @@
             snap.forEach(child => {
                 const o = child.val();
                 const id = child.key;
-                // Only show orders that are ready to be picked up
+                
+                // सिर्फ वही ऑर्डर दिखाएं जो 'Placed' या 'Preparing' स्टेटस में हैं
                 if (o.status === 'Placed' || o.status === 'Preparing') {
                     hasOrders = true;
                     let itemsHtml = buildItemsHtml(o.items);
@@ -286,9 +299,9 @@
                     htmlContent += `
                         <div class="order-card">
                             <div class="card-header"><h4 style="margin:0">Order #${id.substring(1,6)}</h4><span class="status-badge ${badgeClass}">${o.status}</span></div>
-                            <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>Customer:</strong> ${o.userName || 'Guest'}</div>
-                            <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> ${o.phone || 'N/A'}</div>
-                            <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>To:</strong> ${o.address}</div>
+                            <div class="info-row"><i class="fas fa-user fa-fw"></i> <strong>Customer:</strong> ${o.userName || 'Guest'}</div>
+                            <div class="info-row"><i class="fas fa-phone fa-fw"></i> <strong>Phone:</strong> ${o.phone || 'N/A'}</div>
+                            <div class="info-row"><i class="fas fa-map-marker-alt fa-fw"></i> <strong>To:</strong> ${o.address}</div>
                             <div class="item-list">${itemsHtml}</div>
                             <button class="btn btn-accept" onclick="acceptOrder('${id}')"><i class="fas fa-shipping-fast"></i> Accept & Deliver</button>
                         </div>
@@ -297,36 +310,32 @@
             });
             
             if(hasOrders) {
-                // If currently delivering, add a header to differentiate
-                list.innerHTML = (currentOrderId ? '<h3 style="color:#2c3e50; margin-bottom:15px; text-align:center;">Other Available Orders</h3>' : '') + htmlContent;
+                list.innerHTML = htmlContent;
             } else {
-                list.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-mug-hot" style="font-size:3em; color:#ccc;"></i><p style="color:#777; margin-top:10px;">No other active orders right now.</p></div>';
+                list.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-mug-hot" style="font-size:3em; color:#ccc;"></i><p style="color:#777; margin-top:10px;">No active orders right now.</p></div>';
             }
         });
     }
 
-    // 4. Accept Order logic
+    // यह फंक्शन ऑर्डर स्वीकार करने पर काम करता है
     window.acceptOrder = function(id) {
         if(currentOrderId) { alert("You are already delivering an order! Please complete it first."); return; }
         
-        // Atomically update the order and driver states in Firebase
+        // डेटाबेस में ऑर्डर और ड्राइवर की जानकारी अपडेट करें
         const updates = {};
-        updates['orders/' + id + '/status'] = 'Out for Delivery';
+        updates['orders/' + id + '/status'] = 'Out for Delivery'; // स्टेटस बदलने से यह ऑर्डर लिस्ट से हट जाएगा
         updates['orders/' + id + '/driverName'] = myDriverName;
         updates['orders/' + id + '/driverPhone'] = myDriverPhone;
-        updates['drivers/' + myDriverPhone + '/activeOrderId'] = id;
+        updates['drivers/' + myDriverPhone + '/activeOrderId'] = id; // ड्राइवर को यह ऑर्डर असाइन हो जाएगा
 
-        db.ref().update(updates).then(() => {
-            // The Firebase listener `listenToMyFirebaseState` will automatically
-            // handle the UI update, making the active delivery visible.
-        }).catch(err => alert("Error accepting order: " + err.message));
+        db.ref().update(updates).catch(err => alert("Error accepting order: " + err.message));
+        // listenToDriverState() फंक्शन अपने आप UI को अपडेट कर देगा
     }
 
-    // 5. Setup Active Delivery UI
+    // यह फंक्शन स्वीकार किए गए ऑर्डर का UI सेट करता है
     function fetchActiveOrderAndShow(id) {
         db.ref('orders/' + id).once('value', snap => {
             const orderData = snap.val();
-            // If order data is gone or status is delivered, clean up driver state
             if(!orderData || orderData.status === 'Delivered') {
                 db.ref('drivers/' + myDriverPhone).update({ activeOrderId: null });
                 return;
@@ -334,23 +343,21 @@
 
             customerLoc = orderData.location;
             
-            // Make sure the active delivery container and the main orders list are visible
-            document.getElementById('ordersList').classList.remove('hidden');
-            document.getElementById('historyList').classList.add('hidden');
+            // एक्टिव ऑर्डर टैब को दिखाएं
+            document.getElementById('ordersList').classList.add('hidden');
             document.getElementById('activeDelivery').classList.remove('hidden');
+            document.getElementById('historyList').classList.add('hidden');
             
-            // Sync tabs to ensure 'Active Orders' is selected
+            document.getElementById('ordersBtn').classList.remove('active');
             document.getElementById('activeBtn').classList.add('active');
             document.getElementById('historyBtn').classList.remove('active');
             
-            // Populate delivery data
             document.getElementById('custName').textContent = orderData.userName || 'Guest';
             document.getElementById('custAddress').textContent = orderData.address;
             document.getElementById('custPhone').textContent = orderData.phone || 'N/A';
             document.getElementById('activeItemsList').innerHTML = buildItemsHtml(orderData.items);
-            document.getElementById('driverStatus').textContent = `Currently Delivering Order #${id.substring(1,6)}`;
+            document.getElementById('driverStatus').textContent = `Delivering Order #${id.substring(1,6)}`;
 
-            // Set dynamic links for Call & WhatsApp
             let phoneStr = orderData.phone || '';
             document.getElementById('callCustomerBtn').href = phoneStr ? `tel:${phoneStr}` : '#';
             let waPhone = phoneStr.replace(/\D/g, '');
@@ -362,7 +369,6 @@
         });
     }
 
-    // 6. Complete Delivery Logic
     function showDeliveryCodeModal() {
         document.getElementById('deliveryCodeModal').style.display = 'flex';
         document.getElementById('deliveryCodeInput').value = '';
@@ -376,29 +382,24 @@
         db.ref('orders/' + currentOrderId + '/deliveryCode').once('value', snap => {
             const realCode = snap.val();
             if(userInput == realCode) {
-                // On successful verification, update the database
                 const updates = {};
                 updates['orders/' + currentOrderId + '/status'] = 'Delivered';
                 updates['orders/' + currentOrderId + '/deliveredAt'] = firebase.database.ServerValue.TIMESTAMP;
-                updates['drivers/' + myDriverPhone + '/activeOrderId'] = null; // Free up driver
+                updates['drivers/' + myDriverPhone + '/activeOrderId'] = null; // ड्राइवर को फ्री करें
 
                 db.ref().update(updates).then(() => {
                     document.getElementById('deliveryCodeModal').style.display = 'none';
                     alert("Delivery Complete! Verified Successfully.");
-                    // The screen will revert to the main dashboard via `listenToMyFirebaseState`
                 });
             } else {
                 alert("WRONG DELIVERY CODE! PLEASE ASK CUSTOMER AGAIN.");
-                document.getElementById('deliveryCodeInput').value = "";
-                document.getElementById('deliveryCodeInput').focus();
             }
         });
     };
-
-    // 7. Delivery History
+    
     function loadDeliveryHistory() {
         const list = document.getElementById('historyList');
-        list.innerHTML = '<p style="text-align:center; color:#777; margin-top:50px;">Fetching history...</p>';
+        list.innerHTML = '<p>Fetching history...</p>';
         
         db.ref('orders').orderByChild('driverPhone').equalTo(myDriverPhone).once('value', snap => {
             list.innerHTML = '';
@@ -414,34 +415,25 @@
             });
 
             if (!hasHistory) {
-                 list.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-history" style="font-size:3em; color:#ccc;"></i><p style="color:#777; margin-top:10px;">You have no completed deliveries yet.</p></div>';
+                 list.innerHTML = '<div style="text-align:center; margin-top:50px;"><p>You have no completed deliveries yet.</p></div>';
                  return;
             }
 
-            // Sort by most recent delivery
             historyOrders.sort((a, b) => (b.deliveredAt || 0) - (a.deliveredAt || 0));
 
             historyOrders.forEach(o => {
                 const id = o.key;
                 const deliveryDate = new Date(o.deliveredAt || o.timestamp).toLocaleString();
-                const card = document.createElement('div');
-                card.className = 'order-card';
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h4 style="margin:0">Order #${id.substring(1,6)}</h4>
-                        <span class="status-badge badge-delivered">Delivered</span>
-                    </div>
-                    <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>To:</strong> ${o.userName || 'Guest'}</div>
-                    <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> ${o.phone || 'N/A'}</div>
-                    <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>At:</strong> ${o.address}</div>
-                    <div class="info-row"><i class="fas fa-calendar-check fa-fw" style="color:#2980b9;"></i> <strong>On:</strong> ${deliveryDate}</div>
-                `;
-                list.appendChild(card);
+                list.innerHTML += `
+                    <div class="order-card">
+                        <div class="card-header"><h4>Order #${id.substring(1,6)}</h4><span class="status-badge badge-delivered">Delivered</span></div>
+                        <div class="info-row"><strong>To:</strong> ${o.userName || 'Guest'}</div>
+                        <div class="info-row"><strong>On:</strong> ${deliveryDate}</div>
+                    </div>`;
             });
         });
     }
 
-    // Utils & Map Logic
     function buildItemsHtml(items) {
         if(!items) return '<p>No items</p>';
         return items.map(i => `<div class="item-row"><img src="${i.img || 'https://via.placeholder.com/50'}" class="item-img"><div class="item-details"><div class="item-name">${i.name}</div><div class="item-meta">Qty: ${i.quantity}</div></div><div class="item-price">₹${(i.price * i.quantity)}</div></div>`).join('');
@@ -452,7 +444,7 @@
             watchId = navigator.geolocation.watchPosition(pos => {
                 const lat = pos.coords.latitude; const lng = pos.coords.longitude;
                 if(map) { if(driverMarker) driverMarker.setLatLng([lat, lng]); else driverMarker = L.marker([lat, lng], {icon: driverIcon}).addTo(map); }
-                if(currentOrderId) db.ref(`orders/${currentOrderId}/driverLocation`).set({ lat, lng, timestamp: Date.now() });
+                if(currentOrderId) db.ref(`orders/${currentOrderId}/driverLocation`).set({ lat, lng });
             }, err => console.error(err), { enableHighAccuracy: true });
         }
     }
@@ -461,12 +453,7 @@
         document.getElementById('activeMap').style.display = 'block';
         if (map !== null) map.remove();
         map = L.map('activeMap').setView([dest.lat, dest.lng], 16);
-        
-        L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { 
-            maxZoom: 20,
-            attribution: '© Google'
-        }).addTo(map);
-
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }).addTo(map);
         L.marker([dest.lat, dest.lng]).addTo(map).bindPopup("Customer Location").openPopup();
         setTimeout(() => map.invalidateSize(), 300);
     }
