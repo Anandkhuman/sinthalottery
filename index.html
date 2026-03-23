@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -296,7 +297,8 @@
             border: 2px solid white;
         }
 
-        body.auth-screen nav, body.auth-screen #cart-fab-container { display: none; }
+        /* FIXED: Changed 'nav' to '.bottom-nav' so it targets the correct element */
+        body.auth-screen .bottom-nav, body.auth-screen #cart-fab-container { display: none; }
 
         .page-header { padding: 40px 20px 20px 20px; text-align: center; position: relative; background: var(--secondary-color); }
         .page-header h2 { margin: 0; font-size: 1.3em; color: #2d3436; font-weight: 700; }
