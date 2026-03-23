@@ -529,13 +529,40 @@
             <div style="flex:1; padding:20px; overflow-y:auto;">
                 
                 <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="checkoutName" class="form-control" placeholder="Your Name">
+                </div>
+
+                <div class="form-group">
                     <label>Delivery Location</label>
                     <button class="location-btn" id="geoBtn">
                         <i class="fas fa-location-arrow"></i> Use My Current Location
                     </button>
                     <div id="map-container"><div id="map" style="height:100%; width:100%;"></div></div>
-                    <input type="text" id="addressText" class="form-control" placeholder="House/Flat No., Landmark, City">
+                    <input type="text" id="addressText" class="form-control" placeholder="House/Flat No., Landmark, City" style="margin-bottom: 10px;">
                     <input type="hidden" id="lat"><input type="hidden" id="lng">
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>PIN Code</label>
+                        <input type="text" id="checkoutPin" class="form-control" placeholder="e.g. 795001" maxlength="6">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Village/Area</label>
+                        <input type="text" id="checkoutVillage" class="form-control" placeholder="Village name">
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>District</label>
+                        <input type="text" id="checkoutDistrict" class="form-control" placeholder="District">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>State</label>
+                        <input type="text" id="checkoutState" class="form-control" placeholder="State">
+                    </div>
                 </div>
 
                  <div class="form-group">
@@ -683,6 +710,10 @@
                 alert("Please add items to your cart before proceeding to checkout.");
                 return;
             }
+            // Auto fill name if user is logged in
+            if(currentUser) {
+                document.getElementById('checkoutName').value = currentUser.displayName || '';
+            }
             showPage('checkoutPage');
         };
         
@@ -727,9 +758,15 @@
                 .catch(e => showError(e.message));
         };
 
+        const nameInput = document.getElementById('checkoutName');
         const phoneInput = document.getElementById('contactPhone');
         const addressInput = document.getElementById('addressText');
+        const pinInput = document.getElementById('checkoutPin');
+        const villageInput = document.getElementById('checkoutVillage');
+        const districtInput = document.getElementById('checkoutDistrict');
+        const stateInput = document.getElementById('checkoutState');
         const orderBtn = document.getElementById('placeOrderBtn');
+        
         document.querySelectorAll('input[name="paymentMethod"]').forEach(elem => {
             elem.addEventListener("change", function(event) {
                 selectedPaymentMethod = event.target.value;
@@ -737,14 +774,52 @@
             });
         });
 
+        // Event listeners for inputs to trigger validity check dynamically
+        nameInput.addEventListener('input', checkOrderValidity);
         phoneInput.addEventListener('input', checkOrderValidity);
         addressInput.addEventListener('input', checkOrderValidity);
+        villageInput.addEventListener('input', checkOrderValidity);
+        districtInput.addEventListener('input', checkOrderValidity);
+        stateInput.addEventListener('input', checkOrderValidity);
+
+        // Fetch District and State automatically when entering 6 digit PIN
+        pinInput.addEventListener('input', function() {
+            const pin = this.value.trim();
+            if (pin.length === 6) {
+                fetch(`https://api.postalpincode.in/pincode/${pin}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data[0] && data[0].Status === 'Success') {
+                            const postOffice = data[0].PostOffice[0];
+                            districtInput.value = postOffice.District;
+                            stateInput.value = postOffice.State;
+                        } else {
+                            districtInput.value = '';
+                            stateInput.value = '';
+                        }
+                        checkOrderValidity();
+                    })
+                    .catch(err => {
+                        console.error('Error fetching PIN details:', err);
+                        checkOrderValidity();
+                    });
+            } else {
+                districtInput.value = '';
+                stateInput.value = '';
+                checkOrderValidity();
+            }
+        });
 
         function checkOrderValidity() {
+            const nameVal = nameInput.value.trim();
             const phoneVal = phoneInput.value.trim();
             const addressVal = addressInput.value.trim();
+            const pinVal = pinInput.value.trim();
+            const villageVal = villageInput.value.trim();
+            const districtVal = districtInput.value.trim();
+            const stateVal = stateInput.value.trim();
             
-            if (phoneVal.length >= 10 && addressVal.length > 5 && selectedPaymentMethod && cart.length > 0) {
+            if (nameVal.length > 0 && phoneVal.length >= 10 && addressVal.length > 5 && pinVal.length === 6 && villageVal.length > 0 && districtVal.length > 0 && stateVal.length > 0 && selectedPaymentMethod && cart.length > 0) {
                 orderBtn.disabled = false;
                 orderBtn.style.opacity = '1';
                 if(selectedPaymentMethod === 'razorpay') {
@@ -768,7 +843,8 @@
             document.getElementById('map-container').style.display = 'block';
             if(!map) {
                 map = L.map('map').setView([24.8170, 93.9368], 13); 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                // Updated to Google Satellite View (Hybrid view to show roads/labels too)
+                L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }).addTo(map);
                 map.on('click', (e) => handleLocationUpdate(e.latlng.lat, e.latlng.lng));
             }
             map.invalidateSize();
@@ -808,11 +884,10 @@
                     const data = r.val();
                     const card = document.createElement('div');
                     card.className = 'card';
-                    card.style.cursor = 'pointer'; // Makes the shop card look clickable
+                    card.style.cursor = 'pointer'; 
                     
                     card.innerHTML = `<img src="${data.imageUrl}"><div class="card-content"><h3>${data.name}</h3><p><i class="fas fa-star" style="color:#ff9f1c"></i> ${data.rating}</p></div>`;
                     
-                    // NEW FEATURE: Added click listener to filter dishes by shop/restaurant
                     card.onclick = () => {
                         const shopDishes = allDishesData.filter(d => 
                             d.restaurantId === r.key || 
@@ -828,7 +903,6 @@
                             dishesCont.innerHTML = '<p style="padding:10px; color:#666; width:100%; text-align:center;">No dishes available for this shop right now.</p>';
                         }
                         
-                        // Update UI header and reset category selections
                         const dishesTitle = document.getElementById('dishesListTitle');
                         dishesTitle.textContent = `Dishes from ${data.name}`;
                         document.querySelectorAll('.category-card').forEach(cat => cat.classList.remove('active'));
@@ -1057,19 +1131,20 @@
         }
         
         function saveOrderToFirebase(paymentMethod, paymentId = null) {
-            const phone = phoneInput.value.trim();
-            const address = addressInput.value.trim();
-            const lat = document.getElementById('lat').value;
-            const lng = document.getElementById('lng').value;
             const totalAmount = (cart.reduce((a, b) => a + b.price * b.quantity, 0) + 50);
             const dCode = Math.floor(100000 + Math.random() * 900000);
             
             const order = {
                 userId: currentUser.uid,
-                userName: currentUser.displayName || "Customer",
+                userName: nameInput.value.trim(),
                 email: currentUser.email,
-                phone: phone, address: address,
-                location: { lat: lat, lng: lng },
+                phone: phoneInput.value.trim(), 
+                address: addressInput.value.trim(),
+                village: villageInput.value.trim(),
+                pin: pinInput.value.trim(),
+                district: districtInput.value.trim(),
+                state: stateInput.value.trim(),
+                location: { lat: document.getElementById('lat').value, lng: document.getElementById('lng').value },
                 items: cart,
                 total: totalAmount.toFixed(2),
                 status: 'Placed',
@@ -1100,7 +1175,6 @@
                 const totalAmount = (cart.reduce((a, b) => a + b.price * b.quantity, 0) + 50);
                 const totalAmountInPaise = Math.round(totalAmount * 100);
                 
-                // FIXED RAZORPAY CONFIG: Formatted key string so the library doesn't instantly throw exceptions
                 const options = {
                     "key": "rzp_live_SUarhYm5IfBTar",
                     "amount": totalAmountInPaise,
@@ -1112,7 +1186,7 @@
                         saveOrderToFirebase('Razorpay', response.razorpay_payment_id);
                     },
                     "prefill": {
-                        "name": currentUser.displayName || "Customer",
+                        "name": nameInput.value.trim(),
                         "email": currentUser.email || "guest@sinthakeithel.com",
                         "contact": phoneInput.value.trim()
                     },
@@ -1208,7 +1282,8 @@
                                 mapEl.style.display = 'block';
                                 try {
                                     const trackMap = L.map(mapId).setView([o.location.lat, o.location.lng], 14);
-                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(trackMap);
+                                    // Make tracking map satellite (hybrid) as well
+                                    L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }).addTo(trackMap);
                                     L.marker([o.location.lat, o.location.lng]).addTo(trackMap);
                                     
                                     const carIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/741/741407.png', iconSize:[30, 30] });
