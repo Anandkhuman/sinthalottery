@@ -16,7 +16,8 @@
         :root { --primary: #ff9f1c; --dark: #2c3e50; --success: #27ae60; --grey: #f3f4f6; }
         body { margin:0; font-family: 'Poppins', sans-serif; background: var(--grey); color: #333; }
         .header { background: var(--dark); color: white; padding: 20px; text-align: center; position: sticky; top:0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .container { padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 30px; }
+        #ordersList { padding-bottom: 80px; } /* Extra padding for bottom */
         .order-card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -73,6 +74,32 @@
     </div>
 </div>
 
+<!-- Active Delivery View -->
+<div class="container hidden" id="activeDelivery">
+    <div class="order-card" style="border: 2px solid var(--primary);">
+        <div class="card-header"><h3 style="margin:0">Current Delivery</h3><span class="status-badge" style="background:#2980b9">IN PROGRESS</span></div>
+        <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>Name:</strong> <span id="custName"></span></div>
+        <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> <span id="custPhone"></span></div>
+        
+        <!-- Call & WhatsApp Action Buttons -->
+        <div class="contact-btn-group">
+            <a href="#" id="callCustomerBtn" class="btn btn-call"><i class="fas fa-phone-alt"></i> Call</a>
+            <a href="#" id="waCustomerBtn" class="btn btn-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        </div>
+
+        <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>Address:</strong> <span id="custAddress"></span></div>
+        
+        <div class="item-list" id="activeItemsList"></div>
+        <div id="activeMap"></div>
+        <button class="btn btn-street" onclick="openStreetViewModal()"><i class="fas fa-street-view"></i> See House (Street View)</button>
+        <button class="btn btn-nav" onclick="openGoogleMapsNav()"><i class="fas fa-location-arrow"></i> Google Maps Navigation</button>
+        
+        <button class="btn btn-deliver" onclick="showDeliveryCodeModal()">
+            <i class="fas fa-check-circle"></i> Complete Delivery
+        </button>
+    </div>
+</div>
+
 <div class="container" id="ordersList">
     <p style="text-align:center; color:#777; margin-top:50px;">Connecting to server...</p>
 </div>
@@ -108,32 +135,6 @@
         </div>
         <button class="btn btn-accept" id="verifyCodeBtn">Verify Code</button>
         <button onclick="document.getElementById('deliveryCodeModal').style.display='none'" style="background:none; border:none; color:#777; margin-top:10px; cursor:pointer;">Cancel</button>
-    </div>
-</div>
-
-<!-- Active Delivery View -->
-<div class="container hidden" id="activeDelivery">
-    <div class="order-card">
-        <div class="card-header"><h3 style="margin:0">Current Delivery</h3><span class="status-badge" style="background:#2980b9">IN PROGRESS</span></div>
-        <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>Name:</strong> <span id="custName"></span></div>
-        <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> <span id="custPhone"></span></div>
-        
-        <!-- Call & WhatsApp Action Buttons -->
-        <div class="contact-btn-group">
-            <a href="#" id="callCustomerBtn" class="btn btn-call"><i class="fas fa-phone-alt"></i> Call</a>
-            <a href="#" id="waCustomerBtn" class="btn btn-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-        </div>
-
-        <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>Address:</strong> <span id="custAddress"></span></div>
-        
-        <div class="item-list" id="activeItemsList"></div>
-        <div id="activeMap"></div>
-        <button class="btn btn-street" onclick="openStreetViewModal()"><i class="fas fa-street-view"></i> See House (Street View)</button>
-        <button class="btn btn-nav" onclick="openGoogleMapsNav()"><i class="fas fa-location-arrow"></i> Google Maps Navigation</button>
-        
-        <button class="btn btn-deliver" onclick="showDeliveryCodeModal()">
-            <i class="fas fa-check-circle"></i> Complete Delivery
-        </button>
     </div>
 </div>
 
@@ -185,15 +186,16 @@
         activeBtn.addEventListener('click', () => {
             historyList.classList.add('hidden');
             
-            // If delivering show active tracking screen, otherwise show normal orders list
+            // Fix: Keep showing all active orders even if one is accepted
+            ordersList.classList.remove('hidden'); 
+            
+            // Show active tracking screen if currently delivering
             if (currentOrderId) {
                 activeDelivery.classList.remove('hidden');
-                ordersList.classList.add('hidden');
                 // Fix map render issue when unhidden
                 setTimeout(() => { if(map) map.invalidateSize(); }, 100);
             } else {
                 activeDelivery.classList.add('hidden');
-                ordersList.classList.remove('hidden');
             }
             
             activeBtn.classList.add('active');
@@ -237,7 +239,7 @@
         });
     };
 
-    // 2. Main Firebase Driver State Listener (Handles Re-opening the App perfectly)
+    // 2. Main Firebase Driver State Listener
     function listenToMyFirebaseState() {
         document.getElementById('driverStatus').textContent = `Welcome, ${myDriverName}!`;
         
@@ -263,19 +265,18 @@
                     document.getElementById('ordersList').classList.add('hidden');
                     document.getElementById('historyList').classList.remove('hidden');
                 }
-                
-                loadActiveOrders();
             }
+            
+            // Call loadActiveOrders consistently so other remaining orders don't disappear
+            loadActiveOrders();
         });
     }
 
-    // 3. Load Available Orders
+    // 3. Load Available Orders (All active unassigned orders)
     function loadActiveOrders() {
         db.ref('orders').on('value', snap => {
-            if(currentOrderId) return; // Don't refresh main list if currently delivering
-            
             const list = document.getElementById('ordersList');
-            list.innerHTML = '';
+            let htmlContent = '';
             let hasOrders = false;
             
             snap.forEach(child => {
@@ -285,26 +286,31 @@
                     hasOrders = true;
                     let itemsHtml = buildItemsHtml(o.items);
                     let badgeClass = (o.status === 'Placed') ? 'badge-placed' : 'badge-preparing';
-                    const card = document.createElement('div');
-                    card.className = 'order-card';
-                    card.innerHTML = `
-                        <div class="card-header"><h4 style="margin:0">Order #${id.substring(1,6)}</h4><span class="status-badge ${badgeClass}">${o.status}</span></div>
-                        <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>Customer:</strong> ${o.userName || 'Guest'}</div>
-                        <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> ${o.phone || 'N/A'}</div>
-                        <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>To:</strong> ${o.address}</div>
-                        <div class="item-list">${itemsHtml}</div>
-                        <button class="btn btn-accept" onclick="acceptOrder('${id}')"><i class="fas fa-shipping-fast"></i> Accept & Deliver</button>
+                    
+                    htmlContent += `
+                        <div class="order-card">
+                            <div class="card-header"><h4 style="margin:0">Order #${id.substring(1,6)}</h4><span class="status-badge ${badgeClass}">${o.status}</span></div>
+                            <div class="info-row"><i class="fas fa-user fa-fw" style="color:var(--primary)"></i> <strong>Customer:</strong> ${o.userName || 'Guest'}</div>
+                            <div class="info-row"><i class="fas fa-phone fa-fw" style="color:var(--success)"></i> <strong>Phone:</strong> ${o.phone || 'N/A'}</div>
+                            <div class="info-row"><i class="fas fa-map-marker-alt fa-fw" style="color:#e74c3c"></i> <strong>To:</strong> ${o.address}</div>
+                            <div class="item-list">${itemsHtml}</div>
+                            <button class="btn btn-accept" onclick="acceptOrder('${id}')"><i class="fas fa-shipping-fast"></i> Accept & Deliver</button>
+                        </div>
                     `;
-                    list.appendChild(card);
                 }
             });
-            if(!hasOrders) list.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-mug-hot" style="font-size:3em; color:#ccc;"></i><p style="color:#777; margin-top:10px;">No active orders right now.</p></div>';
+            
+            if(hasOrders) {
+                list.innerHTML = (currentOrderId ? '<h3 style="color:#2c3e50; margin-bottom:15px; text-align:center;">Other Available Orders</h3>' : '') + htmlContent;
+            } else {
+                list.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-mug-hot" style="font-size:3em; color:#ccc;"></i><p style="color:#777; margin-top:10px;">No other active orders right now.</p></div>';
+            }
         });
     }
 
-    // 4. Accept Order logic (Uses Firebase atomic updates)
+    // 4. Accept Order logic
     window.acceptOrder = function(id) {
-        if(currentOrderId) { alert("You are already delivering an order!"); return; }
+        if(currentOrderId) { alert("You are already delivering an order! Please complete it first."); return; }
         
         // Update both the order status and the driver's active state simultaneously
         const updates = {};
@@ -330,8 +336,10 @@
 
             customerLoc = orderData.location;
             
-            // Hide standard lists, show active delivery
-            document.getElementById('ordersList').classList.add('hidden');
+            // Fix: Keep orders list visible if active tab is selected
+            if (document.getElementById('activeBtn').classList.contains('active')) {
+                document.getElementById('ordersList').classList.remove('hidden');
+            }
             document.getElementById('historyList').classList.add('hidden');
             document.getElementById('activeDelivery').classList.remove('hidden');
             
@@ -393,7 +401,7 @@
         });
     };
 
-    // 7. Delivery History (Fetches direct from Firebase based on phone number)
+    // 7. Delivery History
     function loadDeliveryHistory() {
         const list = document.getElementById('historyList');
         list.innerHTML = '<p style="text-align:center; color:#777; margin-top:50px;">Fetching history...</p>';
@@ -458,8 +466,14 @@
     function initMap(dest) {
         document.getElementById('activeMap').style.display = 'block';
         if (map !== null) map.remove();
-        map = L.map('activeMap').setView([dest.lat, dest.lng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        map = L.map('activeMap').setView([dest.lat, dest.lng], 16); // Increased zoom for satellite view
+        
+        // FIX: Changed map to Google Maps Satellite View with labels
+        L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { 
+            maxZoom: 20,
+            attribution: '© Google'
+        }).addTo(map);
+
         L.marker([dest.lat, dest.lng]).addTo(map).bindPopup("Customer Location").openPopup();
         // Fix for grey areas in map due to hidden containers
         setTimeout(() => map.invalidateSize(), 300);
