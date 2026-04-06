@@ -4,1354 +4,1108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sintha Keithel</title>
-    <!-- Fonts & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-
+    <title>RideShare - Travel Companion</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Razorpay Payment Gateway -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
-        :root {
-            --primary-color: #008743;
-            --primary-gradient: linear-gradient(135deg, #008743 0%, #2d3436 100%);
-            --secondary-color: #f4f6f8; /* Soft Grey Background */
-            --text-color: #2d3436;
-            --light-text: #636e72;
-            --border-color: #dfe6e9;
-            --white: #ffffff;
-            --danger: #d63031;
-            --success: #00b894;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background-color: #dfe6e9;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; color: var(--text-color);
-        }
-
-        .mobile-container {
-            width: 100%; max-width: 414px; height: 100vh; max-height: 896px;
-            background-color: var(--secondary-color);
-            border-radius: 0px;
-            overflow: hidden; position: relative; display: flex; flex-direction: column;
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f3f4f6; overflow: hidden; font-size: 14px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c7c7cc; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+        .hide { display: none !important; }
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        @media (min-width: 420px) {
-            .mobile-container {
-                border-radius: 30px;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-                height: 90vh;
-            }
-        }
+        /* Stylish Car Loader */
+        #loader { transition: opacity 0.3s, visibility 0.3s; z-index: 9999; }
+        .car-wrapper { position: relative; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; }
+        .car-wrapper i { font-size: 36px; color: white; z-index: 2; animation: bounce 1s infinite alternate; }
+        .speed-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .speed-line { position: absolute; background: rgba(255, 255, 255, 0.6); height: 3px; border-radius: 3px; animation: speed 0.8s linear infinite; }
+        .speed-line:nth-child(1) { top: 30%; width: 20px; left: 100%; animation-delay: 0s; }
+        .speed-line:nth-child(2) { top: 50%; width: 35px; left: 100%; animation-delay: 0.2s; }
+        .speed-line:nth-child(3) { top: 70%; width: 15px; left: 100%; animation-delay: 0.4s; }
+        @keyframes bounce { 0% { transform: translateY(2px); } 100% { transform: translateY(-4px); } }
+        @keyframes speed { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-80px); opacity: 0; } }
 
-        .page {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            opacity: 0; visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            background-color: var(--secondary-color);
-            display: flex; flex-direction: column; z-index: 1;
-            padding-bottom: 70px;
-        }
-        .page.active { opacity: 1; visibility: visible; z-index: 5; }
+        #toast-container { position: fixed; top: 15px; right: 15px; z-index: 10000; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 10px 16px; border-radius: 6px; color: white; font-weight: 500; font-size: 13px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); animation: slideInTopRight 0.3s forwards, fadeOutTopRight 0.3s 2.7s forwards; min-width: 200px; }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.info { background-color: #3b82f6; }
+        @keyframes slideInTopRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOutTopRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-        .auth-content {
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            background: #ecf0f1;
-        }
-
-        .auth-card {
-            background: white;
-            width: 100%;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-            overflow: hidden;
-            animation: fadeIn 0.5s ease-out;
-            position: relative;
-        }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .auth-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0;
-            height: 6px; background: var(--primary-gradient);
-        }
-
-        .auth-header {
-            text-align: center; padding: 40px 30px 10px 30px;
-        }
-        .logo-circle {
-            width: 70px; height: 70px; margin: 0 auto 15px auto;
-            background: #fff5e6; color: var(--primary-color);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 2em;
-            box-shadow: 0 5px 15px rgba(255, 159, 28, 0.2);
-        }
-        .auth-header h1 { font-size: 1.8em; margin: 0; color: #2d3436; font-weight: 700; }
-        .auth-header p { color: #b2bec3; font-size: 0.9em; margin-top: 5px; }
-
-        .auth-body { padding: 30px; }
-
-        .input-label { font-size: 0.8em; color: #636e72; font-weight: 600; margin-bottom: 5px; display: block; margin-left: 5px;}
-        .input-group { position: relative; margin-bottom: 20px; }
-        .input-group i {
-            position: absolute; top: 45px; left: 15px; transform: translateY(-50%);
-            color: #b2bec3; transition: color 0.3s;
-        }
-        
-        .auth-input {
-            width: 100%; padding: 15px 15px 15px 45px;
-            background: #f8f9fa; border: 2px solid #f1f2f6;
-            border-radius: 12px; font-size: 1em;
-            outline: none; transition: all 0.3s; box-sizing: border-box; font-family: 'Poppins', sans-serif; color: #333;
-        }
-        .auth-input:focus {
-            background: #fff; border-color: var(--primary-color);
-            box-shadow: 0 5px 15px rgba(255, 159, 28, 0.1);
-        }
-
-        .btn-main {
-            width: 100%; padding: 16px;
-            background: var(--primary-gradient);
-            color: var(--white); border: none; border-radius: 12px;
-            font-size: 1.1em; font-weight: 600; cursor: pointer;
-            box-shadow: 0 8px 20px rgba(255, 94, 0, 0.25);
-            margin-bottom: 15px; transition: transform 0.2s, background 0.3s, opacity 0.3s;
-        }
-        .btn-main:active { transform: scale(0.98); }
-        .btn-main:disabled { background: #bdc3c7; cursor: not-allowed; box-shadow: none; opacity: 0.8; }
-
-        .btn-google {
-            background: white; color: #333; border: 1px solid #dfe6e9;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        
-        .auth-switch { text-align: center; margin-top: 10px; font-size: 0.9em; color: #636e72; }
-        .auth-switch a { color: var(--primary-color); font-weight: 600; text-decoration: none; }
-        
-        #auth-error { 
-            color: var(--danger); text-align: center; margin-bottom: 15px; 
-            font-size: 0.9em; background: rgba(214, 48, 49, 0.1); padding: 10px; border-radius: 8px;
-            display: none; 
-        }
-
-        .app-header {
-            background: var(--primary-gradient);
-            padding: 20px 10px 10px 10px; color: var(--white);
-            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
-            box-shadow: 0 5px 25px #00874370;
-        }
-        .header-top { display: flex; justify-content: space-between; align-items: center; }
-        .header-top h1 { font-size: 1.5em; margin: 0; font-weight: 700; display:flex; align-items:center;}
-        .user-greeting { font-size: 0.9em; font-weight: 500; opacity: 0.9; text-align: right;}
-        
-        .search-bar { margin-top: 15px; position: relative; }
-        .search-bar input {
-            width: 100%; padding: 15px 20px 15px 45px; border: none;
-            border-radius: 30px; font-size: 1em; box-sizing: border-box;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); outline: none;
-        }
-        .search-bar .fa-search {
-            position: absolute; left: 20px; top: 50%;
-            transform: translateY(-50%); color: var(--light-text);
-        }
-
-        main { flex: 1; overflow-y: auto; padding: 0 20px 100px 20px; }
-        
-        .category-card {
-            flex-shrink: 0;
-            width: 80px;
-            text-align: center;
-            cursor: pointer;
-            border: 2px solid transparent;
-            border-radius: 18px;
-            padding: 5px;
-            transition: all 0.3s ease;
-        }
-        .category-card.active {
-            border-color: var(--primary-color);
-            background-color: var(--border-color);
-        }
-        .category-card img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .category-card p {
-            margin-top: 8px;
-            font-size: 0.8em;
-            font-weight: 500;
-            color: var(--text-color);
-            white-space: nowrap;
-        }
-
-        .section-title { font-size: 1.2em; font-weight: 700; margin: 5px 0 2px 0; color: #2d3436; }
-        .horizontal-scroll { display: flex; overflow-x: auto; padding: 1px 0 1px 0; gap: 0px; scroll-behavior: smooth; }
-        .horizontal-scroll::-webkit-scrollbar { display: none; }
-
-        .promo-banner {
-            width: 100%; height: 140px; 
-            background: linear-gradient(90deg, #2d3436, #636e72);
-            border-radius: 20px; margin-top: 15px;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 25px; box-sizing: border-box; color: white;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15); position: relative; overflow: hidden;
-        }
-        .promo-content h3 { margin: 0; font-size: 1.4em; font-weight: 700;}
-        .promo-content p { margin: 5px 0 0 0; font-size: 0.9em; opacity: 0.9; }
-        .promo-banner img { height: 130%; position: absolute; right: -15px; bottom: -20px; transform: rotate(-15deg); }
-
-        .card {
-            flex-shrink: 0; width: 150px; background-color: var(--white);
-            border-radius: 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            overflow: hidden; position: relative; transition: transform 0.2s ease;
-        }
-        .card:hover { transform: translateY(-3px); }
-        .card img { width: 100%; height: 110px; object-fit: cover; }
-        .card-content { padding: 12px; }
-        .card-content h3 { margin: 0 0 4px 0; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;}
-        .card-content p { color: var(--primary-color); font-weight: 700; font-size: 0.95em; margin: 0;}
-        
-        .add-btn {
-            background-color: var(--primary-color); color: var(--white);
-            border: none; border-radius: 50%; width: 32px; height: 32px;
-            cursor: pointer; position: absolute; bottom: 10px; right: 10px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(255, 159, 28, 0.4);
-        }
-
-         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: var(--primary-gradient);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 -5px 25px #00874370;
-            border-radius: 25px 25px 0 0;
-            z-index: 1000;
-            padding: 0 10px;
-        }
-
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.6rem;
-            gap: 2px;
-            transform: translateY(9px);
-        }
-
-        .nav-item i {
-            font-size: 1.1rem;
-        }
-
-        .nav-item.active {
-            color: #ffffff;
-            font-weight: 600;
-            transform: translateY(1px);
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        #cart-fab-container {
-            position: absolute;
-            bottom: 150px; 
-            right: 20px;
-            z-index: 101;
-        }
-        .fab-btn {
-            width: 50px; height: 50px;
-            background: #ffffff;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            color: var(--primary-color); font-size: 1.4em;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            cursor: pointer; position: relative;
-            transition: transform 0.2s;
-        }
-        .fab-btn:active { transform: scale(0.9); }
-        
-        #cart-count {
-            position: absolute; top: -2px; right: -2px;
-            background-color: var(--danger); color: white;
-            border-radius: 50%; width: 22px; height: 22px;
-            font-size: 0.8em; display: flex; justify-content: center; align-items: center; font-weight: 800;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            border: 2px solid white;
-        }
-
-        body.auth-screen .bottom-nav, body.auth-screen #cart-fab-container { display: none; }
-
-        .page-header { padding: 40px 20px 20px 20px; text-align: center; position: relative; background: var(--secondary-color); }
-        .page-header h2 { margin: 0; font-size: 1.3em; color: #2d3436; font-weight: 700; }
-        .back-btn { position: absolute; left: 20px; top: 43px; font-size: 1.3em; cursor: pointer; color: #2d3436; padding: 5px;}
-
-        .cart-item {
-            display: flex; align-items: center; background: var(--white);
-            padding: 12px; border-radius: 15px; margin-bottom: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-        }
-        .cart-item img { width: 65px; height: 65px; border-radius: 12px; object-fit: cover; margin-right: 15px; }
-        .qty-controls { display: flex; align-items: center; gap: 8px; background: #f5f6fa; padding: 5px 10px; border-radius: 20px;}
-        .qty-controls button {
-            background: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--primary-color); font-weight: bold;
-        }
-
-        #map-container {
-            height: 200px; width: 100%; border-radius: 15px;
-            overflow: hidden; margin-top: 15px; margin-bottom: 15px;
-            border: 2px solid var(--primary-color); display: none;
-        }
-        .location-btn {
-            background-color: #0984e3; color: var(--white);
-            width: 100%; padding: 12px; border-radius: 12px; border: none;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-weight: 500; margin-bottom: 10px; transition: background 0.3s;
-        }
-        
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 0.9em; }
-        .form-control {
-            width: 100%; padding: 14px; border: 1px solid #dfe6e9;
-            border-radius: 12px; box-sizing: border-box; font-family: inherit; background: #fff;
-        }
-        
-        .payment-option {
-            padding: 15px; background:white; border:2px solid #dfe6e9; 
-            border-radius:12px; display:flex; align-items:center; margin-bottom: 10px;
-            cursor: pointer; transition: all 0.3s; position: relative;
-        }
-        .payment-option input[type="radio"] {
-            position: absolute; opacity: 0;
-        }
-        .payment-option .radio-check {
-            width: 20px; height: 20px; border: 2px solid #dfe6e9; border-radius: 50%;
-            margin-right: 15px; transition: all 0.3s;
-        }
-        .payment-option input[type="radio"]:checked + .radio-check {
-            border-color: var(--primary-color); background-color: var(--primary-color);
-            box-shadow: 0 0 0 3px white inset;
-        }
-        .payment-option:has(input[type="radio"]:checked) {
-            border-color: var(--primary-color);
-            background-color: #fffaf0;
-        }
-
-        .order-card {
-            background: var(--white); border-radius: 18px; padding: 20px;
-            margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: opacity 0.5s ease;
-        }
-        .track-bar { display: flex; justify-content: space-between; position: relative; margin-top: 25px; }
-        .track-bar::before {
-            content: ''; position: absolute; top: 8px; left: 0; right: 0;
-            height: 4px; background: #f1f2f6; z-index: 1; border-radius: 2px;
-        }
-        .track-step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 25%; }
-        .dot {
-            width: 16px; height: 16px; background: #dfe6e9; border-radius: 50%;
-            border: 2px solid var(--white); transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .track-step p { font-size: 0.65em; margin-top: 8px; color: #b2bec3; font-weight: 600; text-transform: uppercase; }
-        .track-step.active .dot { background: var(--primary-color); transform: scale(1.4); border-color: #fff; }
-        .track-step.active p { color: var(--primary-color); }
-        .track-step.passed .dot { background: var(--primary-color); }
-        .track-step.passed p { color: var(--primary-color); }
-
-        .notification-card {
-            background: white; border-radius: 15px; padding: 15px;
-            margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            display: flex; align-items: flex-start;
-            position: relative;
-        }
-        .notif-icon-box {
-            width: 40px; height: 40px; background: #fff0d4;
-            color: var(--primary-color); border-radius: 12px;
-            display: flex; justify-content: center; align-items: center;
-            margin-right: 15px; font-size: 1.1em; flex-shrink: 0;
-        }
-        .delete-notif-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: none;
-            border: none;
-            color: #b2bec3;
-            cursor: pointer;
-            font-size: 1.1em;
-            padding: 5px;
-        }
-        .delete-notif-btn:hover {
-            color: var(--danger);
-        }
+        .msg-me { background-color: #4f46e5; color: white; align-self: flex-end; border-radius: 12px 12px 0 12px; }
+        .msg-other { background-color: #e5e7eb; color: #1f2937; align-self: flex-start; border-radius: 12px 12px 12px 0; }
+        .tab-active { color: #4f46e5; border-bottom: 2px solid #4f46e5; }
+        .tab-inactive { color: #6b7280; border-bottom: 2px solid transparent; }
     </style>
 </head>
-<body class="auth-screen">
+<body class="text-gray-800 antialiased h-screen flex flex-col">
 
-    <div class="mobile-container">
-
-        <!-- LOGIN PAGE -->
-        <div id="loginPage" class="page active">
-            <div class="auth-content">
-                <div class="auth-card">
-                    <div class="auth-header">
-                        <div class="logo-circle"><i class="fas fa-mug-hot"></i></div>
-                        <h1>Welcome Back</h1>
-                        <p>Sign in to continue to Sintha Keithel</p>
-                    </div>
-                    
-                    <div class="auth-body">
-                        <p id="auth-error"></p>
-                        
-                        <div class="input-group">
-                            <label class="input-label">EMAIL ADDRESS</label>
-                            <input type="email" id="loginEmail" class="auth-input" placeholder="name@example.com">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="input-group">
-                            <label class="input-label">PASSWORD</label>
-                            <input type="password" id="loginPassword" class="auth-input" placeholder="••••••••">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        
-                        <button class="btn-main" id="loginBtn">Login</button>
-                        <button class="btn-main btn-google" id="googleBtn">
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="20"> 
-                            Sign in with Google
-                        </button>
-                        
-                        <div class="auth-switch">
-                            Don't have an account? <a href="#" id="gotoRegister">Register</a>
-                        </div>
-                    </div>
-                </div>
+    <!-- STYLISH CAR LOADER -->
+    <div id="loader" class="fixed inset-0 bg-indigo-900/95 flex flex-col items-center justify-center backdrop-blur-md">
+        <div class="car-wrapper mb-2">
+            <i class="fas fa-car-side shadow-lg"></i>
+            <div class="speed-lines">
+                <div class="speed-line"></div>
+                <div class="speed-line"></div>
+                <div class="speed-line"></div>
             </div>
         </div>
-
-        <!-- REGISTER PAGE -->
-        <div id="registerPage" class="page">
-             <div class="auth-content">
-                <div class="auth-card">
-                    <div class="auth-header">
-                        <div class="logo-circle"><i class="fas fa-user-plus"></i></div>
-                        <h1>Create Account</h1>
-                        <p>Join the Sintha Keithel</p>
-                    </div>
-                    
-                    <div class="auth-body">
-                        <div class="input-group">
-                            <label class="input-label">FULL NAME</label>
-                            <input type="text" id="regName" class="auth-input" placeholder="John Doe">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="input-group">
-                            <label class="input-label">EMAIL ADDRESS</label>
-                            <input type="email" id="registerEmail" class="auth-input" placeholder="name@example.com">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="input-group">
-                            <label class="input-label">PASSWORD</label>
-                            <input type="password" id="registerPassword" class="auth-input" placeholder="••••••••">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        
-                        <button class="btn-main" id="registerBtn">Sign Up</button>
-                        
-                        <div class="auth-switch">
-                            Already have an account? <a href="#" id="gotoLogin">Login</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- HOME -->
-        <div id="appContainer" class="page">
-            <header class="app-header">
-                <div class="header-top">
-                    <h1><i class="fas fa-mug-hot" style="margin-right:10px;"></i> Sintha Keithel</h1>
-                    <div class="user-greeting" id="userGreeting">Hello, Guest</div>
-                </div>
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="What are you craving?">
-                </div>
-            </header>
-
-            <main>
-                <h2 class="section-title">Categories</h2>
-                <div class="horizontal-scroll" id="category-section-dynamic">
-                    <!-- Dynamic categories will be loaded here -->
-                </div>
-                
-                <h2 class="section-title">Most Popular Dishes</h2>
-                <div class="horizontal-scroll" id="popularDishesContainer"></div>
-
-                <div class="promo-banner">
-                    <div class="promo-content">
-                        <h3>50% OFF</h3>
-                        <p>On your first order today!</p>
-                    </div>
-                    <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Burger">
-                </div>
-
-                <h2 class="section-title" id="dishesListTitle">Recommended Dishes</h2>
-                <div class="horizontal-scroll" id="dishesContainer"></div>
-            </main>
-        </div>
-
-        <!-- CART -->
-        <div id="cartPage" class="page">
-            <header class="page-header">
-                <i class="fas fa-arrow-left back-btn" data-target="appContainer"></i>
-                <h2>My Cart</h2>
-            </header>
-            <div style="flex:1; padding:20px; overflow-y:auto;" id="cart-content-area">
-                <div id="cartItemsContainer"></div>
-                <div id="cart-summary" style="margin-top:30px; border-top:1px solid var(--border-color); padding-top:20px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Subtotal</span><span id="subtotal-price">₹0.00</span></div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Delivery Fee</span><span>₹50.00</span></div>
-                    <div style="display:flex; justify-content:space-between; font-weight:700; font-size:1.4em; color:#2d3436; margin-top:10px;"><span>Total</span><span id="total-price">₹50.00</span></div>
-                    <button class="btn-main" id="goToCheckoutBtn" style="margin-top:25px;">Proceed to Checkout</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- CHECKOUT -->
-        <div id="checkoutPage" class="page">
-            <header class="page-header">
-                <i class="fas fa-arrow-left back-btn" data-target="cartPage"></i>
-                <h2>Checkout</h2>
-            </header>
-            <div style="flex:1; padding:20px; overflow-y:auto;">
-                
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="checkoutName" class="form-control" placeholder="Your Name">
-                </div>
-
-                <div class="form-group">
-                    <label>Delivery Location</label>
-                    <button class="location-btn" id="geoBtn">
-                        <i class="fas fa-location-arrow"></i> Use My Current Location
-                    </button>
-                    <div id="map-container"><div id="map" style="height:100%; width:100%;"></div></div>
-                    <input type="text" id="addressText" class="form-control" placeholder="House/Flat No., Landmark, City" style="margin-bottom: 10px;">
-                    <input type="hidden" id="lat"><input type="hidden" id="lng">
-                </div>
-
-                <div class="form-group" style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label>PIN Code</label>
-                        <input type="text" id="checkoutPin" class="form-control" placeholder="e.g. 795001" maxlength="6">
-                    </div>
-                    <div style="flex: 1;">
-                        <label>Village/Area</label>
-                        <input type="text" id="checkoutVillage" class="form-control" placeholder="Village name">
-                    </div>
-                </div>
-
-                <div class="form-group" style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label>District</label>
-                        <input type="text" id="checkoutDistrict" class="form-control" placeholder="District">
-                    </div>
-                    <div style="flex: 1;">
-                        <label>State</label>
-                        <input type="text" id="checkoutState" class="form-control" placeholder="State">
-                    </div>
-                </div>
-
-                 <div class="form-group">
-                    <label>Contact Phone Number</label>
-                    <input type="tel" id="contactPhone" class="form-control" placeholder="10-digit Mobile Number" maxlength="10">
-                </div>
-
-                <div class="form-group">
-                    <label>Payment Method</label>
-                    
-                    <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="razorpay">
-                        <span class="radio-check"></span>
-                        <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 25px; margin-right: 15px; margin-left: 10px;">
-                        <span style="font-weight:600; color: #2d3436;">Pay Online</span>
-                    </label>
-
-                    <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="cod">
-                        <span class="radio-check"></span>
-                        <i class="fas fa-money-bill-wave" style="color:var(--success); margin-right:15px; font-size:1.4em; margin-left: 10px;"></i>
-                        <span style="font-weight:600; color: #2d3436;">Cash on Delivery</span>
-                    </label>
-                </div>
-
-                <button class="btn-main" id="placeOrderBtn" disabled>Complete Your Details</button>
-            </div>
-        </div>
-
-        <!-- ORDERS -->
-        <div id="ordersPage" class="page">
-            <header class="page-header">
-                <i class="fas fa-arrow-left back-btn" data-target="appContainer"></i>
-                <h2>My Orders</h2>
-            </header>
-            <div style="flex:1; padding:20px; overflow-y:auto;" id="ordersListContainer">
-                 <p id="orders-placeholder" style="text-align:center; color:#777; padding:20px;">Loading your orders...</p>
-            </div>
-        </div>
-
-        <!-- NOTIFICATIONS -->
-        <div id="notificationsPage" class="page">
-            <header class="page-header">
-                <i class="fas fa-arrow-left back-btn" data-target="appContainer"></i>
-                <h2>Notifications</h2>
-            </header>
-            <div style="flex:1; padding:20px; overflow-y:auto;" id="notificationListContainer">
-                <p style="text-align:center; color:#777; margin-top:50px;">Loading...</p>
-            </div>
-        </div>
-
-        <!-- THANK YOU PAGE -->
-        <div id="thankYouPage" class="page">
-            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; text-align:center;">
-                <div style="width:100px; height:100px; background:#e0f0ff; border-radius:50%; display:flex; justify-content:center; align-items:center; margin-bottom:20px;">
-                    <i class="fas fa-check" style="font-size:3em; color:var(--primary-color);"></i>
-                </div>
-                <h2 style="color:#2d3436;">Order Placed!</h2>
-                <p style="color:#636e72;">Your food is being prepared.</p>
-
-                <div style="background:#fff5e6; padding:15px; border-radius:12px; margin-top:20px; border:2px dashed var(--primary-color); width: 100%;">
-                    <p style="margin:0; font-size:0.85em; color:#333; font-weight:600;">YOUR DELIVERY CODE</p>
-                    <h1 style="margin:5px 0 0 0; letter-spacing:5px; color:var(--primary-color);" id="thankYouDeliveryCode">------</h1>
-                </div>
-
-                <button class="btn-main" id="trackOrderBtn" style="margin-top:30px;">Track Order</button>
-                <a href="#" id="backToHomeBtn" style="margin-top:20px; display:block; color:var(--light-text); text-decoration:none;">Back to Home</a>
-            </div>
-        </div>
-
-        <!-- --- GLOBAL NAV BAR (OUTSIDE PAGES) --- -->
-        <div id="cart-fab-container">
-            <div class="fab-btn" data-page="cartPage">
-                <i class="fas fa-shopping-basket"></i>
-                <div id="cart-count">0</div>
-            </div>
-        </div>
-
-         <div class="bottom-nav">
-            <div class="nav-item active" data-page="appContainer"><i class="fas fa-home"></i><p>Home</p></div>
-            <div class="nav-item" data-page="ordersPage" id="ordersNavBtn"><i class="fas fa-receipt"></i><p>Orders</p></div>
-            <div class="nav-item" data-page="notificationsPage" id="notifNavBtn">
-                <div style="position:relative; display:flex; justify-content:center; align-items:center;">
-                    <i class="fas fa-bell"></i>
-                    <div id="notif-badge" style="position:absolute; top:-5px; right:-8px; background:var(--danger); color:white; border-radius:50%; width:16px; height:16px; font-size:0.7em; display:none; justify-content:center; align-items:center; font-weight:bold; border:1px solid #fff;">0</div>
-                </div>
-                <p>Alerts</p>
-            </div>
-            <div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><p>Logout</p></div>
-        </div>
-
+        <p class="text-white text-sm font-semibold tracking-wide animate-pulse" id="loader-text">Loading...</p>
     </div>
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <!-- Leaflet -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <!-- Razorpay -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <div id="toast-container"></div>
 
-
-    <script>
-        const firebaseConfig = {
-          "apiKey": "AIzaSyDkOrw5HnHE8rp0-rnmUJnzh1KjZPpFXEY",
-          "authDomain": "sinthakeithel-ccb49.firebaseapp.com",
-          "databaseURL": "https://sinthakeithel-ccb49-default-rtdb.firebaseio.com",
-          "projectId": "sinthakeithel-ccb49",
-          "storageBucket": "sinthakeithel-ccb49.firebasestorage.app",
-          "messagingSenderId": "575832888579",
-          "appId": "1:575832888579:web:ac8111abfba799256c0536",
-          "measurementId": "G-XESZZF5J7L"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-        let cart =[];
-        let currentUser = null;
-        let map, marker;
-        let allDishesData =[]; 
-        let ordersRef = null; // **MODIFIED**: To hold the reference for listeners
-        let notificationsListener = null;
-        let selectedPaymentMethod = null;
-        
-        // **NEW**: To keep track of the current active page to manage listeners
-        let activePageId = 'loginPage';
-
-        const showPage = (id) => {
-            // **MODIFIED**: Detach listeners when navigating away from the orders page
-            if (activePageId === 'ordersPage' && id !== 'ordersPage') {
-                if (ordersRef) ordersRef.off();
-            }
-        
-            activePageId = id;
-            document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
-            document.querySelectorAll('.nav-item').forEach(nav => {
-                nav.classList.toggle('active', nav.dataset.page === id);
-            });
-            if(id === 'loginPage' || id === 'registerPage') {
-                document.body.classList.add('auth-screen');
-            } else {
-                document.body.classList.remove('auth-screen');
-            }
-            if(id === 'checkoutPage') {
-                setTimeout(() => { if(map) map.invalidateSize(); }, 300);
-                checkOrderValidity();
-            }
-            // **MODIFIED**: Call the listener setup function when the page is shown
-            if(id === 'ordersPage') loadOrders();
-            if(id === 'notificationsPage') {
-                loadNotifications();
-                markNotificationsAsRead();
-            }
-        };
-
-        document.querySelectorAll('[data-target], [data-page]').forEach(b => 
-            b.addEventListener('click', (e) => {
-                const target = e.currentTarget.dataset.target || e.currentTarget.dataset.page;
-                if(target) showPage(target);
-            })
-        );
-        document.getElementById('gotoRegister').onclick = () => showPage('registerPage');
-        document.getElementById('gotoLogin').onclick = () => showPage('loginPage');
-        document.getElementById('logoutBtn').onclick = () => { auth.signOut(); cart=[]; updateCartUI(); };
-        
-        document.getElementById('goToCheckoutBtn').onclick = () => {
-            if(cart.length === 0) {
-                alert("Please add items to your cart before proceeding to checkout.");
-                return;
-            }
-            if(currentUser) {
-                document.getElementById('checkoutName').value = currentUser.displayName || '';
-            }
-            showPage('checkoutPage');
-        };
-        
-        document.getElementById('trackOrderBtn').onclick = () => showPage('ordersPage');
-        document.getElementById('backToHomeBtn').onclick = () => showPage('appContainer');
-
-        auth.onAuthStateChanged(u => {
-            if(u) { 
-                currentUser = u; 
-                showPage('appContainer'); 
-                fetchData();
-                fetchAndRenderCategories();
-                listenForStatusUpdates(); // This now handles notifications reliably
-                listenForUnreadNotifications();
-                const name = u.displayName ? u.displayName.split(' ')[0] : 'Guest';
-                document.getElementById('userGreeting').innerHTML = `Hello, ${name}`;
-            } else { 
-                currentUser = null; 
-                showPage('loginPage'); 
-                if (ordersRef) ordersRef.off(); // **MODIFIED**: Clean up all listeners on logout
-                if (notificationsListener) notificationsListener.off();
-            }
-        });
-
-        const showError = (msg) => {
-            const err = document.getElementById('auth-error');
-            err.textContent = msg;
-            err.style.display = 'block';
-        }
-
-        document.getElementById('loginBtn').onclick = () => auth.signInWithEmailAndPassword(
-            document.getElementById('loginEmail').value, document.getElementById('loginPassword').value
-        ).catch(e => showError(e.message));
-
-        document.getElementById('googleBtn').onclick = () => auth.signInWithPopup(googleProvider).catch(e => showError(e.message));
-
-        document.getElementById('registerBtn').onclick = () => {
-            const email = document.getElementById('registerEmail').value;
-            const pass = document.getElementById('registerPassword').value;
-            const name = document.getElementById('regName').value;
-            auth.createUserWithEmailAndPassword(email, pass)
-                .then((userCred) => userCred.user.updateProfile({ displayName: name }))
-                .catch(e => showError(e.message));
-        };
-
-        const nameInput = document.getElementById('checkoutName');
-        const phoneInput = document.getElementById('contactPhone');
-        const addressInput = document.getElementById('addressText');
-        const pinInput = document.getElementById('checkoutPin');
-        const villageInput = document.getElementById('checkoutVillage');
-        const districtInput = document.getElementById('checkoutDistrict');
-        const stateInput = document.getElementById('checkoutState');
-        const orderBtn = document.getElementById('placeOrderBtn');
-        
-        document.querySelectorAll('input[name="paymentMethod"]').forEach(elem => {
-            elem.addEventListener("change", function(event) {
-                selectedPaymentMethod = event.target.value;
-                checkOrderValidity();
-            });
-        });
-
-        nameInput.addEventListener('input', checkOrderValidity);
-        phoneInput.addEventListener('input', checkOrderValidity);
-        addressInput.addEventListener('input', checkOrderValidity);
-        villageInput.addEventListener('input', checkOrderValidity);
-        districtInput.addEventListener('input', checkOrderValidity);
-        stateInput.addEventListener('input', checkOrderValidity);
-
-        pinInput.addEventListener('input', function() {
-            const pin = this.value.trim();
-            if (pin.length === 6) {
-                fetch(`https://api.postalpincode.in/pincode/${pin}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data && data[0] && data[0].Status === 'Success') {
-                            const postOffice = data[0].PostOffice[0];
-                            districtInput.value = postOffice.District;
-                            stateInput.value = postOffice.State;
-                        } else {
-                            districtInput.value = '';
-                            stateInput.value = '';
-                        }
-                        checkOrderValidity();
-                    })
-                    .catch(err => {
-                        console.error('Error fetching PIN details:', err);
-                        checkOrderValidity();
-                    });
-            } else {
-                districtInput.value = '';
-                stateInput.value = '';
-                checkOrderValidity();
-            }
-        });
-
-        function checkOrderValidity() {
-            const nameVal = nameInput.value.trim();
-            const phoneVal = phoneInput.value.trim();
-            const addressVal = addressInput.value.trim();
-            const pinVal = pinInput.value.trim();
-            const villageVal = villageInput.value.trim();
-            const districtVal = districtInput.value.trim();
-            const stateVal = stateInput.value.trim();
+    <!-- ==================== AUTHENTICATION VIEW ==================== -->
+    <div id="auth-view" class="hide h-screen overflow-y-auto flex items-center justify-center p-3">
+        <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-lg fade-in my-auto">
+            <div class="text-center mb-5">
+                <i class="fas fa-route text-indigo-600 text-3xl mb-1"></i>
+                <h1 class="text-xl font-bold text-gray-900">RideShare</h1>
+                <p class="text-gray-500 text-xs mt-1">Your ultimate travel companion</p>
+            </div>
             
-            if (nameVal.length > 0 && phoneVal.length >= 10 && addressVal.length > 5 && pinVal.length === 6 && villageVal.length > 0 && districtVal.length > 0 && stateVal.length > 0 && selectedPaymentMethod && cart.length > 0) {
-                orderBtn.disabled = false;
-                orderBtn.style.opacity = '1';
-                if(selectedPaymentMethod === 'razorpay') {
-                    orderBtn.textContent = "Proceed to Pay";
-                } else if (selectedPaymentMethod === 'cod') {
-                    orderBtn.textContent = "Place Order";
-                }
-            } else {
-                orderBtn.disabled = true;
-                orderBtn.style.opacity = '0.6';
-                if (cart.length === 0) {
-                    orderBtn.textContent = "Cart is Empty";
-                } else {
-                    orderBtn.textContent = "Complete Your Details";
-                }
-            }
-        }
-
-        document.getElementById('geoBtn').addEventListener('click', () => {
-            const btn = document.getElementById('geoBtn');
-            document.getElementById('map-container').style.display = 'block';
-            if(!map) {
-                map = L.map('map').setView([24.8170, 93.9368], 13); 
-                L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }).addTo(map);
-                map.on('click', (e) => handleLocationUpdate(e.latlng.lat, e.latlng.lng));
-            }
-            map.invalidateSize();
-            if (navigator.geolocation) {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
-                navigator.geolocation.getCurrentPosition(
-                    (p) => {
-                        handleLocationUpdate(p.coords.latitude, p.coords.longitude);
-                        map.setView([p.coords.latitude, p.coords.longitude], 16);
-                        btn.innerHTML = '<i class="fas fa-check"></i> Location Set';
-                    },
-                    (e) => { alert("Geolocation permission denied. Please click on the map or enter your address manually."); btn.innerHTML = 'Use My Current Location'; }
-                );
-            }
-        });
-
-        function handleLocationUpdate(lat, lng) {
-            if(marker) map.removeLayer(marker);
-            marker = L.marker([lat, lng]).addTo(map);
-            document.getElementById('lat').value = lat;
-            document.getElementById('lng').value = lng;
-            const addr = document.getElementById('addressText');
-            addr.value = "Fetching address...";
-            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`)
-                .then(r => r.json())
-                .then(d => {
-                     addr.value = `${d.locality || ''}, ${d.principalSubdivision || ''}, ${d.countryName || ''}`;
-                     checkOrderValidity();
-                }).catch(() => addr.value = "Could not fetch address. Please enter manually.");
-        }
-
-        function fetchData() {
-            db.ref('dishes').once('value', s => {
-                allDishesData =[]; 
-                s.forEach(d => { allDishesData.push({ key: d.key, ...d.val() }); });
-                renderDishes(allDishesData);
-                renderPopularDishes(allDishesData);
-            });
-        }
-        
-        function renderPopularDishes(dishesList) {
-            const c = document.getElementById('popularDishesContainer');
-            c.innerHTML = '';
-            let popular = [...dishesList].sort(() => 0.5 - Math.random()).slice(0, 5);
-            if(popular.length === 0) { 
-                c.innerHTML = '<p style="padding:10px; color:#666; width:100%; text-align:center;">No popular dishes right now.</p>'; 
-                return; 
-            }
-            popular.forEach(d => {
-                const price = parseFloat(d.price) || 0;
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <img src="${d.imageUrl}" alt="Dish">
-                    <div class="card-content">
-                        <h3>${d.name}</h3>
-                        <p>₹${price.toFixed(2)}</p>
-                    </div>
-                `;
-                const addBtn = document.createElement('button');
-                addBtn.className = 'add-btn';
-                addBtn.innerHTML = '<i class="fas fa-plus"></i>';
-                addBtn.onclick = () => addToCart(d.key, d.name, price, d.imageUrl);
-                card.appendChild(addBtn);
-                c.appendChild(card);
-            });
-        }
-
-        function fetchAndRenderCategories() {
-            const container = document.getElementById('category-section-dynamic');
-            db.ref('categories').on('value', snap => {
-                container.innerHTML = ''; 
-                const allCat = document.createElement('div');
-                allCat.className = 'category-card active';
-                allCat.dataset.categoryId = 'all';
-                allCat.dataset.categoryName = 'All';
-                allCat.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/5787/5787098.png" alt="All"><p>All</p>`;
-                container.appendChild(allCat);
-
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        const cat = child.val();
-                        const catCard = document.createElement('div');
-                        catCard.className = 'category-card';
-                        catCard.dataset.categoryId = child.key;
-                        catCard.dataset.categoryName = cat.name;
-                        catCard.innerHTML = `<img src="${cat.imageUrl}" alt="${cat.name}"><p>${cat.name}</p>`;
-                        container.appendChild(catCard);
-                    });
-                }
+            <form id="auth-form" class="space-y-3">
+                <div id="name-group" class="hide">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="auth-name" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="John Doe">
+                </div>
                 
-                document.querySelectorAll('.category-card').forEach(card => {
-                    card.addEventListener('click', handleCategoryClick);
-                });
-            });
-        }
-        
-        function handleCategoryClick(event) {
-            const clickedCard = event.currentTarget;
-            const categoryId = clickedCard.dataset.categoryId;
-            const categoryName = clickedCard.dataset.categoryName;
-            const dishesTitle = document.getElementById('dishesListTitle');
+                <div id="mobile-group" class="hide">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Mobile Number</label>
+                    <input type="text" id="auth-mobile" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="1234567890">
+                </div>
 
-            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
-            clickedCard.classList.add('active');
-            
-            if (categoryId === 'all') {
-                renderDishes(allDishesData);
-                dishesTitle.textContent = 'Recommended Dishes';
-            } else {
-                const filteredDishes = allDishesData.filter(dish => dish.categoryId === categoryId);
-                renderDishes(filteredDishes);
-                dishesTitle.textContent = `Dishes in ${categoryName}`;
-            }
-        }
-
-        function renderDishes(dishesList) {
-            const c = document.getElementById('dishesContainer');
-            c.innerHTML = '';
-            if(dishesList.length === 0) { 
-                c.innerHTML = '<p style="padding:10px; color:#666; width:100%; text-align:center;">No dishes found in this category.</p>'; 
-                return; 
-            }
-            dishesList.forEach(d => {
-                const price = parseFloat(d.price) || 0;
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <img src="${d.imageUrl}" alt="Dish">
-                    <div class="card-content">
-                        <h3>${d.name}</h3>
-                        <p>₹${price.toFixed(2)}</p>
-                    </div>
-                `;
-                const addBtn = document.createElement('button');
-                addBtn.className = 'add-btn';
-                addBtn.innerHTML = '<i class="fas fa-plus"></i>';
-                addBtn.onclick = () => addToCart(d.key, d.name, price, d.imageUrl);
-                card.appendChild(addBtn);
-                c.appendChild(card);
-            });
-        }
-
-        document.querySelector('.search-bar input').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredDishes = allDishesData.filter(dish => dish.name.toLowerCase().includes(searchTerm));
-            renderDishes(filteredDishes);
-            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
-            document.querySelector('.category-card[data-category-id="all"]').classList.add('active');
-            document.getElementById('dishesListTitle').textContent = 'Search Results';
-        });
-
-        window.addToCart = (id,name,price,img) => {
-            price = parseFloat(price); 
-            const ex = cart.find(i=>i.id===id);
-            ex ? ex.quantity++ : cart.push({id,name,price,img,quantity:1});
-            updateCartUI();
-        };
-
-        function updateCartUI() {
-            document.getElementById('cart-count').textContent = cart.reduce((a,b)=>a+b.quantity,0);
-            const c = document.getElementById('cartItemsContainer');
-            
-            if(cart.length===0) { 
-                c.innerHTML='<p style="text-align:center;">Your cart is empty.</p>'; 
-                document.getElementById('cart-summary').style.display='none'; 
-                checkOrderValidity(); 
-                return; 
-            }
-            
-            document.getElementById('cart-summary').style.display='block';
-            c.innerHTML='';
-            let sub=0;
-            
-            cart.forEach(i => {
-                sub += i.price * i.quantity;
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'cart-item';
-                itemDiv.innerHTML = `
-                    <img src="${i.img}" alt="${i.name}">
-                    <div style="flex: 1;">
-                        <h4>${i.name}</h4>
-                        <p>₹${i.price.toFixed(2)}</p>
-                    </div>
-                    <div class="qty-controls">
-                        <button onclick="modQty('${i.id}', -1)">-</button>
-                        <span>${i.quantity}</span>
-                        <button onclick="modQty('${i.id}', 1)">+</button>
-                    </div>
-                `;
-                c.appendChild(itemDiv);
-            });
-            
-            document.getElementById('subtotal-price').textContent = `₹${sub.toFixed(2)}`;
-            document.getElementById('total-price').textContent = `₹${(sub+50).toFixed(2)}`;
-            checkOrderValidity(); 
-        }
-
-        window.modQty = (id,n) => {
-            const i = cart.find(x=>x.id===id);
-            if(i) { i.quantity+=n; if(i.quantity<=0) cart=cart.filter(x=>x.id!==id); updateCartUI(); }
-        };
-
-        function pushNotification(title, body) {
-            if(!currentUser) return;
-            db.ref(`notifications/${currentUser.uid}`).push({
-                title: title, body: body, timestamp: Date.now(), read: false
-            });
-        }
-        
-        // **REWRITTEN**: This function now only handles notifications and is much more reliable.
-        function listenForStatusUpdates() {
-            if(!currentUser) return;
-            const notificationOrdersRef = db.ref('orders').orderByChild('userId').equalTo(currentUser.uid);
-
-            // Listener for when an order's data is CHANGED
-            notificationOrdersRef.on('child_changed', (snapshot) => {
-                const order = snapshot.val();
-                const orderId = snapshot.key;
+                <div>
+                    <label id="auth-email-label" class="block text-xs font-medium text-gray-700 mb-1">Email or Mobile Number</label>
+                    <input type="text" id="auth-email" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Email or Mobile">
+                </div>
                 
-                const lastNotified = order.lastNotifiedStatus || 'Placed';
-                if (lastNotified !== order.status && order.status) {
-                    pushNotification(`Order #${orderId.substring(1,6)} Update`, `Your order is now: ${order.status}`);
-                    db.ref(`orders/${orderId}/lastNotifiedStatus`).set(order.status);
-                }
-            });
-        }
-        
-        function listenForUnreadNotifications() {
-            if(!currentUser) return;
-            db.ref(`notifications/${currentUser.uid}`).on('value', snap => {
-                let unreadCount = 0;
-                if(snap.exists()) {
-                    snap.forEach(c => {
-                        if(!c.val().read) unreadCount++;
-                    });
-                }
-                const badge = document.getElementById('notif-badge');
-                if(unreadCount > 0) {
-                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
-                    badge.style.display = 'flex';
-                } else {
-                    badge.style.display = 'none';
-                }
-            });
-        }
-
-        function markNotificationsAsRead() {
-            if(!currentUser) return;
-            db.ref(`notifications/${currentUser.uid}`).once('value', snap => {
-                if(snap.exists()) {
-                    const updates = {};
-                    snap.forEach(child => {
-                        if(!child.val().read) updates[`${child.key}/read`] = true;
-                    });
-                    if(Object.keys(updates).length > 0) {
-                        db.ref(`notifications/${currentUser.uid}`).update(updates);
-                    }
-                }
-            });
-        }
-
-        window.deleteNotification = (key) => {
-            if (!currentUser || !key) return;
-            db.ref(`notifications/${currentUser.uid}/${key}`).remove();
-        };
-
-        function loadNotifications() {
-            if(!currentUser) return;
-            if (notificationsListener) notificationsListener.off();
-            const container = document.getElementById('notificationListContainer');
-            container.innerHTML = '<p style="text-align:center; padding:20px;">Loading alerts...</p>';
-            
-            notificationsListener = db.ref(`notifications/${currentUser.uid}`).orderByChild('timestamp');
-            notificationsListener.on('value', snap => {
-                if(!snap.exists()) {
-                    container.innerHTML = '<div style="text-align:center; margin-top:50px; color:#999;"><i class="fas fa-bell-slash" style="font-size:3em; margin-bottom:15px;"></i><p>No notifications yet</p></div>';
-                    return;
-                }
-                const alerts =[];
-                snap.forEach(c => alerts.push({key: c.key, ...c.val()}));
-                alerts.reverse(); 
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <label class="block text-xs font-medium text-gray-700">Password</label>
+                        <span class="text-[10px] text-indigo-600 cursor-pointer hover:underline" onclick="toggleModal('forgot-password-modal')">Forgot Password?</span>
+                    </div>
+                    <input type="password" id="auth-password" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="••••••••">
+                </div>
                 
-                let html = '';
-                alerts.forEach(n => {
-                    try {
-                        const date = n.timestamp ? new Date(n.timestamp).toLocaleString() : 'Date unavailable';
-                        let titleText = n.title || 'Alert';
-                        let bodyText = n.body || '';
-                        let icon = 'fa-info-circle';
-                        if(titleText.includes('Placed')) icon = 'fa-check-circle';
-                        if(titleText.includes('Update')) icon = 'fa-shipping-fast';
-                        
-                        html += `
-                            <div class="notification-card" style="${n.read ? 'opacity:0.7;' : 'border-left: 4px solid var(--primary-color);'}">
-                                <button class="delete-notif-btn" onclick="deleteNotification('${n.key}')" title="Delete notification">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                                <div class="notif-icon-box"><i class="fas ${icon}"></i></div>
-                                <div class="notif-content" style="flex:1;">
-                                    <h4 style="margin:0 0 5px 0; color:#2d3436;">${titleText}</h4>
-                                    <p style="margin:0; font-size:0.9em; color:#636e72;">${bodyText}</p>
-                                    <span class="notif-time" style="font-size:0.7em; color:#b2bec3;">${date}</span>
+                <div id="role-group" class="hide">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Register as</label>
+                    <select id="auth-role" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-500 outline-none">
+                        <option value="user">Regular User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <button type="submit" id="auth-btn" class="w-full bg-indigo-600 text-white text-sm font-bold py-2 rounded-md hover:bg-indigo-700 transition mt-2">Log In</button>
+            </form>
+
+            <div class="mt-4 flex items-center justify-between">
+                <hr class="w-full border-gray-200">
+                <span class="px-2 text-[10px] text-gray-400 font-bold">OR</span>
+                <hr class="w-full border-gray-200">
+            </div>
+
+            <button id="google-login-btn" class="mt-4 w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold py-2 rounded-md hover:bg-gray-50 transition shadow-sm">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-4 h-4">
+                Sign in with Google
+            </button>
+
+            <div class="mt-5 text-center">
+                <p class="text-xs text-gray-600" id="auth-toggle-text">Don't have an account? <span class="text-indigo-600 font-semibold cursor-pointer hover:underline" id="toggle-auth-mode">Sign Up</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN USER DASHBOARD ==================== -->
+    <div id="user-view" class="hide h-screen flex flex-col relative bg-gray-100">
+        <!-- GRADIENT HEADER -->
+        <header id="main-header" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white fixed top-0 w-full z-40 p-3 shadow-md">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="flex items-center justify-between w-full md:w-auto">
+                    <div class="flex items-center gap-2 font-bold text-lg cursor-pointer" onclick="goToHome()">
+                        <i class="fas fa-route"></i> RideShare
+                    </div>
+                    <!-- Header Mobile Wallet -->
+                    <div class="flex md:hidden gap-3 items-center">
+                        <div class="flex items-center gap-1 font-bold text-indigo-700 bg-white px-2.5 py-1 rounded-md text-xs cursor-pointer shadow-sm" onclick="goToWallet()">
+                            <i class="fas fa-wallet"></i> ₹<span class="wallet-bal-disp">0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Bar -->
+                <div id="top-search-bar" class="flex-1 w-full max-w-2xl flex flex-col md:flex-row gap-2">
+                    <div class="relative flex-1">
+                        <i class="fas fa-map-marker-alt absolute left-2.5 top-2 text-gray-400 text-xs"></i>
+                        <input type="text" id="search-from" placeholder="From (Origin)" class="text-gray-800 w-full pl-7 pr-2 py-1.5 text-sm border-none rounded-md focus:ring-2 focus:ring-white outline-none shadow-inner">
+                    </div>
+                    <div class="relative flex-1">
+                        <i class="fas fa-location-arrow absolute left-2.5 top-2 text-gray-400 text-xs"></i>
+                        <input type="text" id="search-to" placeholder="To (Destination)" class="text-gray-800 w-full pl-7 pr-2 py-1.5 text-sm border-none rounded-md focus:ring-2 focus:ring-white outline-none shadow-inner">
+                    </div>
+                    <div class="relative w-full md:w-32">
+                        <i class="fas fa-bullseye absolute left-2.5 top-2 text-gray-400 text-xs"></i>
+                        <select id="search-radius" class="text-gray-800 w-full pl-7 pr-2 py-1.5 text-sm border-none rounded-md focus:ring-2 focus:ring-white outline-none shadow-inner bg-white cursor-pointer">
+                            <option value="5">5 km</option>
+                            <option value="10">10 km</option>
+                            <option value="25">25 km</option>
+                            <option value="50">50 km</option>
+                            <option value="all" selected>All</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Icons (Includes Image) -->
+                <div class="hidden md:flex gap-4 items-center">
+                    <button onclick="goToAdminChat()" title="Contact Support" class="hover:text-indigo-200 transition"><i class="fas fa-headset text-lg"></i></button>
+                    <div class="flex items-center gap-1.5 font-bold text-indigo-700 bg-white px-3 py-1.5 rounded-md text-sm cursor-pointer hover:bg-gray-100 transition shadow-sm" onclick="goToWallet()">
+                        <i class="fas fa-wallet"></i> ₹<span class="wallet-bal-disp">0.00</span>
+                    </div>
+                    <div onclick="goToProfile()" class="flex items-center gap-2 cursor-pointer bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-md transition shadow-sm border border-white/10" title="Profile">
+                        <img id="header-desktop-img" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y" class="w-6 h-6 rounded-full object-cover bg-white">
+                        <span id="header-desktop-name" class="font-bold text-sm truncate max-w-[100px]">User</span>
+                    </div>
+                    <button class="hover:text-red-300 transition ml-2" onclick="logoutHandler()" title="Logout"><i class="fas fa-sign-out-alt text-lg"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-content" class="flex-1 overflow-y-auto w-full pt-36 md:pt-20 pb-20 p-3 md:p-4 max-w-6xl mx-auto scroll-smooth">
+            <!-- FEED SECTION -->
+            <div id="feed-section" class="fade-in">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
+                    <div class="flex gap-4 font-bold text-sm">
+                        <button id="tab-btn-trips" class="tab-active pb-1 transition" onclick="switchTab('trips')">Available Rides</button>
+                        <button id="tab-btn-requests" class="tab-inactive pb-1 transition" onclick="switchTab('requests')">Ride Requests</button>
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="toggleModal('post-trip-modal')" class="flex-1 sm:flex-none bg-indigo-600 text-white px-3 py-1.5 text-xs rounded-md font-semibold shadow hover:bg-indigo-700 transition">
+                            <i class="fas fa-car mr-1"></i> Offer Ride
+                        </button>
+                        <button onclick="toggleModal('request-ride-modal')" class="flex-1 sm:flex-none bg-orange-500 text-white px-3 py-1.5 text-xs rounded-md font-semibold shadow hover:bg-orange-600 transition">
+                            <i class="fas fa-hand-paper mr-1"></i> Request Ride
+                        </button>
+                    </div>
+                </div>
+                <div id="feed-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+            </div>
+
+            <!-- POSTS SECTION -->
+            <div id="posts-section" class="hide fade-in w-full">
+                <h2 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-clipboard-list mr-2 text-indigo-500"></i>Active Ride Requests</h2>
+                <div id="posts-container" class="space-y-3"></div>
+            </div>
+
+            <!-- **** NEW WALLET PAGE CONTAINER **** -->
+            <div id="wallet-section" class="hide fade-in w-full">
+                <div class="max-w-md mx-auto">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-wallet mr-2 text-indigo-500"></i>My Wallet</h2>
+                     <div class="bg-white rounded-xl shadow-sm p-5">
+                         <div class="my-4 text-center">
+                             <i class="fas fa-wallet text-3xl text-indigo-500 mb-2"></i>
+                             <h3 class="text-2xl font-bold text-gray-800 leading-tight">₹<span class="wallet-bal-disp">0.00</span></h3>
+                             <p class="text-[10px] text-gray-500 uppercase tracking-wide font-bold mt-1">Available Balance</p>
+                         </div>
+                         <div class="space-y-4">
+                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                 <h4 class="text-[11px] font-bold text-gray-600 uppercase mb-2">Add Funds</h4>
+                                 <div class="flex gap-2">
+                                     <input type="number" id="add-funds-amount" placeholder="Amount (₹)" class="w-full px-2 py-1.5 text-sm border rounded-md outline-none focus:border-indigo-500 bg-white">
+                                     <button id="btn-add-funds" class="bg-indigo-600 text-white px-3 py-1.5 text-xs rounded-md font-bold hover:bg-indigo-700 whitespace-nowrap shadow-sm"><i class="fas fa-bolt mr-1"></i>Pay</button>
+                                 </div>
+                             </div>
+                             <div class="bg-orange-50 p-3 rounded-lg border border-orange-100">
+                                 <h4 class="text-[11px] font-bold text-orange-700 uppercase mb-1">Withdraw to UPI</h4>
+                                 <p class="text-[10px] text-red-500 font-bold mb-2">Withdrawal Charge: <span id="user-withdrawal-fee-disp">0</span>% per tx</p>
+                                 <input type="text" id="withdraw-upi" placeholder="UPI ID (e.g. name@upi)" class="w-full px-2 py-1.5 text-sm border rounded-md mb-2 outline-none focus:border-orange-400 bg-white">
+                                 <div class="flex gap-2">
+                                     <input type="number" id="withdraw-amount" placeholder="Amount (₹)" class="w-full px-2 py-1.5 text-sm border rounded-md outline-none focus:border-orange-400 bg-white">
+                                     <button id="btn-withdraw-funds" class="bg-orange-500 text-white px-3 py-1.5 text-xs rounded-md font-bold hover:bg-orange-600 whitespace-nowrap shadow-sm">Withdraw</button>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                </div>
+            </div>
+
+            <!-- **** NEW ADMIN CHAT PAGE CONTAINER **** -->
+            <div id="chat-section" class="hide fade-in w-full h-full">
+                 <div class="bg-white w-full h-full max-w-3xl mx-auto rounded-xl shadow-sm flex flex-col overflow-hidden border">
+                    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-3 py-2.5 flex justify-between items-center shadow-sm z-10 flex-shrink-0">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center font-bold text-sm shadow-inner">
+                                <i id="chat-page-icon" class="fas fa-headset"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-sm leading-none" id="chat-title-page">Admin Support</h2>
+                                <p class="text-[10px] text-indigo-100 mt-0.5">Secure Connection</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-times cursor-pointer text-lg hover:text-indigo-200 transition px-1" onclick="goToHome()"></i>
+                    </div>
+                    <div id="chat-messages-page" class="flex-1 p-3 overflow-y-auto flex flex-col gap-2 bg-gray-50"></div>
+                    <form id="chat-form-page" class="p-2 bg-white border-t flex gap-2">
+                        <input type="text" id="chat-input-page" required placeholder="Type a message..." class="flex-1 px-3 py-1.5 border rounded-full outline-none focus:border-indigo-500 bg-gray-100 text-sm">
+                        <button type="submit" class="w-9 h-9 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:bg-indigo-700 shadow-sm flex-shrink-0">
+                            <i class="fas fa-paper-plane text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+
+            <!-- PROFILE SECTION -->
+            <div id="profile-section" class="hide fade-in w-full">
+                <div class="max-w-3xl mx-auto">
+                    <!-- Profile Header Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
+                        <div class="h-20 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+                        <div class="px-5 py-3 relative flex justify-between items-end">
+                            <div class="flex items-center gap-4 -mt-10 relative">
+                                <!-- Upload Image Element -->
+                                <div class="w-20 h-20 bg-white rounded-full p-1 shadow relative cursor-pointer group" onclick="document.getElementById('profile-upload').click()" title="Change Profile Picture">
+                                    <img id="prof-page-img" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y" class="w-full h-full rounded-full object-cover">
+                                    <div class="absolute inset-1 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                        <i class="fas fa-camera text-white text-sm"></i>
+                                    </div>
+                                    <input type="file" id="profile-upload" accept="image/*" class="hide" onchange="uploadProfilePic(event)">
                                 </div>
-                            </div>`;
-                    } catch(e) { console.error("Skipped a corrupted notification:", e); }
-                });
-                container.innerHTML = html;
-                if(document.getElementById('notificationsPage').classList.contains('active')) {
-                    markNotificationsAsRead();
-                }
-            });
-        }
-        
-        function saveOrderToFirebase(paymentMethod, paymentId = null) {
-            const totalAmount = (cart.reduce((a, b) => a + b.price * b.quantity, 0) + 50);
-            const dCode = Math.floor(100000 + Math.random() * 900000);
-            const order = {
-                userId: currentUser.uid, userName: nameInput.value.trim(), email: currentUser.email,
-                phone: phoneInput.value.trim(), address: addressInput.value.trim(),
-                village: villageInput.value.trim(), pin: pinInput.value.trim(),
-                district: districtInput.value.trim(), state: stateInput.value.trim(),
-                location: { lat: document.getElementById('lat').value, lng: document.getElementById('lng').value },
-                items: cart, total: totalAmount.toFixed(2), status: 'Placed', lastNotifiedStatus: 'Placed',
-                method: paymentMethod, paymentId: paymentId, deliveryCode: dCode, timestamp: new Date().toISOString()
-            };
-            db.ref('orders').push(order).then((snap) => {
-                pushNotification("Order Placed", `Order #${snap.key.substring(1,6)} has been placed successfully.`);
-                cart =[]; updateCartUI();
-                const codeElement = document.getElementById('thankYouDeliveryCode');
-                if (codeElement) { codeElement.textContent = dCode; }
-                showPage('thankYouPage');
-            }).catch(err => {
-                alert('Failed to save order. Please try again or contact support.');
-                console.error("Firebase write error: ", err);
-            });
-        }
-        
-        orderBtn.onclick = (e) => {
-            e.preventDefault();
-            if(orderBtn.disabled || cart.length === 0) return;
+                                <div class="pt-8">
+                                    <h2 class="text-lg font-bold text-gray-800 leading-tight" id="prof-header-name">User Name</h2>
+                                    <p class="text-gray-500 text-xs font-medium capitalize mt-0.5" id="prof-header-role">User</p>
+                                </div>
+                            </div>
+                            <button onclick="logoutHandler()" class="hidden md:flex items-center gap-1.5 bg-red-50 text-red-600 px-3 py-1.5 text-xs rounded-md font-bold hover:bg-red-100 transition border border-red-100">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </div>
+                    </div>
 
-            if (selectedPaymentMethod === 'cod') {
-                saveOrderToFirebase('Cash on Delivery');
-            } else if (selectedPaymentMethod === 'razorpay') {
-                const totalAmount = (cart.reduce((a, b) => a + b.price * b.quantity, 0) + 50);
-                const options = {
-                    "key": "rzp_live_SUarhYm5IfBTar", "amount": Math.round(totalAmount * 100), "currency": "INR",
-                    "name": "Sintha Keithel", "description": "Food Order Payment",
-                    "image": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
-                    "handler": (response) => saveOrderToFirebase('Razorpay', response.razorpay_payment_id),
-                    "prefill": { "name": nameInput.value.trim(), "email": currentUser.email, "contact": phoneInput.value.trim() },
-                    "theme": { "color": "#ff9f1c" }
-                };
-                try {
-                    const rzp1 = new Razorpay(options);
-                    rzp1.on('payment.failed', (response) => alert("Payment Failed: " + response.error.description));
-                    rzp1.open();
-                } catch (err) { alert("Payment interface failed to load."); }
-            }
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-base font-bold text-gray-800"><i class="fas fa-user-edit text-indigo-500 mr-1.5"></i>Personal Info</h3>
+                                <button type="button" onclick="toggleEditProfile()" id="prof-edit-btn" class="text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1 text-xs rounded-md font-semibold transition"><i class="fas fa-edit mr-1"></i>Edit</button>
+                            </div>
+                            <form id="profile-edit-form" class="space-y-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Full Name</label><div class="relative"><i class="fas fa-user absolute left-2.5 top-2.5 text-gray-400 text-xs"></i><input type="text" id="prof-name" disabled required class="w-full pl-8 pr-2 py-1.5 text-sm bg-gray-50 border rounded-md outline-none text-gray-800 font-medium focus:ring-1 focus:ring-indigo-500 disabled:opacity-80 disabled:bg-gray-100"></div></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Mobile</label><div class="relative"><i class="fas fa-phone absolute left-2.5 top-2.5 text-gray-400 text-xs"></i><input type="text" id="prof-mobile" disabled required class="w-full pl-8 pr-2 py-1.5 text-sm bg-gray-50 border rounded-md outline-none text-gray-800 font-medium focus:ring-1 focus:ring-indigo-500 disabled:opacity-80 disabled:bg-gray-100"></div></div>
+                                    <div class="sm:col-span-2"><label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Email Address</label><div class="relative"><i class="fas fa-envelope absolute left-2.5 top-2.5 text-gray-400 text-xs"></i><input type="email" id="prof-email" disabled class="w-full pl-8 pr-2 py-1.5 text-sm bg-gray-100 border border-transparent rounded-md outline-none text-gray-500 cursor-not-allowed font-medium"></div></div>
+                                </div>
+                                <div id="prof-save-btn-container" class="hide pt-3 border-t border-gray-100 mt-4">
+                                    <div class="flex gap-2 justify-end">
+                                        <button type="button" onclick="toggleEditProfile()" class="px-4 py-1.5 text-xs rounded-md font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition">Cancel</button>
+                                        <button type="submit" class="px-4 py-1.5 text-xs rounded-md font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow">Save</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="md:col-span-1 space-y-4">
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                                <h3 class="text-sm font-bold text-gray-800 mb-3"><i class="fas fa-lock text-indigo-500 mr-1.5"></i>Password</h3>
+                                <form id="profile-password-form" class="space-y-2.5">
+                                    <input type="password" id="prof-current-pass" required placeholder="Current Password" class="w-full px-2.5 py-1.5 border rounded-md bg-gray-50 outline-none text-xs focus:ring-1 focus:ring-indigo-500">
+                                    <input type="password" id="prof-new-pass" required placeholder="New Password" class="w-full px-2.5 py-1.5 border rounded-md bg-gray-50 outline-none text-xs focus:ring-1 focus:ring-indigo-500">
+                                    <button type="submit" class="w-full bg-gray-800 text-white text-xs font-bold py-1.5 rounded-md hover:bg-gray-900 shadow-sm mt-1">Update</button>
+                                </form>
+                            </div>
+                            <button onclick="logoutHandler()" class="md:hidden w-full bg-red-50 text-red-600 py-2 rounded-md text-xs font-bold flex justify-center items-center gap-1.5 hover:bg-red-100 border border-red-100 transition">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- GRADIENT BOTTOM NAV BAR (UPDATED) -->
+        <nav id="bottom-nav" class="fixed bottom-0 w-full z-40 bg-gradient-to-r from-indigo-600 to-purple-600 shadow-[0_-4px_10px_rgba(0,0,0,0.15)] md:hidden">
+            <div class="flex justify-around items-center p-2.5 text-white text-[10px] font-bold">
+                <div class="flex flex-col items-center gap-1 cursor-pointer opacity-80 hover:opacity-100 transition" onclick="goToHome()">
+                    <i class="fas fa-home text-lg"></i><span>Home</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 cursor-pointer opacity-80 hover:opacity-100 transition" onclick="goToPosts()">
+                    <i class="fas fa-clipboard-list text-lg"></i><span>Posts</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 cursor-pointer opacity-80 hover:opacity-100 transition" onclick="goToWallet()">
+                    <i class="fas fa-wallet text-lg"></i><span>Wallet</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 cursor-pointer opacity-80 hover:opacity-100 transition relative" onclick="goToAdminChat()">
+                    <i class="fas fa-comment-dots text-lg"></i><span>Admin Chat</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 cursor-pointer opacity-80 hover:opacity-100 transition" onclick="goToProfile()">
+                    <i class="fas fa-user-circle text-lg"></i><span>Profile</span>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- ==================== ADMIN DASHBOARD ==================== -->
+    <div id="admin-view" class="hide h-screen flex flex-col bg-gray-50 relative">
+        <header class="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-3 shadow-md fixed top-0 w-full z-40">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-2 font-bold text-lg">
+                    <i class="fas fa-shield-alt"></i> Admin Panel
+                </div>
+                <button onclick="logoutHandler()" class="text-gray-300 hover:text-white transition"><i class="fas fa-sign-out-alt text-lg"></i></button>
+            </div>
+        </header>
+        
+        <main class="flex-1 overflow-y-auto pt-16 p-4 max-w-6xl mx-auto w-full">
+            <div class="flex gap-4 font-bold text-sm mb-4 border-b">
+                <button id="admin-tab-dash-btn" class="tab-active pb-1 transition" onclick="switchAdminTab('dash')">Dashboard</button>
+                <button id="admin-tab-users-btn" class="tab-inactive pb-1 transition" onclick="switchAdminTab('users')">User Management</button>
+            </div>
+
+            <!-- DASHBOARD SECTION -->
+            <div id="admin-dash-section">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                        <p class="text-gray-500 text-[11px] uppercase font-bold tracking-wider">Total Revenue</p>
+                        <h3 class="text-xl font-bold text-gray-800 mt-1">₹<span id="admin-revenue">0.00</span></h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-orange-500">
+                        <p class="text-gray-500 text-[11px] uppercase font-bold tracking-wider">Pending Withdrawals</p>
+                        <h3 class="text-xl font-bold text-gray-800 mt-1" id="admin-withdrawals-count">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+                        <p class="text-gray-500 text-[11px] uppercase font-bold tracking-wider">Total Users</p>
+                        <h3 class="text-xl font-bold text-gray-800 mt-1" id="admin-users-count">0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+                    <div class="bg-white p-4 rounded-xl shadow-sm col-span-1 h-fit">
+                        <h3 class="text-sm font-bold mb-3 border-b pb-2">Platform Settings</h3>
+                        
+                        <label class="block text-xs font-medium text-gray-700">Commission Fee (%)</label>
+                        <div class="flex mt-1 gap-2 mb-3">
+                            <input type="number" id="admin-commission-rate" class="w-full px-2 py-1.5 text-sm border rounded-md outline-none focus:border-indigo-500" value="10">
+                            <button id="save-commission-btn" class="bg-indigo-600 text-white px-3 py-1.5 text-xs rounded-md font-bold hover:bg-indigo-700">Save</button>
+                        </div>
+
+                        <!-- Withdrawal Charges in Percentage (%) -->
+                        <label class="block text-xs font-medium text-gray-700">Withdrawal Charge (%)</label>
+                        <div class="flex mt-1 gap-2">
+                            <input type="number" id="admin-withdrawal-fee" class="w-full px-2 py-1.5 text-sm border rounded-md outline-none focus:border-indigo-500" value="0">
+                            <button id="save-fee-btn" class="bg-orange-500 text-white px-3 py-1.5 text-xs rounded-md font-bold hover:bg-orange-600">Save</button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-xl shadow-sm col-span-2 overflow-hidden">
+                        <h3 class="text-sm font-bold mb-3 border-b pb-2 text-orange-600"><i class="fas fa-money-bill-wave mr-1"></i> Withdrawals</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs whitespace-nowrap">
+                                <thead class="text-gray-500 bg-gray-50 uppercase text-[10px]">
+                                    <tr><th class="p-2">User</th><th class="p-2">Amount</th><th class="p-2">UPI ID</th><th class="p-2">Action</th></tr>
+                                </thead>
+                                <tbody id="admin-withdrawals-list" class="text-gray-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USER MANAGEMENT SECTION WITH ADD FUNDS & LEVEL -->
+            <div id="admin-users-section" class="hide">
+                <div class="bg-white p-4 rounded-xl shadow-sm overflow-hidden">
+                    <h3 class="text-sm font-bold mb-3 border-b pb-2">Manage Users</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="text-gray-500 bg-gray-50 uppercase text-[10px]">
+                                <tr>
+                                    <th class="p-2">Name</th>
+                                    <th class="p-2">Email</th>
+                                    <th class="p-2">Mobile</th>
+                                    <th class="p-2">Status</th>
+                                    <th class="p-2">Level</th>
+                                    <th class="p-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-mgmt-list" class="text-gray-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+    <div id="forgot-password-modal" class="hide fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-3 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-xl shadow-xl p-5 fade-in">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-base font-bold text-indigo-600"><i class="fas fa-key mr-1"></i> Reset Password</h2>
+                <i class="fas fa-times text-gray-500 cursor-pointer text-lg hover:text-red-500" onclick="toggleModal('forgot-password-modal')"></i>
+            </div>
+            <input type="email" id="reset-email-input" class="w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-indigo-500 outline-none mb-3" placeholder="your@email.com">
+            <button onclick="sendForgotPass()" class="w-full bg-indigo-600 text-white text-sm font-bold py-2 rounded-md hover:bg-indigo-700">Send Link</button>
+        </div>
+    </div>
+
+    <div id="post-trip-modal" class="hide fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-3 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-xl p-4 fade-in max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-lg font-bold text-indigo-600"><i class="fas fa-car mr-1"></i> Offer Ride</h2>
+                <i class="fas fa-times text-gray-500 cursor-pointer text-lg hover:text-red-500" onclick="toggleModal('post-trip-modal')"></i>
+            </div>
+            <form id="post-trip-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">Origin</label><input type="text" id="trip-origin" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">Destination</label><input type="text" id="trip-destination" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">Date</label><input type="date" id="trip-date" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">Time</label><input type="time" id="trip-time" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-600 mb-0.5">Vehicle</label>
+                        <select id="trip-vehicle" class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"><option value="Car">Car</option><option value="Bike">Bike</option><option value="Scooty">Scooty</option></select>
+                    </div>
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">Seats</label><input type="number" id="trip-seats" min="1" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">Price (₹)</label><input type="number" id="trip-price" min="0" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white text-sm font-bold py-2 rounded-md hover:bg-indigo-700 mt-2">Publish Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="request-ride-modal" class="hide fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-3 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-xl p-4 fade-in max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-lg font-bold text-orange-500"><i class="fas fa-hand-paper mr-1"></i> Request Ride</h2>
+                <i class="fas fa-times text-gray-500 cursor-pointer hover:text-red-500" onclick="toggleModal('request-ride-modal')"></i>
+            </div>
+            <form id="request-ride-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">From</label><input type="text" id="req-origin" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">To</label><input type="text" id="req-destination" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                </div>
+                <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">Date</label><input type="date" id="req-date" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-600 mb-0.5">Pref. Vehicle</label>
+                        <select id="req-vehicle" class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"><option value="Any">Any</option><option value="Car">Car</option><option value="Bike">Bike</option></select>
+                    </div>
+                    <div><label class="block text-[11px] font-bold text-gray-600 mb-0.5">Seats Needed</label><input type="number" id="req-seats" min="1" value="1" required class="w-full px-2 py-1.5 text-sm border rounded-md bg-gray-50 outline-none"></div>
+                </div>
+                <button type="submit" class="w-full bg-orange-500 text-white text-sm font-bold py-2 rounded-md hover:bg-orange-600 mt-2">Post Request</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- **** NEW MODAL FOR VIEWING RIDE OFFERS **** -->
+    <div id="ride-offers-modal" class="hide fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-3 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-xl shadow-xl p-4 fade-in max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-base font-bold text-gray-800"><i class="fas fa-hand-holding-usd mr-2 text-indigo-500"></i>Ride Offers Received</h2>
+                <i class="fas fa-times text-gray-500 cursor-pointer text-lg hover:text-red-500" onclick="toggleModal('ride-offers-modal')"></i>
+            </div>
+            <div id="ride-offers-container" class="space-y-3 overflow-y-auto flex-1">
+                <!-- Dynamic offers will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs & Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } 
+            from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue, update, get, serverTimestamp, query, orderByChild, equalTo } 
+            from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } 
+            from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+
+        // Firebase Config 
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1TXQonZ0nHr1b-OiuLXsHCa8A8QhC3BU",
+            authDomain: "driveshare-75fd1.firebaseapp.com",
+            databaseURL: "https://driveshare-75fd1-default-rtdb.firebaseio.com",
+            projectId: "driveshare-75fd1",
+            storageBucket: "driveshare-75fd1.firebasestorage.app",
+            messagingSenderId: "472135257681",
+            appId: "1:472135257681:web:35285a4f36cf21f81a7270"
         };
 
-        // **NEW**: A helper function to generate the HTML for a single order card.
-        function createOrderCardHTML(orderKey, orderData) {
-            let o = orderData;
-            let st = o.status || 'Placed';
-            let s1 = '', s2 = '', s3 = '', s4 = '';
-            if (st === 'Placed') s1 = 'active';
-            else if (st === 'Preparing') { s1 = 'passed'; s2 = 'active'; }
-            else if (st === 'Out for Delivery') { s1 = 'passed'; s2 = 'passed'; s3 = 'active'; }
-            else if (st === 'Delivered') { s1 = 'passed'; s2 = 'passed'; s3 = 'passed'; s4 = 'active'; }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+        const googleProvider = new GoogleAuthProvider();
 
-            let itemsDisplay = (o.items && Array.isArray(o.items)) 
-                                ? o.items.map(i => `${i.quantity || 1}x ${i.name || 'Item'}`).join(', ') 
-                                : "Items not found";
+        let currentUser = null, userData = null, currentRole = null, isLoginMode = true;
+        let platformCommissionRate = 10, platformWithdrawalFee = 0; 
+        let activeChatId = null, chatUnsub = null;
+        let myBookings = new Set();
+        let allTrips = [], allRequests = [], allCoRides = [], currentTab = 'trips';
+        const defaultAvatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        const pageSections = ['feed-section', 'posts-section', 'profile-section', 'wallet-section', 'chat-section'];
 
-            return `
-                <div style="display:flex;justify-content:space-between;font-weight:600;">
-                    <span>#${orderKey.substring(1, 6)}</span>
-                    <span style="color:var(--primary-color)">${st}</span>
-                </div>
-                <p style="font-size:0.9em; color:#636e72;">${itemsDisplay}</p>
-                <p style="text-align:right; font-weight:700; font-size:1.1em; margin-bottom: 20px;">Total: ₹${o.total || '0'}</p>
-
-                ${st !== 'Delivered' && o.deliveryCode ? `
-                    <div style="background:#e0f0ff; padding:10px; border-radius:10px; text-align:center; margin:15px 0;">
-                        <p style="margin:0; font-size:0.8em; color:#0984e3; font-weight:600;">DELIVERY CODE</p>
-                        <h2 style="margin:0; letter-spacing:5px; color:#2d3436;">${o.deliveryCode}</h2>
-                    </div>
-                ` : ''}
-
-                ${o.status === 'Out for Delivery' && o.driverName ? `
-                    <div style="background:#fff5e6; padding:12px; border-radius:12px; margin-top:10px; border:1px dashed var(--primary-color);">
-                        <p style="margin:0; font-size:0.85em; color:#333;"><strong>Driver:</strong> ${o.driverName}</p>
-                        <p style="margin:0; font-size:0.85em; color:#333;"><strong>Contact:</strong> <a href="tel:${o.driverPhone}" style="color:var(--primary-color); text-decoration:none;">${o.driverPhone}</a></p>
-                    </div>
-                ` : ''}
-
-                <div class="track-bar">
-                    <div class="track-step ${s1}"><div class="dot"></div><p>Placed</p></div>
-                    <div class="track-step ${s2}"><div class="dot"></div><p>Prep</p></div>
-                    <div class="track-step ${s3}"><div class="dot"></div><p>On Way</p></div>
-                    <div class="track-step ${s4}"><div class="dot"></div><p>Done</p></div>
-                </div>
-                <div id="track-map-${orderKey}" style="height:200px; width:100%; margin-top:15px; border-radius:10px; display:none; border:2px solid #ff9f1c;"></div>
-            `;
-        }
+        const el = (id) => document.getElementById(id);
+        const show = (id) => el(id).classList.remove('hide');
+        const hide = (id) => el(id).classList.add('hide');
+        window.toggleModal = (id) => el(id).classList.toggle('hide');
         
-        // **REWRITTEN**: This function now uses real-time listeners for instant updates.
-        function loadOrders() {
-            const container = document.getElementById('ordersListContainer');
-            const placeholder = document.getElementById('orders-placeholder');
-            
-            // Clear previous content and listeners before starting
-            if (ordersRef) { ordersRef.off(); }
-            container.innerHTML = ''; 
-            container.appendChild(placeholder);
-            placeholder.textContent = "Loading your orders...";
+        const showLoader = (msg = 'Please wait...') => { 
+            el('loader-text').innerText = msg;
+            show('loader'); 
+        };
+        const hideLoader = () => hide('loader');
 
-            if (!currentUser) return;
+        window.showToast = (message, type = 'info') => {
+            const container = el('toast-container');
+            const toast = document.createElement('div');
+            let icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas fa-${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { if(toast.parentElement) toast.remove(); }, 3000);
+        };
 
-            ordersRef = db.ref('orders').orderByChild('userId').equalTo(currentUser.uid);
+        // --- NEW PAGE NAVIGATION LOGIC ---
+        function navigateTo(targetSection) {
+            pageSections.forEach(id => hide(id));
+            show(targetSection);
             
-            // Check once if there are any orders at all
-            ordersRef.once('value', snapshot => {
-                if (!snapshot.exists()) {
-                    placeholder.textContent = "You haven't placed any orders yet.";
+            // Show/hide top header elements based on page
+            const isHomePage = targetSection === 'feed-section';
+            el('top-search-bar').style.display = isHomePage ? '' : 'none';
+            el('main-header').classList.toggle('md:pt-3', !isHomePage); // Reduce header padding on non-home pages
+            el('main-content').classList.toggle('pt-36', isHomePage); // Adjust main content padding top
+            el('main-content').classList.toggle('md:pt-20', isHomePage);
+            el('main-content').classList.toggle('pt-20', !isHomePage);
+            el('main-content').classList.toggle('md:pt-20', !isHomePage);
+        }
+
+        window.goToHome = () => { if(currentRole !== 'admin') navigateTo('feed-section'); };
+        window.goToProfile = () => navigateTo('profile-section');
+        window.goToPosts = () => { renderPostsList(); navigateTo('posts-section'); };
+        window.goToWallet = () => navigateTo('wallet-section');
+        window.goToAdminChat = () => {
+            navigateTo('chat-section');
+            openChat('support_' + currentUser.uid, 'Admin Support');
+        };
+        // --- END OF NAVIGATION LOGIC ---
+
+        function routeUser() {
+            hide('auth-view');
+            if(currentRole === 'admin') { show('admin-view'); hide('user-view'); initAdminDashboard(); } 
+            else { show('user-view'); hide('admin-view'); initUserDashboard(); }
+        }
+
+        el('toggle-auth-mode').addEventListener('click', function toggleMode() {
+            isLoginMode = !isLoginMode; el('auth-form').reset();
+            if(isLoginMode) {
+                hide('name-group'); hide('role-group'); hide('mobile-group');
+                el('auth-email-label').innerText = 'Email or Mobile Number'; el('auth-btn').innerText = 'Log In';
+                el('auth-toggle-text').innerHTML = `Don't have an account? <span class="text-indigo-600 font-semibold cursor-pointer hover:underline" id="toggle-auth-mode">Sign Up</span>`;
+            } else {
+                show('name-group'); show('role-group'); show('mobile-group');
+                el('auth-email-label').innerText = 'Email Address'; el('auth-btn').innerText = 'Sign Up';
+                el('auth-toggle-text').innerHTML = `Already have an account? <span class="text-indigo-600 font-semibold cursor-pointer hover:underline" id="toggle-auth-mode">Log In</span>`;
+            }
+            document.getElementById('toggle-auth-mode').addEventListener('click', toggleMode);
+        });
+
+        el('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const loginId = el('auth-email').value.trim(), password = el('auth-password').value; 
+            showLoader("Authenticating...");
+            try {
+                if(isLoginMode) {
+                    let emailToUse = loginId;
+                    if (/^\d{7,15}$/.test(loginId)) {
+                        const usersSnap = await get(ref(db, 'users')); let foundEmail = null;
+                        if(usersSnap.exists()) usersSnap.forEach(child => { if(child.val().mobile === loginId) foundEmail = child.val().email; });
+                        if(foundEmail) emailToUse = foundEmail; else throw new Error("No account found with this mobile number.");
+                    }
+                    await signInWithEmailAndPassword(auth, emailToUse, password);
+                } else {
+                    const name = el('auth-name').value, mobile = el('auth-mobile').value, role = el('auth-role').value;
+                    if(!mobile) throw new Error("Mobile number is required.");
+                    const cred = await createUserWithEmailAndPassword(auth, loginId, password);
+                    await set(ref(db, 'users/' + cred.user.uid), { name, email: loginId, mobile, role, level: 'Bronze', walletBalance: 0, profilePic: '', isBanned: false });
+                }
+            } catch (err) { showToast(err.message, 'error'); } finally { hideLoader(); }
+        });
+
+        window.logoutHandler = async () => { await signOut(auth); showToast('Logged out.', 'info'); };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                onValue(ref(db, 'users/' + user.uid), async (snapshot) => {
+                    userData = snapshot.val();
+                    if(userData) {
+                        if(userData.isBanned) { showToast("Account banned.", "error"); await signOut(auth); return; }
+                        currentRole = userData.role; updateWalletUI(userData.walletBalance);
+                        populateProfileUI(); routeUser();
+                        if (currentRole !== 'admin') { fetchMyBookings(); fetchAdminSettings(); }
+                        hideLoader();
+                    } else { await signOut(auth); show('auth-view'); hideLoader(); }
+                });
+            } else { currentUser = null; userData = null; currentRole = null; show('auth-view'); hide('user-view'); hide('admin-view'); hideLoader(); }
+        });
+
+        function populateProfileUI() {
+            if(!userData) return;
+            const avatar = userData.profilePic || defaultAvatar;
+            el('prof-name').value = userData.name || ''; el('prof-email').value = userData.email || ''; el('prof-mobile').value = userData.mobile || '';
+            el('prof-header-name').innerText = userData.name || 'User';
+            el('prof-header-role').innerText = (userData.role || 'User') + " • " + (userData.level || 'Bronze');
+            el('prof-page-img').src = avatar;
+            el('header-desktop-img').src = avatar;
+            el('header-desktop-name').innerText = (userData.name || 'User').split(' ')[0];
+        }
+
+        window.toggleEditProfile = () => {
+            const inputs = [el('prof-name'), el('prof-mobile')];
+            const isDis = inputs[0].disabled;
+            inputs.forEach(i => i.disabled = !isDis);
+            if(isDis) { show('prof-save-btn-container'); hide('prof-edit-btn'); inputs[0].focus(); } 
+            else { hide('prof-save-btn-container'); show('prof-edit-btn'); populateProfileUI(); }
+        };
+
+        el('profile-edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); showLoader("Updating Profile...");
+            try {
+                await update(ref(db, 'users/' + currentUser.uid), { name: el('prof-name').value.trim(), mobile: el('prof-mobile').value.trim() });
+                showToast("Profile updated successfully!", "success");
+                [el('prof-name'), el('prof-mobile')].forEach(i => i.disabled = true);
+                hide('prof-save-btn-container'); show('prof-edit-btn');
+            } catch(err) { showToast("Update failed.", "error"); } finally { hideLoader(); }
+        });
+
+        el('profile-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(currentUser.providerData[0].providerId !== 'password') return showToast("Social login accounts cannot change password here.", "error");
+            showLoader("Updating Password...");
+            try {
+                const cred = EmailAuthProvider.credential(currentUser.email, el('prof-current-pass').value);
+                await reauthenticateWithCredential(currentUser, cred);
+                await updatePassword(currentUser, el('prof-new-pass').value);
+                el('profile-password-form').reset(); showToast("Password updated successfully!", "success");
+            } catch (err) { showToast(err.message, "error"); } finally { hideLoader(); }
+        });
+
+        window.uploadProfilePic = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return; showLoader("Uploading Image...");
+            try {
+                const imgRef = sRef(storage, `profiles/${currentUser.uid}_${Date.now()}`);
+                await uploadBytes(imgRef, file);
+                const url = await getDownloadURL(imgRef);
+                await update(ref(db, 'users/' + currentUser.uid), { profilePic: url });
+                showToast("Profile image updated!", "success");
+            } catch (e) { showToast("Image upload failed.", "error"); } finally { hideLoader(); }
+        };
+
+        window.sendForgotPass = async () => {
+            const email = el('reset-email-input').value.trim();
+            if(!email) return showToast('Please enter an email.', 'error');
+            showLoader("Sending Link...");
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showToast("Reset link sent! Check your inbox.", "success");
+                toggleModal('forgot-password-modal'); el('reset-email-input').value = '';
+            } catch(error) { showToast(error.message, "error"); } finally { hideLoader(); }
+        };
+
+        function fetchAdminSettings() {
+            onValue(ref(db, 'settings/admin'), snap => {
+                if(snap.exists()){
+                    platformCommissionRate = parseFloat(snap.val().commissionRate || 10);
+                    platformWithdrawalFee = parseFloat(snap.val().withdrawalFee || 0);
+                    if(el('user-withdrawal-fee-disp')) el('user-withdrawal-fee-disp').innerText = platformWithdrawalFee;
                 }
             });
+        }
 
-            // LISTEN FOR NEW ORDERS
-            ordersRef.on('child_added', (snapshot) => {
-                placeholder.style.display = 'none'; // Hide placeholder once an order loads
+        function updateWalletUI(balance) { const bal = parseFloat(balance || 0).toFixed(2); document.querySelectorAll('.wallet-bal-disp').forEach(n => n.innerText = bal); }
 
-                const orderKey = snapshot.key;
-                const orderData = snapshot.val();
-                
-                const card = document.createElement('div');
-                card.className = 'order-card';
-                card.id = `order-${orderKey}`;
-                card.innerHTML = createOrderCardHTML(orderKey, orderData);
-                
-                // Add the new order card to the top of the list
-                container.prepend(card);
-            });
-
-            // LISTEN FOR CHANGES TO EXISTING ORDERS
-            ordersRef.on('child_changed', (snapshot) => {
-                const orderKey = snapshot.key;
-                const orderData = snapshot.val();
-                
-                const card = document.getElementById(`order-${orderKey}`);
-                if (card) {
-                    // Update the content of the existing card
-                    card.innerHTML = createOrderCardHTML(orderKey, orderData);
-
-                    // Re-initialize map if needed
-                    const mapEl = document.getElementById(`track-map-${orderKey}`);
-                    if (orderData.status === 'Out for Delivery' && orderData.location && orderData.location.lat) {
-                        mapEl.style.display = 'block';
-                        // Logic to initialize or update map can be added here
-                    } else {
-                        mapEl.style.display = 'none';
+        el('btn-add-funds').addEventListener('click', async () => {
+            const amount = parseFloat(el('add-funds-amount').value);
+            if(amount > 0 && currentUser) {
+                const options = {
+                    "key": "rzp_test_YOUR_KEY", // <-- UPDATE THIS KEY HERE
+                    "amount": amount * 100, 
+                    "currency": "INR",
+                    "name": "RideShare Wallet",
+                    "description": "Add Funds to Wallet",
+                    "handler": async function (response) {
+                        showLoader("Updating Wallet...");
+                        try {
+                            const newBalance = (parseFloat(userData.walletBalance) || 0) + amount;
+                            await update(ref(db, 'users/' + currentUser.uid), { walletBalance: newBalance });
+                            const txRef = push(ref(db, 'transactions'));
+                            await set(txRef, { userId: currentUser.uid, paymentId: response.razorpay_payment_id, amount, type: "deposit", timestamp: serverTimestamp() });
+                            el('add-funds-amount').value = ''; 
+                            showToast(`₹${amount} added successfully!`, "success");
+                        } catch(err) { showToast("Error updating wallet.", "error"); } finally { hideLoader(); }
+                    },
+                    "prefill": { "name": userData.name, "email": userData.email, "contact": userData.mobile },
+                    "theme": { "color": "#4f46e5" }
+                };
+                try { 
+                    const rzpInstance = new Razorpay(options);
+                    rzpInstance.on('payment.failed', (r) => showToast(`Payment Failed: ${r.error.description}`, "error"));
+                    rzpInstance.open(); 
+                } catch(e) {
+                     if(confirm("Payment Gateway error. Simulate payment of ₹" + amount + "?")) {
+                        showLoader("Adding Funds...");
+                        try {
+                            await update(ref(db, 'users/' + currentUser.uid), { walletBalance: (parseFloat(userData.walletBalance) || 0) + amount });
+                            el('add-funds-amount').value = ''; showToast(`Simulated: ₹${amount} added.`, "success");
+                        } catch(err) { showToast("Error updating wallet.", "error"); } finally { hideLoader(); }
                     }
                 }
+            } else { showToast("Invalid amount.", "error"); }
+        });
+
+        el('btn-withdraw-funds').addEventListener('click', async () => {
+            const amount = parseFloat(el('withdraw-amount').value);
+            const upiId = el('withdraw-upi').value.trim();
+            const currentBal = parseFloat(userData.walletBalance) || 0;
+            const feeAmount = amount * (platformWithdrawalFee / 100);
+            const totalDeduction = amount + feeAmount;
+
+            if(!upiId) return showToast("Enter a valid UPI ID.", "error");
+            if(amount > 0 && totalDeduction <= currentBal) {
+                const updates = {};
+                updates[`users/${currentUser.uid}/walletBalance`] = currentBal - totalDeduction;
+                const wRef = push(ref(db, 'withdrawals'));
+                updates[`withdrawals/${wRef.key}`] = { userId: currentUser.uid, userName: userData.name, amount, feeAmount, upiId, status: 'pending', timestamp: serverTimestamp() };
+                await update(ref(db), updates);
+                el('withdraw-amount').value = ''; el('withdraw-upi').value = ''; showToast("Withdrawal requested.", "success");
+            } else { showToast("Insufficient funds (Check fee).", "error"); }
+        });
+
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            el('tab-btn-trips').className = (tab === 'trips') ? 'tab-active pb-1 transition' : 'tab-inactive pb-1 transition';
+            el('tab-btn-requests').className = (tab === 'requests') ? 'tab-active pb-1 transition' : 'tab-inactive pb-1 transition';
+            renderFeed();
+        };
+
+        el('post-trip-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await push(ref(db, 'trips'), {
+                creatorId: currentUser.uid, creatorName: userData.name, creatorPhone: userData.mobile || 'N/A', creatorPic: userData.profilePic || defaultAvatar,
+                origin: el('trip-origin').value, destination: el('trip-destination').value, date: el('trip-date').value, time: el('trip-time').value,
+                vehicleType: el('trip-vehicle').value, seats: parseInt(el('trip-seats').value), price: parseFloat(el('trip-price').value), 
+                status: 'active', createdAt: serverTimestamp()
+            });
+            el('post-trip-form').reset(); toggleModal('post-trip-modal'); showToast("Trip posted!", "success");
+        });
+
+        el('request-ride-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); showLoader("Posting Request...");
+            try {
+                await push(ref(db, 'rideRequests'), {
+                    requesterId: currentUser.uid, requesterName: userData.name, requesterPhone: userData.mobile || 'N/A', requesterPic: userData.profilePic || defaultAvatar,
+                    origin: el('req-origin').value, destination: el('req-destination').value, date: el('req-date').value,
+                    vehicleType: el('req-vehicle').value, seats: parseInt(el('req-seats').value), status: 'active', createdAt: serverTimestamp()
+                });
+                el('request-ride-form').reset(); toggleModal('request-ride-modal');
+                showToast("Ride Request posted successfully!", "success"); switchTab('requests');
+            } catch (err) { showToast("Failed to post request.", "error"); } finally { hideLoader(); }
+        });
+
+        function initUserDashboard() {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            onValue(ref(db, 'trips'), (snap) => {
+                allTrips = []; 
+                snap.forEach(c => { const d = c.val(); if (d.date && new Date(d.date) >= today) allTrips.push({ id: c.key, ...d }); });
+                allTrips.reverse(); renderFeed();
+            });
+            onValue(ref(db, 'rideRequests'), (snap) => {
+                allRequests = [];
+                snap.forEach(c => { const d = c.val(); if (d.date && new Date(d.date) >= today) allRequests.push({ id: c.key, ...d }); });
+                allRequests.reverse(); renderFeed();
+                if (!el('posts-section').classList.contains('hide')) renderPostsList();
+            });
+            onValue(ref(db, 'coRides'), (snap) => { allCoRides = []; snap.forEach(c => { allCoRides.push({ id: c.key, ...c.val() }); }); allCoRides.reverse(); renderFeed(); });
+            el('search-from').addEventListener('input', renderFeed); el('search-to').addEventListener('input', renderFeed); el('search-radius').addEventListener('change', renderFeed);
+        }
+
+        function renderPostsList() {
+            const container = el('posts-container'); container.innerHTML = '';
+            const activeRequests = allRequests.filter(r => r.status === 'active');
+            if (activeRequests.length === 0) { container.innerHTML = `<div class="text-center text-gray-400 py-12"><i class="fas fa-moon text-3xl mb-2"></i><p>No active ride requests.</p></div>`; return; }
+            activeRequests.forEach(req => {
+                const formattedDate = new Date(req.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                container.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 fade-in"><div class="flex items-center gap-4">
+                        <img src="${req.requesterPic || defaultAvatar}" class="w-10 h-10 rounded-full object-cover bg-gray-100">
+                        <div class="flex-1">
+                            <p class="font-bold text-sm text-gray-900">${req.requesterName}</p>
+                            <div class="text-xs text-gray-700 mt-1.5 flex items-center flex-wrap">
+                                <span class="font-semibold bg-gray-100 px-2 py-0.5 rounded">${req.origin}</span>
+                                <i class="fas fa-long-arrow-alt-right text-indigo-400 mx-2"></i>
+                                <span class="font-semibold bg-gray-100 px-2 py-0.5 rounded">${req.destination}</span>
+                            </div>
+                            <div class="text-[11px] text-gray-500 font-medium mt-2">
+                                <i class="fas fa-calendar-alt fa-fw mr-1"></i>${formattedDate} &nbsp;&nbsp;
+                                <i class="fas fa-chair fa-fw mr-1"></i>Needs ${req.seats} seat(s)
+                            </div>
+                        </div>
+                    </div></div>`;
             });
         }
+
+        function fetchMyBookings() {
+            if(!currentUser) return;
+            onValue(ref(db, 'bookings'), (snap) => { myBookings.clear(); snap.forEach(c => { if(c.val().passengerId === currentUser.uid) myBookings.add(c.val().tripId); }); renderFeed(); });
+        }
+
+        window.repostTrip = (id) => {
+            const t = allTrips.find(x => x.id === id); if(!t) return;
+            el('trip-origin').value = t.origin; el('trip-destination').value = t.destination;
+            el('trip-date').value = t.date; el('trip-time').value = t.time; el('trip-vehicle').value = t.vehicleType;
+            el('trip-seats').value = t.seats > 0 ? t.seats : 1; el('trip-price').value = t.price;
+            toggleModal('post-trip-modal');
+        };
+
+        window.requestCoRider = async (tripId, price, origin, destination) => {
+            if(!confirm(`Broadcast a Co-Rider request for ₹${price/2}?`)) return; showLoader("Broadcasting...");
+            try {
+                await push(ref(db, 'coRides'), { tripId, originalPassengerId: currentUser.uid, originalPassengerName: userData.name, originalPassengerPic: userData.profilePic || defaultAvatar, origin, destination, splitPrice: price / 2, status: 'active', timestamp: serverTimestamp() });
+                showToast("Co-Rider request sent!", "success");
+            } catch(e) { showToast("Failed to send request.", "error"); } finally { hideLoader(); }
+        };
+
+        window.acceptCoRide = async (coRideId, tripId, splitPrice, user1Id) => {
+            if(!confirm(`Accept Co-Ride and pay ₹${splitPrice} from your wallet?`)) return; showLoader("Processing Payment...");
+            try {
+                const [u2Snap, u1Snap] = await Promise.all([ get(ref(db, `users/${currentUser.uid}`)), get(ref(db, `users/${user1Id}`)) ]);
+                const u2Bal = parseFloat(u2Snap.val().walletBalance) || 0; const u1Bal = parseFloat(u1Snap.val().walletBalance) || 0;
+                if(u2Bal < splitPrice) { hideLoader(); return showToast("Insufficient balance for Co-Ride.", "error"); }
+                const updates = {};
+                updates[`users/${currentUser.uid}/walletBalance`] = u2Bal - splitPrice;
+                updates[`users/${user1Id}/walletBalance`] = u1Bal + splitPrice;
+                updates[`coRides/${coRideId}/status`] = 'closed'; updates[`coRides/${coRideId}/acceptedBy`] = currentUser.uid;
+                updates[`bookings/${tripId}_${currentUser.uid}`] = { tripId, passengerId: currentUser.uid, isCoRider: true, price: splitPrice, timestamp: serverTimestamp() };
+                await update(ref(db), updates); showToast(`Co-Ride Accepted! ₹${splitPrice} deducted.`, "success");
+            } catch(e) { showToast("Failed to accept Co-Ride.", "error"); } finally { hideLoader(); }
+        };
+
+        window.makeRideOffer = async (requestId) => {
+            const amountStr = prompt("Enter the price (₹) you want to offer for this ride:");
+            if (!amountStr) return; const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount <= 0) return showToast("Please enter a valid amount.", "error");
+            showLoader("Sending Offer...");
+            try {
+                await push(ref(db, 'rideOffers'), { requestId, offererId: currentUser.uid, offererName: userData.name, offererPic: userData.profilePic || defaultAvatar, offeredAmount: amount, status: 'pending', createdAt: serverTimestamp() });
+                showToast("Your offer has been sent!", "success");
+            } catch (err) { showToast("Could not send offer.", "error"); } finally { hideLoader(); }
+        };
+
+        window.viewRideOffers = (requestId) => {
+            const offersQuery = query(ref(db, 'rideOffers'), orderByChild('requestId'), equalTo(requestId));
+            const container = el('ride-offers-container');
+            container.innerHTML = `<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-indigo-500"></i></div>`;
+            toggleModal('ride-offers-modal');
+            onValue(offersQuery, (snap) => {
+                if (!snap.exists()) { container.innerHTML = `<div class="text-center text-gray-400 py-8"><p>No offers received yet.</p></div>`; return; }
+                container.innerHTML = '';
+                snap.forEach(child => {
+                    const offer = { id: child.key, ...child.val() };
+                    if(offer.status === 'pending') {
+                         container.innerHTML += `
+                            <div class="bg-gray-50 p-3 rounded-lg border flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <img src="${offer.offererPic}" class="w-10 h-10 rounded-full object-cover">
+                                    <div><p class="font-bold text-sm">${offer.offererName}</p><p class="text-xs text-indigo-600 font-semibold">Offer: ₹${offer.offeredAmount}</p></div>
+                                </div>
+                                <button onclick="acceptRideOffer('${offer.id}', '${offer.requestId}', ${offer.offeredAmount}, '${offer.offererId}', '${offer.offererName}', '${offer.offererPic}')" class="bg-green-500 text-white px-3 py-1 text-xs font-bold rounded-md hover:bg-green-600 shadow-sm">Accept</button>
+                            </div>`;
+                    }
+                });
+                 if(container.innerHTML === '') container.innerHTML = `<div class="text-center text-gray-400 py-8"><p>No new offers.</p></div>`;
+            }, { onlyOnce: true });
+        };
+        
+        window.acceptRideOffer = async (offerId, requestId, amount, offererId, offererName, offererPic) => {
+            if (!confirm(`Accept offer of ₹${amount} from ${offererName}? This amount will be deducted from your wallet.`)) return;
+            showLoader("Processing Transaction...");
+            try {
+                 const [requesterSnap, offererSnap, adminSnap] = await Promise.all([ get(ref(db, `users/${currentUser.uid}`)), get(ref(db, `users/${offererId}`)), get(ref(db, `settings/admin`)) ]);
+                const requesterBal = parseFloat(requesterSnap.val().walletBalance) || 0;
+                if(requesterBal < amount) { hideLoader(); return showToast("Insufficient wallet balance.", "error"); }
+                const offererBal = parseFloat(offererSnap.val().walletBalance) || 0;
+                const adminRevenue = parseFloat(adminSnap.val()?.totalRevenue) || 0;
+                const commission = amount * (platformCommissionRate / 100);
+                const updates = {};
+                updates[`users/${currentUser.uid}/walletBalance`] = requesterBal - amount;
+                updates[`users/${offererId}/walletBalance`] = offererBal + (amount - commission);
+                updates[`settings/admin/totalRevenue`] = adminRevenue + commission;
+                updates[`rideRequests/${requestId}/status`] = 'booked';
+                updates[`rideRequests/${requestId}/acceptedOfferId`] = offerId;
+                updates[`rideRequests/${requestId}/acceptedOffererId`] = offererId;
+                updates[`rideRequests/${requestId}/acceptedOffererName`] = offererName;
+                updates[`rideRequests/${requestId}/acceptedOffererPic`] = offererPic;
+                updates[`rideRequests/${requestId}/finalPrice`] = amount;
+                updates[`rideOffers/${offerId}/status`] = 'accepted';
+                await update(ref(db), updates);
+                showToast("Offer accepted and ride booked!", "success");
+                toggleModal('ride-offers-modal');
+            } catch (err) { showToast("Transaction failed.", "error"); } finally { hideLoader(); }
+        };
+
+        function renderFeed() {
+            const container = el('feed-container'); container.innerHTML = '';
+            const qFrom = el('search-from').value.toLowerCase(), qTo = el('search-to').value.toLowerCase();
+            const itemsToRender = (currentTab === 'trips' ? allTrips : allRequests).filter(t => (t.origin.toLowerCase().includes(qFrom) || qFrom === '') && (t.destination.toLowerCase().includes(qTo) || qTo === ''));
+            const activeCoRides = allCoRides.filter(c => c.status === 'active' && c.originalPassengerId !== currentUser.uid && !myBookings.has(c.tripId));
+
+            if(itemsToRender.length === 0 && (currentTab === 'requests' || activeCoRides.length === 0)) { container.innerHTML = `<div class="col-span-full text-center text-gray-400 py-12"><p>No ${currentTab} found.</p></div>`; return; }
+
+            if(currentTab === 'trips') {
+                 activeCoRides.forEach(cr => {
+                    if((cr.origin.toLowerCase().includes(qFrom) || qFrom === '') && (cr.destination.toLowerCase().includes(qTo) || qTo === '')) {
+                        container.innerHTML += `<div class="bg-indigo-50 rounded-xl p-4 shadow-sm border border-indigo-200 flex flex-col justify-between"><div class="flex justify-between items-start mb-2"><div class="text-[10px] font-bold uppercase text-white bg-indigo-600 px-2 rounded shadow-sm"><i class="fas fa-handshake mr-1"></i>Co-Ride</div><div class="font-bold text-gray-800">₹${cr.splitPrice}</div></div><div class="text-xs font-semibold mb-2">${cr.origin} <i class="fas fa-arrow-right text-indigo-300 mx-1"></i> ${cr.destination}</div><div class="mt-1 p-2 bg-white rounded border border-indigo-100 flex items-center gap-2"><img src="${cr.originalPassengerPic}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="flex-1 min-w-0"><p class="text-[9px] text-indigo-500 font-bold uppercase">Booked By</p><p class="text-xs font-bold text-gray-800 truncate">${cr.originalPassengerName}</p></div></div><button onclick="acceptCoRide('${cr.id}', '${cr.tripId}', ${cr.splitPrice}, '${cr.originalPassengerId}')" class="w-full mt-3 bg-indigo-600 text-white py-1.5 rounded-md text-xs font-bold shadow-sm hover:bg-indigo-700 transition"><i class="fas fa-check-circle mr-1"></i>Accept & Pay</button></div>`;
+                    }
+                });
+            }
+
+            itemsToRender.forEach(item => {
+                if (currentTab === 'trips') {
+                    const isCreator = item.creatorId === currentUser.uid, hasBooked = item.passengerId === currentUser.uid || myBookings.has(item.id), isClosed = item.status === 'closed';
+                    let btn = '', extraDetails = '';
+                    if(isCreator){
+                        if(isClosed){
+                            extraDetails = `<div class="mt-2 p-2 bg-green-50 rounded border border-green-100 flex items-center gap-2"><img src="${item.passengerPic||defaultAvatar}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="flex-1 min-w-0"><p class="text-[10px] text-green-700 font-bold uppercase">Booked By</p><p class="text-xs font-bold text-gray-800 truncate">${item.passengerName}</p></div><button onclick="openChat('${item.id}', 'Chat w/ Passenger')" class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center hover:bg-indigo-200"><i class="fas fa-comment"></i></button></div>`;
+                            btn = `<button onclick="repostTrip('${item.id}')" class="w-full mt-3 bg-blue-600 text-white py-1.5 rounded-md text-xs font-bold"><i class="fas fa-redo mr-1"></i>Repost</button>`;
+                        } else { btn = `<button disabled class="w-full mt-3 bg-gray-200 text-gray-500 py-1.5 rounded-md text-xs font-bold"><i class="fas fa-hourglass-half mr-1"></i>Your Offer is Live</button>`; }
+                    } else if (hasBooked) {
+                        extraDetails = `<div class="mt-2 p-2 bg-indigo-50 rounded border border-indigo-100 flex items-center gap-2"><img src="${item.creatorPic||defaultAvatar}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="flex-1 min-w-0"><p class="text-[10px] text-indigo-700 font-bold uppercase">Your Host</p><p class="text-xs font-bold text-gray-800 truncate">${item.creatorName}</p></div><button onclick="openChat('${item.id}', 'Chat w/ Host')" class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:bg-indigo-700"><i class="fas fa-comment"></i></button></div>`;
+                        const hasCoRide = allCoRides.some(c => c.tripId === item.id && c.originalPassengerId === currentUser.uid);
+                        if(hasCoRide) btn = `<button disabled class="w-full mt-3 bg-blue-100 text-blue-700 py-1.5 rounded-md text-xs font-bold"><i class="fas fa-spinner fa-spin mr-1"></i>Finding Co-Rider</button>`;
+                        else btn = `<button onclick="requestCoRider('${item.id}', ${item.price}, '${item.origin}', '${item.destination}')" class="w-full mt-3 bg-indigo-50 text-indigo-700 py-1.5 rounded-md text-xs font-bold border border-indigo-300 hover:bg-indigo-100"><i class="fas fa-user-plus mr-1"></i>Find Co-Rider</button>`;
+                    } else { btn = `<button onclick="joinTrip('${item.id}', ${item.price}, '${item.creatorId}')" class="w-full mt-3 bg-indigo-600 text-white py-1.5 rounded-md text-xs font-bold"><i class="fas fa-ticket-alt mr-1"></i>Join (₹${item.price})</button>`; }
+                    container.innerHTML += `<div class="bg-white rounded-xl p-4 shadow-sm border flex flex-col justify-between"><div class="flex justify-between items-start mb-2"><div class="text-[10px] font-bold uppercase text-indigo-600 bg-indigo-50 px-2 rounded">${item.vehicleType}</div><div class="font-bold text-gray-800">₹${item.price}</div></div><div class="text-xs font-semibold mb-1">${item.origin} <i class="fas fa-arrow-right text-gray-400 mx-1"></i> ${item.destination}</div><div class="text-[11px] text-gray-500">Seats: ${item.seats}</div>${extraDetails}${btn}</div>`;
+                } else {
+                    let btn = '', extraDetails = '';
+                    if (item.status === 'booked') {
+                        if(item.requesterId === currentUser.uid) {
+                             extraDetails = `<div class="mt-2 p-2 bg-green-50 rounded border border-green-100 flex items-center gap-2"><img src="${item.acceptedOffererPic||defaultAvatar}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="flex-1 min-w-0"><p class="text-[10px] text-green-700 font-bold uppercase">Booked with</p><p class="text-xs font-bold text-gray-800 truncate">${item.acceptedOffererName}</p></div></div>`;
+                             btn = `<button onclick="openChat('req_${item.id}', 'Chat with Driver')" class="w-full mt-3 bg-indigo-600 text-white py-1.5 rounded-md text-xs font-bold"><i class="fas fa-comment mr-1"></i>Chat Now</button>`;
+                        } else if (item.acceptedOffererId === currentUser.uid) {
+                             extraDetails = `<div class="mt-2 p-2 bg-green-50 rounded border border-green-100 flex items-center gap-2"><img src="${item.requesterPic||defaultAvatar}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="flex-1 min-w-0"><p class="text-[10px] text-green-700 font-bold uppercase">You are driving</p><p class="text-xs font-bold text-gray-800 truncate">${item.requesterName}</p></div></div>`;
+                             btn = `<button onclick="openChat('req_${item.id}', 'Chat with Passenger')" class="w-full mt-3 bg-indigo-600 text-white py-1.5 rounded-md text-xs font-bold"><i class="fas fa-comment mr-1"></i>Chat Now</button>`;
+                        } else { btn = `<button disabled class="w-full mt-3 bg-gray-200 text-gray-500 py-1.5 rounded-md text-xs font-bold">Already Booked</button>`; }
+                    } else { 
+                        if (item.requesterId === currentUser.uid) { btn = `<button onclick="viewRideOffers('${item.id}')" class="w-full mt-3 bg-gray-800 text-white py-1.5 rounded-md text-xs font-bold"><i class="fas fa-list-ul mr-1"></i>View Offers</button>`;
+                        } else { btn = `<button onclick="makeRideOffer('${item.id}')" class="w-full mt-3 bg-orange-500 text-white py-1.5 rounded-md text-xs font-bold"><i class="fas fa-hand-holding-usd mr-1"></i>Offer Ride</button>`; }
+                    }
+                     container.innerHTML += `<div class="bg-white rounded-xl p-4 shadow-sm border border-orange-100 flex flex-col justify-between"><div class="flex justify-between items-start mb-2"><div class="text-[10px] font-bold uppercase text-orange-600 bg-orange-50 px-2 rounded">Needs ${item.vehicleType==='Any'?'Ride':item.vehicleType}</div><div class="text-xs font-semibold text-gray-500">${item.date}</div></div><div class="text-xs font-semibold mb-1">${item.origin} <i class="fas fa-arrow-right text-gray-400 mx-1"></i> ${item.destination}</div><div class="text-[11px] text-gray-500">Passenger: ${item.requesterName} | Seats: ${item.seats}</div>${extraDetails}${btn}</div>`;
+                }
+            });
+        }
+
+        window.joinTrip = async (tripId, price, creatorId) => {
+            if(!confirm(`Join trip for ₹${price}?`)) return; showLoader("Joining Trip...");
+            try {
+                const [uSnap, tSnap, aSnap, cSnap] = await Promise.all([ get(ref(db, `users/${currentUser.uid}`)), get(ref(db, `trips/${tripId}`)), get(ref(db, `settings/admin`)), get(ref(db, `users/${creatorId}`)) ]);
+                const uBal = parseFloat(uSnap.val().walletBalance) || 0, seats = parseInt(tSnap.val().seats) || 0;
+                if(uBal < price) { hideLoader(); return showToast("Insufficient funds.", "error"); } if(seats <= 0) { hideLoader(); return showToast("Sold out.", "error"); }
+                const comm = price * ((parseFloat(aSnap.val()?.commissionRate)||10) / 100);
+                const updates = {};
+                updates[`users/${currentUser.uid}/walletBalance`] = uBal - price;
+                updates[`users/${creatorId}/walletBalance`] = (parseFloat(cSnap.val().walletBalance)||0) + (price - comm);
+                updates[`settings/admin/totalRevenue`] = (parseFloat(aSnap.val()?.totalRevenue)||0) + comm;
+                updates[`trips/${tripId}/status`] = 'closed'; updates[`trips/${tripId}/seats`] = seats - 1;
+                updates[`trips/${tripId}/passengerId`] = currentUser.uid; updates[`trips/${tripId}/passengerName`] = userData.name;
+                updates[`trips/${tripId}/passengerPhone`] = userData.mobile; updates[`trips/${tripId}/passengerPic`] = userData.profilePic || defaultAvatar;
+                updates[`bookings/${tripId}_${currentUser.uid}`] = { tripId, passengerId: currentUser.uid, price, timestamp: serverTimestamp() };
+                await update(ref(db), updates); showToast("Booked successfully!", "success");
+            } catch (err) { showToast("Failed.", "error"); } finally { hideLoader(); }
+        };
+
+        window.openChat = (chatId, title) => {
+            if(el('chat-section').classList.contains('hide')) goToAdminChat();
+            activeChatId = chatId;
+            el('chat-title-page').innerText = title;
+            if(chatUnsub) chatUnsub();
+            chatUnsub = onValue(ref(db, `chats/${chatId}`), (snap) => {
+                const container = el('chat-messages-page'); container.innerHTML = '';
+                const msgs = []; snap.forEach(c => msgs.push(c.val()));
+                if(!msgs.length) container.innerHTML = `<p class="text-center text-gray-400 mt-6 text-xs">No messages yet.</p>`;
+                else { msgs.forEach(m => { const isMe = m.senderId === currentUser.uid; container.innerHTML += `<div class="max-w-[85%] px-3 py-1.5 text-xs shadow-sm ${isMe ? 'msg-me' : 'msg-other'}"><div class="font-bold text-[9px] uppercase opacity-70 mb-0.5">${isMe ? 'You' : m.senderName}</div>${m.text}</div>`; }); container.scrollTop = container.scrollHeight; }
+            });
+        };
+        
+        el('chat-form-page').addEventListener('submit', async (e) => {
+            e.preventDefault(); const text = el('chat-input-page').value.trim();
+            if(text && activeChatId) { await push(ref(db, `chats/${activeChatId}`), { senderId: currentUser.uid, senderName: userData.name, text, timestamp: serverTimestamp() }); el('chat-input-page').value = ''; }
+        });
+
+        function initAdminDashboard() {
+            onValue(ref(db, 'settings/admin'), snap => { 
+                if(snap.exists()) {
+                    el('admin-commission-rate').value = snap.val().commissionRate || 10;
+                    el('admin-withdrawal-fee').value = snap.val().withdrawalFee || 0;
+                    el('admin-revenue').innerText = parseFloat(snap.val().totalRevenue||0).toFixed(2);
+                }
+            });
+            onValue(ref(db, 'users'), snap => { 
+                let c = 0; const list = el('admin-users-mgmt-list'); list.innerHTML = '';
+                snap.forEach(child => {
+                    c++; const u = { id: child.key, ...child.val() };
+                    const badge = u.isBanned ? `<span class="bg-red-100 text-red-700 px-1 py-0.5 rounded text-[10px]">Banned</span>` : `<span class="bg-green-100 text-green-700 px-1 py-0.5 rounded text-[10px]">Active</span>`;
+                    const levelSel = `<select onchange="changeUserLevel('${u.id}', this.value)" class="text-[10px] border rounded p-1 outline-none w-full bg-white text-gray-700"><option value="Bronze" ${u.level==='Bronze'?'selected':''}>Bronze</option><option value="Silver" ${u.level==='Silver'?'selected':''}>Silver</option><option value="Gold" ${u.level==='Gold'?'selected':''}>Gold</option><option value="Platinum" ${u.level==='Platinum'?'selected':''}>Platinum</option></select>`;
+                    list.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="p-2 font-semibold text-xs">${u.name}</td><td class="p-2 text-[11px]">${u.email}</td><td class="p-2 text-[11px]">${u.mobile||'-'}</td><td class="p-2">${badge}</td><td class="p-2">${levelSel}</td><td class="p-2 flex gap-1.5"><button onclick="adminAddFunds('${u.id}', '${u.name}', ${u.walletBalance || 0})" title="Add Funds" class="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-600"><i class="fas fa-wallet"></i></button><button onclick="adminOpenChat('${u.id}')" title="Admin Chat" class="bg-indigo-500 text-white px-2 py-1 rounded text-[10px]"><i class="fas fa-comment"></i></button><button onclick="toggleUserBan('${u.id}', ${u.isBanned})" title="Ban/Unban" class="${u.isBanned?'bg-green-500':'bg-red-500'} text-white px-2 py-1 rounded text-[10px]"><i class="fas fa-${u.isBanned?'check':'ban'}"></i></button></td></tr>`;
+                }); el('admin-users-count').innerText = c; 
+            });
+            onValue(ref(db, 'withdrawals'), snap => {
+                let pc = 0; const list = el('admin-withdrawals-list'); list.innerHTML = '';
+                const reqs = []; snap.forEach(c => reqs.push({id: c.key, ...c.val()}));
+                reqs.reverse().forEach(w => {
+                    if(w.status === 'pending') pc++;
+                    const btn = w.status === 'pending' ? `<button onclick="approveWithdrawal('${w.id}')" class="bg-green-500 text-white px-1.5 py-0.5 rounded text-[10px]">Approve</button>` : `<span class="text-[10px] text-green-600 font-bold">Paid</span>`;
+                    list.innerHTML += `<tr class="border-b"><td class="p-2 text-[11px] font-bold">${w.userName}</td><td class="p-2 font-bold text-orange-600 text-[11px]">₹${w.amount}</td><td class="p-2 text-[10px]">${w.upiId}</td><td class="p-2 flex gap-1 items-center">${btn}</td></tr>`;
+                }); el('admin-withdrawals-count').innerText = pc;
+            });
+        }
+        window.switchAdminTab = (tab) => {
+            if(tab === 'dash') { el('admin-tab-dash-btn').className = 'tab-active pb-1'; el('admin-tab-users-btn').className = 'tab-inactive pb-1'; show('admin-dash-section'); hide('admin-users-section'); } 
+            else { el('admin-tab-users-btn').className = 'tab-active pb-1'; el('admin-tab-dash-btn').className = 'tab-inactive pb-1'; show('admin-users-section'); hide('admin-dash-section'); }
+        };
+        window.adminOpenChat = (userId) => {
+            activeChatId = 'support_' + userId; el('chat-title-page').innerText = 'Support Chat';
+            navigateTo('chat-section'); // This function is for user view, but can be adapted or we need a new one for admin
+            // For now, let's just make it a modal for admin to avoid complexity
+            toggleModal('admin-chat-modal-or-similar');
+            // This part needs a dedicated admin chat UI which is not built yet. The above is a placeholder.
+            showToast("Admin-to-user chat UI not implemented in this version.", "info");
+        };
+        window.adminAddFunds = async (uid, name, currentBal) => {
+            const amountStr = prompt(`Enter amount (₹) to add to ${name}'s wallet:`); if(!amountStr) return;
+            const amount = parseFloat(amountStr);
+            if(amount > 0) {
+                showLoader("Processing...");
+                try {
+                    await update(ref(db, `users/${uid}`), { walletBalance: parseFloat(currentBal || 0) + amount });
+                    showToast(`₹${amount} added to ${name}'s wallet`, 'success');
+                } catch(e) { showToast('Failed to add funds', 'error'); } finally { hideLoader(); }
+            } else { showToast('Invalid amount', 'error'); }
+        };
+        window.changeUserLevel = async (uid, newLevel) => { await update(ref(db, `users/${uid}`), { level: newLevel }); showToast(`User level updated to ${newLevel}`, "success"); };
+        window.toggleUserBan = async (uid, isBanned) => { if(confirm(`Confirm Action?`)) { await update(ref(db, `users/${uid}`), { isBanned: !isBanned }); showToast(`Updated.`, "success"); } };
+        window.approveWithdrawal = async (id) => { if(confirm("Mark as paid?")) { await update(ref(db, `withdrawals/${id}`), { status: 'approved' }); showToast("Approved.", "success"); } };
+        el('save-commission-btn').addEventListener('click', async () => { const r = parseFloat(el('admin-commission-rate').value); if(r>=0) { await update(ref(db, 'settings/admin'), { commissionRate: r }); showToast('Commission Updated!', 'success'); } });
+        el('save-fee-btn').addEventListener('click', async () => { const f = parseFloat(el('admin-withdrawal-fee').value); if(f>=0) { await update(ref(db, 'settings/admin'), { withdrawalFee: f }); showToast('Fee Percentage Updated!', 'success'); } });
     </script>
 </body>
 </html>
