@@ -1,0 +1,827 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tambola Domains & Registration</title>
+
+<!-- Razorpay & jsPDF CDNs -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+/* ================= SECTION 1: OFFERS PAGE ================= */
+.offers-container {
+  max-width: 1100px;
+  width: 95%;
+  margin: auto;
+  padding: 20px;
+}
+
+.offers-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.offers-header h1 {
+  font-size: 2rem;
+}
+
+.offers-header p {
+  margin-top: 8px;
+  opacity: 0.85;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.card {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.card h2 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.price {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #00ffcc;
+  margin: 12px 0;
+}
+
+.card ul {
+  list-style: none;
+  margin-bottom: 15px;
+}
+
+.card ul li {
+  margin-bottom: 8px;
+  padding-left: 22px;
+  position: relative;
+}
+
+.card ul li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #00ffcc;
+}
+
+.card select, .card input[type="number"], .card input[type="email"] {
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 1rem;
+  outline: none;
+  background: white;
+  color: black;
+}
+
+.btn-primary {
+  margin-top: 18px;
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #00ffcc, #00c6ff);
+  color: #003;
+  transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+  transform: scale(1.03);
+}
+
+.message {
+  display: none;
+  margin-top: 25px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+}
+
+/* Credentials Box for Ready Domains */
+.credentials-box {
+  display: none;
+  margin-top: 15px;
+  background: rgba(0, 255, 204, 0.2);
+  border: 1px solid #00ffcc;
+  border-radius: 10px;
+  padding: 15px;
+  color: #fff;
+}
+.credentials-box h3 { color: #00ffcc; margin-bottom: 10px; font-size: 1.1rem; }
+.credentials-box p { margin-bottom: 5px; font-size: 0.95rem; }
+.credentials-box strong { color: #ffd166; }
+
+/* ================= SECTION 2: FORM PAGE ================= */
+.form-container {
+  display: none; /* Initially Hidden */
+  width: 95%;
+  max-width: 600px;
+  padding: 30px;
+  border-radius: 25px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  margin: auto;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.back-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.form-container h1 {
+  text-align: center;
+  font-size: 1.8rem;
+}
+
+.form-container input, .form-container select {
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  outline: none;
+}
+
+.form-container select {
+  background: rgba(255,255,255,0.9);
+  color: black;
+}
+
+.form-container input::placeholder {
+  color: #ddd;
+}
+
+/* Domain Wrap & Preview */
+.domain-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: bold;
+  color: #00ffcc;
+  min-width: 130px;
+}
+
+.info-text {
+  font-size: 0.85rem;
+  color: #ffd166;
+  margin: 5px 0 10px 5px;
+}
+
+/* Domain Suggestions Styling */
+.suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.suggestion-chip {
+  background: rgba(0, 255, 204, 0.15);
+  color: #00ffcc;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid #00ffcc;
+  transition: all 0.2s;
+}
+
+.suggestion-chip:hover {
+  background: #00ffcc;
+  color: #003;
+  transform: translateY(-2px);
+}
+
+.btn-pay {
+  width: 100%;
+  padding: 15px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-pay:hover {
+  transform: scale(1.05);
+}
+
+/* ================= NEW POPUP MODAL STYLES ================= */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #1a2a33;
+  padding: 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0,255,204,0.3);
+  text-align: center;
+}
+
+.modal-content h3 {
+  color: #00ffcc;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  outline: none;
+}
+
+.modal-content input::placeholder {
+  color: #bbb;
+}
+
+.password-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrap span {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.btn-submit-modal {
+  width: 100%;
+  padding: 14px;
+  background: #00ffcc;
+  color: #003;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.btn-submit-modal:hover {
+  background: #00e6b8;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= SECTION 1: OFFERS ================= -->
+<div class="offers-container" id="offersSection">
+  <div class="offers-header">
+    <h1>Online Tambola Domain Available</h1>
+    <p>Select your domain and start your Tambola business</p>
+  </div>
+
+  <section class="cards">
+    <!-- New Domain / Custom Domain -->
+    <div class="card">
+      <h2>New Custom Domain</h2>
+      <div class="price">₹4,000 / month</div>
+      <ul>
+        <li>Brand new domain</li>
+        <li>Custom domain name (.in)</li>
+        <li>Premium branding</li>
+      </ul>
+      <button class="btn-primary" onclick="showForm()">
+        Select Plan & Register
+      </button>
+    </div>
+
+    <!-- Ready-Made Domains -->
+    <div class="card">
+      <h2>Ready-Made Domain List</h2>
+      <div class="price" id="dynamicPriceDisplay">Select Days for Price</div>
+      <ul>
+        <li>1 to 15 Days = ₹200/day</li>
+        <li>16 to 29 Days = ₹150/day</li>
+        <li>1 Month (30 Days) = ₹3500 fixed</li>
+        <li>Create Your Own Admin Details</li>
+      </ul>
+
+      <select id="domainSelect">
+        <option value="">Loading Domains...</option>
+      </select>
+      
+      <input type="number" id="validityDays" min="1" max="30" placeholder="Enter Validity (1 to 30 Days)" oninput="calculateDynamicPrice()">
+      <input type="email" id="buyerEmail" placeholder="Enter Your Email Address">
+
+      <button class="btn-primary" onclick="payForReadyDomain()">
+        Pay & Create Admin
+      </button>
+
+      <!-- Div to show credentials after successful creation -->
+      <div id="credentialsBox" class="credentials-box"></div>
+    </div>
+  </section>
+
+  <div class="message" id="messageBox"></div>
+</div>
+
+
+<!-- ================= ADMIN CREATION MODAL ================= -->
+<div class="modal-overlay" id="adminPopup">
+  <div class="modal-content">
+    <h3>Create Admin Account</h3>
+    <p style="font-size: 0.85rem; margin-bottom:15px; color:#ddd;">Payment Successful! Please create your admin login credentials for the selected domain.</p>
+    
+    <input type="text" id="adminName" placeholder="Full Name">
+    <input type="tel" id="adminPhone" placeholder="Mobile Number">
+    <input type="email" id="adminEmailInput" placeholder="Admin Email (e.g. admin@domain.in)">
+    
+    <div class="password-wrap">
+      <input type="password" id="adminPassword" placeholder="Set Admin Password">
+      <span id="eyeIcon" onclick="togglePassword()">👁️</span>
+    </div>
+    
+    <button class="btn-submit-modal" onclick="saveAdminToFirebase()">Submit & Finish</button>
+  </div>
+</div>
+
+
+<!-- ================= SECTION 2: REGISTRATION FORM ================= -->
+<div class="form-container" id="formSection">
+  <div class="form-header">
+    <button class="back-btn" onclick="hideForm()">⬅ Back</button>
+    <h1>🚀 Sintha Developer</h1>
+    <div style="width: 60px;"></div>
+  </div>
+
+  <input id="name" placeholder="Your Name">
+  <input id="title" placeholder="Website Title" oninput="generateSuggestions()">
+
+  <p class="info-text">👉 Note: We only support and register <strong>.in</strong> domains.</p>
+  
+  <div class="domain-wrap">
+    <input id="domain" placeholder="Enter base domain name" oninput="updatePreview()">
+    <div class="preview" id="preview">yourname.in</div>
+  </div>
+
+  <div id="domainSuggestions" class="suggestions-list"></div>
+
+  <input id="email" type="email" placeholder="Email">
+  <input id="mobile" type="tel" placeholder="Mobile Number">
+  <input id="address" placeholder="Address">
+
+  <select id="plan">
+    <option value="4000">Monthly ₹4000</option>
+    <option value="32000">Yearly ₹32000</option>
+  </select>
+
+  <button class="btn-pay" onclick="payNow()">Pay Now</button>
+</div>
+
+
+<!-- ================= JAVASCRIPT & FIREBASE REALTIME DB ================= -->
+<script type="module">
+  // NOTE: This code uses FIREBASE REALTIME DATABASE.
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  // =================================================================
+  // YAHAN APNE 10 ALAG-ALAG FIREBASE PROJECTS KI PURI DETAILS DAALEIN
+  // =================================================================
+  const allDomainScripts = {
+    "manipurhousietambola.in": {
+      apiKey: "AIzaSyDrfrgYYY69ufupGKbktPDY0jtKKVOzR-0",
+  authDomain: "manipurhousie-45674.firebaseapp.com",
+  databaseURL: "https://manipurhousie-45674-default-rtdb.firebaseio.com",
+  projectId: "manipurhousie-45674",
+  storageBucket: "manipurhousie-45674.firebasestorage.app",
+  messagingSenderId: "887925712516",
+  appId: "1:887925712516:web:b03d27f5759dd5719c84d1",
+  measurementId: "G-H3GRHB177F"
+},
+
+    "imphalhousie.in": {
+      apiKey: "AIzaSyCyxIhlGD-lDoj4sJN2bUAWMKCmg7khV0o",
+  authDomain: "imphalhousie.firebaseapp.com",
+  databaseURL: "https://imphalhousie-default-rtdb.firebaseio.com",
+  projectId: "imphalhousie",
+  storageBucket: "imphalhousie.firebasestorage.app",
+  messagingSenderId: "211890685857",
+  appId: "1:211890685857:web:10a590033b9eeb3ec9ede0",
+  measurementId: "G-XRWNM16EGM"
+},
+
+    "yaiphaminarasi-ngasi.in": {
+      apiKey: "AIzaSyBJV79KTol9d8Ox882Lu1mhqHJbGFqaIe4",
+  authDomain: "peacehousie.firebaseapp.com",
+  databaseURL: "https://peacehousie-default-rtdb.firebaseio.com",
+  projectId: "peacehousie",
+  storageBucket: "peacehousie.firebasestorage.app",
+  messagingSenderId: "166571305818",
+  appId: "1:166571305818:web:b5900f75e44ec3c9726163",
+  measurementId: "G-L1HD0RWKBG"
+},
+    "eramdamtambola.in": {
+      apiKey: "AIzaSyBHirTmBB9IdgfQ9JKbSbnISXOdEXyRPjk",
+  authDomain: "eramdamtambola.firebaseapp.com",
+  databaseURL: "https://eramdamtambola-default-rtdb.firebaseio.com",
+  projectId: "eramdamtambola",
+  storageBucket: "eramdamtambola.firebasestorage.app",
+  messagingSenderId: "229285760705",
+  appId: "1:229285760705:web:ac5052bbf1f18f1e05ce40",
+  measurementId: "G-0E1XGMWBN2"
+},
+
+    "gangpartytambola.in": {
+      apiKey: "AIzaSyAvtxo-P6vrV6M9bdgLfpcrRfwsjeF5TxA",
+  authDomain: "gangpartytambola.firebaseapp.com",
+  databaseURL: "https://gangpartytambola-default-rtdb.firebaseio.com",
+  projectId: "gangpartytambola",
+  storageBucket: "gangpartytambola.firebasestorage.app",
+  messagingSenderId: "927866790189",
+  appId: "1:927866790189:web:8f5437030b5ed0918db3a4",
+  measurementId: "G-CNREKSSTN7"
+},
+    "pothaphamhousie.in": {
+      apiKey: "AIzaSyBDhmUhwqj_aYXg10DPFvRJI89p0PvxtmA",
+  authDomain: "daily-housie.firebaseapp.com",
+  databaseURL: "https://daily-housie-default-rtdb.firebaseio.com",
+  projectId: "daily-housie",
+  storageBucket: "daily-housie.firebasestorage.app",
+  messagingSenderId: "336383808677",
+  appId: "1:336383808677:web:787e0710d5800152e9a94c",
+  measurementId: "G-KLZ93N1FHB"
+},
+
+    "hiyaihousie.in": {
+      apiKey: "AIzaSyBwa-fMdgrhogvYKvmb-fVne1YpOD7Xe7c",
+  authDomain: "hiyaihousie.firebaseapp.com",
+  databaseURL: "https://hiyaihousie-default-rtdb.firebaseio.com",
+  projectId: "hiyaihousie",
+  storageBucket: "hiyaihousie.firebasestorage.app",
+  messagingSenderId: "382852347843",
+  appId: "1:382852347843:web:84c2274d2bc239e99a6f76",
+  measurementId: "G-RJQ7EECZEJ"
+}
+
+ 
+  };
+
+  // Har ek domain ki config ko initialize karke ek object me save kar rahe hain
+  const dbs = {};
+  for (let domainName in allDomainScripts) {
+    try {
+      const app = initializeApp(allDomainScripts[domainName], domainName);
+      dbs[domainName] = getDatabase(app);
+    } catch (e) {
+      // It's okay if some fail due to placeholder keys, the app will continue.
+      // console.error(`Could not initialize Firebase for ${domainName}. It might be using placeholder credentials.`);
+    }
+  }
+
+  // ================= FIREBASE LOGIC (Realtime DB) =================
+  
+  // IMPLEMENTED: This function now correctly populates the domain list.
+  // It reads all the domain names from your 'allDomainScripts' object above
+  // and adds them to the dropdown menu so the user can see them.
+  function loadAvailableDomains() {
+    const selectBox = document.getElementById("domainSelect");
+    selectBox.innerHTML = '<option value="">Select Domain</option>'; // Clear default text
+    
+    // Get all the domain names from our configuration object
+    const allConfiguredDomains = Object.keys(allDomainScripts);
+
+    if (allConfiguredDomains.length === 0) {
+      selectBox.innerHTML = '<option value="">No domains configured</option>';
+    } else {
+      // Loop through each domain and add it as an option in the dropdown
+      allConfiguredDomains.forEach(domain => {
+        const option = document.createElement("option");
+        option.value = domain;
+        option.text = domain;
+        selectBox.appendChild(option);
+      });
+    }
+  }
+
+  // Run on Page Load
+  window.onload = loadAvailableDomains;
+
+  // 2. Dynamic Price Calculator
+  window.calculateDynamicPrice = function() {
+    let days = parseInt(document.getElementById("validityDays").value);
+    let priceDisplay = document.getElementById("dynamicPriceDisplay");
+    let amount = 0;
+
+    if (!days || days < 1) {
+      priceDisplay.innerText = "Select valid Days";
+      return 0;
+    }
+
+    if (days >= 1 && days <= 15) {
+      amount = days * 200;
+    } else if (days >= 16 && days <= 29) {
+      amount = days * 150;
+    } else if (days >= 30) {
+      amount = 3500;
+    }
+
+    priceDisplay.innerText = "Total: ₹" + amount;
+    return amount;
+  };
+
+  // 3. Temporary variable to hold payment info for the Popup
+  window.tempPaymentData = null;
+
+  // 4. Payment Trigger
+  window.payForReadyDomain = function() {
+    let domain = document.getElementById("domainSelect").value;
+    let days = parseInt(document.getElementById("validityDays").value);
+    let buyerEmail = document.getElementById("buyerEmail").value.trim();
+    let amount = window.calculateDynamicPrice();
+
+    if (!domain) return alert("Please select a domain.");
+    if (!days || days < 1 || days > 30) return alert("Please enter validity between 1 to 30 days.");
+    if (!buyerEmail) return alert("Please enter your email.");
+    if (amount === 0) return alert("Invalid Amount.");
+
+    var options = {
+      key: "rzp_live_SUarhYm5IfBTar", // Replace with your Razorpay Key
+      amount: amount * 100,
+      currency: "INR",
+      name: "Sintha Developer",
+      description: "Ready Domain Purchase",
+      handler: function(response) {
+        window.tempPaymentData = {
+          domain: domain,
+          days: days,
+          amount: amount,
+          buyerEmail: buyerEmail,
+          paymentId: response.razorpay_payment_id
+        };
+        document.getElementById("adminEmailInput").value = "admin@" + domain;
+        document.getElementById("adminPopup").style.display = "flex";
+      },
+      prefill: { email: buyerEmail },
+      method: { upi: true, card: true, netbanking: true, wallet: true, emi: true }
+    };
+
+    new Razorpay(options).open();
+  };
+
+  // 5. Toggle Password Visibility in Modal
+  window.togglePassword = function() {
+    let pwd = document.getElementById("adminPassword");
+    let icon = document.getElementById("eyeIcon");
+    if (pwd.type === "password") {
+      pwd.type = "text";
+      icon.innerText = "🙈";
+    } else {
+      pwd.type = "password";
+      icon.innerText = "👁️";
+    }
+  };
+
+  // 6. Save Custom Admin to the Selected Domain's Firebase
+  window.saveAdminToFirebase = async function() {
+    let name = document.getElementById("adminName").value.trim();
+    let phone = document.getElementById("adminPhone").value.trim();
+    let email = document.getElementById("adminEmailInput").value.trim();
+    let pass = document.getElementById("adminPassword").value.trim();
+
+    if (!name || !phone || !email || !pass) {
+      alert("Please fill all details for the Admin Account.");
+      return;
+    }
+
+    let { domain, days, amount, paymentId } = window.tempPaymentData;
+    
+    // Check if a database connection exists for the selected domain
+    if (!dbs[domain]) {
+        alert(`Error: Firebase is not configured correctly for the domain '${domain}'. Please check the credentials.`);
+        return;
+    }
+
+    let createdAt = new Date().getTime();
+    let expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + days);
+
+    try {
+      const db = dbs[domain];
+      const usersRef = ref(db, 'users');
+      const newUserRef = push(usersRef); // Generate unique ID
+
+      await set(newUserRef, {
+        createdAt: createdAt,
+        email: email,
+        name: name,
+        phone: phone,
+        role: "admin",
+        password: pass,
+        expiryDate: expiryDate.getTime(),
+        paymentId: paymentId
+      });
+
+      document.getElementById("adminPopup").style.display = "none";
+
+      let credBox = document.getElementById("credentialsBox");
+      credBox.style.display = "block";
+      credBox.innerHTML = `
+        <h3>✅ Admin Account Created Successfully!</h3>
+        <p><strong>Domain:</strong> ${domain}</p>
+        <p><strong>Admin Login:</strong> ${email}</p>
+        <p><strong>Password:</strong> ${pass}</p>
+        <p><strong>Valid Till:</strong> ${expiryDate.toLocaleString()}</p>
+        <p style="font-size: 0.8rem; margin-top:10px;">Please save these details. They will expire automatically after ${days} days.</p>
+      `;
+
+      window.generateInvoice(name, domain, amount, paymentId);
+      window.tempPaymentData = null;
+      // You may want to refresh the available domains list here if needed in the future
+      // loadAvailableDomains(); 
+
+    } catch (e) {
+      console.error("Error saving admin to Firebase: ", e);
+      alert("Failed to save Admin Details. Please contact support with Payment ID: " + paymentId);
+    }
+  };
+
+  // ================= ORIGINAL SECTION 2 JS LOGIC (Unchanged) =================
+  
+  window.showForm = function() {
+    document.getElementById("offersSection").style.display = "none";
+    document.getElementById("formSection").style.display = "block";
+    document.getElementById("messageBox").style.display = "none";
+  };
+
+  window.hideForm = function() {
+    document.getElementById("formSection").style.display = "none";
+    document.getElementById("offersSection").style.display = "block";
+  };
+
+  window.updatePreview = function() {
+    let val = document.getElementById("domain").value.trim().toLowerCase();
+    let cleanBase = val.replace(/\..*$/, '').replace(/[^a-z0-9-]/g, '');
+    document.getElementById("preview").innerText = cleanBase ? cleanBase + ".in" : "yourname.in";
+  };
+
+  window.generateSuggestions = function() {
+    const titleInput = document.getElementById("title").value.trim();
+    const suggestionsContainer = document.getElementById("domainSuggestions");
+    let baseName = titleInput.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    if (baseName.length < 2) {
+      suggestionsContainer.innerHTML = "";
+      return;
+    }
+
+    const suggestions = [baseName, `play${baseName}`, `${baseName}online`];
+    suggestionsContainer.innerHTML = suggestions.map(base => 
+      `<div class="suggestion-chip" onclick="selectSuggestedDomain('${base}')">${base}.in</div>`
+    ).join('');
+  };
+
+  window.selectSuggestedDomain = function(baseName) {
+    document.getElementById("domain").value = baseName;
+    window.updatePreview();
+  };
+
+  window.payNow = function() {
+    let name = document.getElementById("name").value.trim();
+    let title = document.getElementById("title").value.trim();
+    let domainRaw = document.getElementById("domain").value.trim().toLowerCase();
+    let baseDomain = domainRaw.replace(/\..*$/, '').replace(/[^a-z0-9-]/g, '');
+    let domain = baseDomain + ".in";
+    let email = document.getElementById("email").value.trim();
+    let mobile = document.getElementById("mobile").value.trim();
+    let address = document.getElementById("address").value.trim();
+    let amount = document.getElementById("plan").value;
+
+    if(!name || !title || !baseDomain || !email || !mobile){
+      alert("Please fill all required fields");
+      return;
+    }
+
+    var options = {
+      key: "rzp_live_SUarhYm5IfBTar",
+      amount: amount * 100,
+      currency: "INR",
+      name: "Sintha Developer",
+      description: "Custom Domain Order",
+      handler: function(response){
+        window.generateInvoice(name, domain, amount, response.razorpay_payment_id);
+
+        const msg = `New Order:\nName: ${name}\nTitle: ${title}\nDomain: ${domain}\nEmail: ${email}\nMobile: ${mobile}\nAddress: ${address}\nAmount: ₹${amount}\nPaymentID: ${response.razorpay_payment_id}`;
+
+        window.location.href = "https://wa.me/919366193440?text=" + encodeURIComponent(msg);
+      },
+      prefill: { name: name, email: email, contact: mobile },
+      method: { upi: true, card: true, netbanking: true, wallet: true, emi: true }
+    };
+
+    new Razorpay(options).open();
+  };
+
+  // Original PDF Function
+  window.generateInvoice = function(name, domain, amount, paymentId){
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text("Sintha Developer - Invoice", 20, 20);
+    doc.setFontSize(14);
+    doc.text("Name: " + name, 20, 40);
+    doc.text("Domain: " + domain, 20, 50);
+    doc.text("Amount Paid: Rs " + amount, 20, 60);
+    doc.text("Payment ID: " + paymentId, 20, 70);
+    doc.save(domain + "_invoice.pdf");
+  };
+
+</script>
+
+</body>
+</html>
