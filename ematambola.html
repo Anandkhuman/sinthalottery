@@ -1,0 +1,1388 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ema Tambola - Full App System</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Global CSS & Theme -->
+    <style>
+        :root {
+            --bg-dark: #0a0118;
+            --theme-accent: #00ffc6;
+            --theme-accent-secondary: #ff007f;
+            --theme-accent-glow: rgba(0, 255, 198, 0.4);
+            --theme-panel-bg: rgba(16, 5, 36, 0.85);
+            --theme-panel-border: rgba(0, 255, 198, 0.3);
+            --theme-panel-shadow: rgba(0, 0, 0, 0.5);
+            --theme-text-primary: #ffffff;
+            --theme-text-secondary: #a78bfa;
+            --theme-button-bg: #00ffc6;
+            --theme-button-text: #0a0118;
+            
+            /* Admin & Sub-Agent Specific Colors */
+            --sa-accent-cyan: #06b6d4;
+            --sa-text-muted: #94a3b8;
+            --color-accent-yellow: #ffd21c;
+            --color-accent-purple: #a78bfa;
+            --color-banned: #ff3333;
+            
+            --spacing-sm: 8px; --spacing-md: 16px; --spacing-lg: 24px; --spacing-xl: 32px;
+            --radius-md: 12px; --radius-xl: 20px;
+            --font-body: 'Poppins', sans-serif;
+            --font-heading: 'Space Grotesk', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-dark);
+            background-image: url('https://tambolaganggang.com/assets/game-bg-luxury.png');
+            background-size: cover; background-attachment: fixed; background-position: center;
+            color: var(--theme-text-primary);
+            font-family: var(--font-body);
+        }
+
+        /* --- Header Styling --- */
+        .main-header {
+            background: rgba(10, 1, 24, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--theme-accent);
+            padding: 15px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 9997;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
+        .main-header h1 {
+            margin: 0;
+            color: var(--theme-accent);
+            font-family: var(--font-heading);
+            text-transform: uppercase;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px var(--theme-accent-glow);
+        }
+
+        /* --- Global Layout Utility Classes --- */
+        .container { max-width: 1000px; margin: 0 auto; padding: 15px; }
+        .container-sm { max-width: 400px; margin: 0 auto; padding: 15px; }
+        .container-lg { max-width: 1200px; margin: 0 auto; padding: 15px; }
+        
+        .text-center { text-align: center; }
+        .mt-0 { margin-top: 0; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-15 { margin-bottom: 15px; }
+        .mb-20 { margin-bottom: 20px; }
+        .mt-20 { margin-top: 20px; }
+        .w-100 { width: 100%; }
+        .text-muted { color: var(--theme-text-secondary); font-size: 0.9rem; text-transform: uppercase; }
+        .text-small { font-size: 0.8rem; }
+
+        /* --- SPA Routing Classes --- */
+        .app-view { display: none; width: 100%; min-height: 100vh; animation: fadeIn 0.4s ease-in-out; }
+        .app-view.active-view { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Generic UI Elements --- */
+        .btn { padding: 10px 20px; border: none; border-radius: var(--radius-md); font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; font-size: 0.95rem; white-space: nowrap; }
+        .btn-primary { background: var(--theme-button-bg); color: var(--theme-button-text); box-shadow: 0 4px 15px var(--theme-accent-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--theme-accent-glow); }
+        .btn-danger { background: rgba(255,0,127,0.2); color: var(--theme-accent-secondary); border: 1px solid var(--theme-accent-secondary); }
+        .btn-danger:hover { background: var(--theme-accent-secondary); color: white; box-shadow: 0 0 15px rgba(255,0,127,0.5); }
+        .btn-warning { background: rgba(255, 210, 28, 0.2); color: var(--color-accent-yellow); border: 1px solid var(--color-accent-yellow); }
+        .btn-warning:hover { background: var(--color-accent-yellow); color: black; box-shadow: 0 0 15px rgba(255, 210, 28, 0.5); }
+        
+        .form-control { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-panel-border); color: white; box-sizing: border-box; font-family: var(--font-body); font-size: 0.9rem; }
+        .form-control:focus { outline: none; border-color: var(--theme-accent); box-shadow: 0 0 10px var(--theme-accent-glow); }
+        select.form-control option { background: var(--bg-dark); color: white; }
+
+        .panel { background: var(--theme-panel-bg); backdrop-filter: blur(12px); border: 1px solid var(--theme-panel-border); border-radius: var(--radius-xl); padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 32px var(--theme-panel-shadow); }
+
+        /* --- Flexible Layouts --- */
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; background: var(--theme-panel-bg); padding: 15px 25px; border-radius: var(--radius-xl); border: 1px solid var(--theme-panel-border); margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .dashboard-header h1 { font-family: var(--font-heading); margin: 0; font-size: 1.6rem; }
+        .dashboard-header .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .control-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .control-group .form-control { margin-bottom: 0; flex: 1; min-width: 150px; }
+        
+        .active-game-box { display: flex; flex-direction: column; background: rgba(0,0,0,0.4); padding: 15px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); gap: 15px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+
+        /* --- Role Switcher Menu --- */
+        .role-switch-btn { position: fixed; top: 15px; right: 15px; z-index: 9998; width: 44px; height: 44px; background: var(--theme-panel-bg); border: 2px solid var(--theme-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 15px var(--theme-accent-glow); transition: 0.3s; }
+        .role-switch-btn:hover { transform: scale(1.1); }
+        .role-switch-btn svg { fill: var(--theme-accent); width: 20px; height: 20px; }
+        
+        .role-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(10,1,24,0.9); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .role-popup-overlay.active { opacity: 1; visibility: visible; }
+        .role-popup-card { background: var(--theme-panel-bg); border: 2px solid var(--theme-accent); padding: 25px 20px; border-radius: var(--radius-xl); text-align: center; width: 90%; max-width: 350px; position: relative; }
+        .role-option-btn { display: block; margin: 10px 0; padding: 12px; background: rgba(0,255,198,0.1); border: 1px solid var(--theme-accent); color: var(--theme-accent); text-decoration: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .role-option-btn:hover { background: var(--theme-accent); color: black; }
+        
+        /* --- Tables & Tickets --- */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+        th { color: var(--theme-text-secondary); font-family: var(--font-heading); text-transform: uppercase; font-size: 0.85rem; }
+
+        .ticket-card { background: rgba(0,0,0,0.5); border: 1px solid var(--theme-panel-border); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+        .ticket-card.booked { border-color: var(--theme-accent-secondary); background: rgba(255,0,127,0.1); }
+        .ticket-card-header { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-heading); font-weight: bold; }
+
+        /* --- Tambola Visual Ticket styling --- */
+        .visual-ticket { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; background: rgba(0,0,0,0.8); padding: 4px; border-radius: 6px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.15); }
+        .vt-cell { background: #222; color: #fff; text-align: center; padding: 4px 0; font-size: 0.75rem; font-family: var(--font-heading); height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 2px; border: 1px solid #444; transition: 0.3s ease; }
+        .vt-cell.empty { background: transparent; border-color: transparent; }
+        .vt-cell.called { background: var(--theme-accent); color: #000; font-weight: bold; border-color: var(--theme-accent); box-shadow: 0 0 8px var(--theme-accent-glow); transform: scale(1.05); }
+
+        /* --- Number Board styling --- */
+        .number-board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 15px; }
+        .board-num { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; text-align: center; padding: 8px 0; font-size: 1rem; font-family: var(--font-heading); color: white; transition: 0.3s; }
+        .board-num.called { background: var(--theme-accent-secondary); color: white; border-color: var(--theme-accent-secondary); box-shadow: 0 0 12px rgba(255,0,127,0.6); font-weight: bold; transform: scale(1.1); }
+
+        /* --- Winner List styling --- */
+        .winner-list-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-top: 15px; }
+        .winner-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; gap: 10px; }
+        .winner-row:last-child { border-bottom: none; }
+        .winner-title { color: var(--theme-text-secondary); font-weight: bold; font-family: var(--font-heading); font-size: 1.05rem; }
+        .winner-pending { color: var(--color-accent-yellow); font-style: italic; font-size: 0.95rem; }
+        .winner-name { color: var(--theme-accent); font-weight: bold; font-size: 1.05rem; display: flex; align-items: center; }
+
+        .search-bar { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(0,0,0,0.6); border: 1px solid var(--theme-accent); color: white; font-family: var(--font-body); font-size: 0.95rem; outline: none; transition: 0.3s; }
+        .search-bar:focus { box-shadow: 0 0 12px var(--theme-accent-glow); }
+
+        /* --- Badges --- */
+        .badge { padding: 5px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
+        .badge-admin { background: rgba(255, 210, 28, 0.2); color: var(--color-accent-yellow); border: 1px solid var(--color-accent-yellow); }
+        .badge-agent { background: rgba(0, 255, 198, 0.2); color: var(--theme-accent); border: 1px solid var(--theme-accent); }
+        .badge-subagent { background: rgba(167, 139, 250, 0.2); color: var(--color-accent-purple); border: 1px solid var(--color-accent-purple); }
+        
+        .badge-active { background: rgba(0, 255, 198, 0.1); color: var(--theme-accent); border: 1px solid var(--theme-accent); }
+        .badge-banned { background: rgba(255, 51, 51, 0.1); color: var(--color-banned); border: 1px solid var(--color-banned); }
+
+        /* --- Toast Notification --- */
+        #toast { position: fixed; bottom: 20px; right: 20px; max-width: 90%; background: var(--theme-accent); color: #000; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(150%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 10000; }
+        #toast.show { transform: translateX(0); }
+        #toast.error { background: var(--theme-accent-secondary); color: white; }
+
+        /* --- Dynamic Typography --- */
+        .player-game-id { font-size: clamp(1.5rem, 6vw, 2.5rem); font-family: var(--font-heading); font-weight: bold; color: var(--theme-text-primary); }
+        .player-last-num { font-size: clamp(5rem, 15vw, 8rem); line-height: 1; font-family: var(--font-heading); font-weight: bold; color: var(--theme-accent-secondary); text-shadow: 0 0 30px rgba(255,0,127,0.5); }
+        .section-title { font-size: clamp(1.3rem, 5vw, 1.6rem); margin-top: 0; color: var(--theme-text-primary); }
+        
+        /* Layout fix for player board */
+        .player-board-container {
+            display: flex; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            margin-bottom: 20px;
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 600px) {
+            .dashboard-header { flex-direction: column; text-align: center; gap: 15px; padding: 15px; }
+            .dashboard-header .btn-group { width: 100%; flex-direction: column; gap: 10px; }
+            .dashboard-header .btn-group .btn { width: 100%; }
+            
+            .control-group { flex-direction: column; align-items: stretch; gap: 10px; }
+            .control-group .form-control { max-width: 100%; width: 100%; }
+            .control-group .btn { width: 100%; }
+            
+            .form-grid { grid-template-columns: 1fr; }
+            .panel { padding: 15px; margin-bottom: 15px; }
+            .container { padding: 10px; }
+            
+            /* Keeps 1-10 number layout explicitly as requested on mobile */
+            .number-board { grid-template-columns: repeat(10, 1fr); gap: 2px; }
+            .board-num { padding: 4px 0; font-size: 0.75rem; }
+            
+            /* Force side-by-side alignment on mobile for Last Called & Board */
+            .player-board-container { flex-wrap: nowrap !important; align-items: stretch; gap: 10px; }
+            .player-last-num { font-size: 3.5rem !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- EMA TAMBOLA HEADER -->
+    <header class="main-header">
+        <h1>Ema Tambola</h1>
+    </header>
+
+    <!-- GLOBAL TOAST NOTIFICATION -->
+    <div id="toast">Message goes here</div>
+
+    <!-- ROLE SWITCH BUTTON (Global) -->
+    <button class="role-switch-btn" onclick="toggleRolePopup()" title="Switch View">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </button>
+
+    <!-- ROLE POPUP -->
+    <div class="role-popup-overlay" id="rolePopupOverlay">
+        <div class="role-popup-card">
+            <button onclick="toggleRolePopup()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+            <h2 style="font-family: var(--font-heading); color: var(--theme-accent); margin-top: 0; font-size: 1.5rem;">Switch Dashboard</h2>
+            <p style="color: var(--theme-text-secondary); font-size: 0.9rem; margin-bottom: 20px;">Select panel to navigate</p>
+            
+            <button class="role-option-btn" onclick="AppRouter.navigate('player'); toggleRolePopup();">🎮 Main Player View</button>
+            <button class="role-option-btn" onclick="AppRouter.navigate('admin'); toggleRolePopup();">👑 Master Admin / Agent</button>
+            <button class="role-option-btn" onclick="AppRouter.navigate('subagent'); toggleRolePopup();">💼 Sub-Agent</button>
+            <button class="role-option-btn" style="border-color: var(--color-accent-yellow); color: var(--color-accent-yellow); background: rgba(255, 210, 28, 0.1); margin-top: 25px;" onclick="AppRouter.navigate('rolemanager'); toggleRolePopup();">⚙️ Manage Roles</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: MAIN PLAYER SCREEN -->
+    <!-- ========================================== -->
+    <div id="view-player" class="app-view active-view">
+        <div class="container-lg" style="padding-top: 20px;">
+            
+            <div class="panel text-center">
+                <h3 class="text-muted mt-0 mb-10">Current Active Game ID</h3>
+                <div id="playerGameId" class="player-game-id">Waiting for Admin...</div>
+                <div id="playerGameDateTime" style="color: var(--theme-text-secondary); font-size: 0.9rem; margin-top: 5px;"></div>
+            </div>
+
+            <!-- Number Board & Last Called in one line (1-10 layout) -->
+            <div class="player-board-container">
+                
+                <!-- Last Called -->
+                <div class="panel text-center" style="flex: 1; min-width: 120px; margin-bottom: 0; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-family: var(--font-heading); color: var(--theme-text-secondary); margin-top: 0; font-size: 1.1rem;">Last Called</h3>
+                    <div id="lastCalledNumberDisplay" class="player-last-num">--</div>
+                </div>
+                
+                <!-- 1 to 90 Number Board (1-10 per line) -->
+                <div class="panel" style="flex: 4; min-width: 250px; margin-bottom: 0;">
+                    <h3 style="font-family: var(--font-heading); color: var(--theme-text-secondary); margin-top: 0; font-size: 1.1rem; text-align: center;">Live Number Board</h3>
+                    <div id="playerNumberBoard" class="number-board">
+                        <!-- Populated dynamically 1-90 -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- PLAYER ALL CALLED NUMBERS CONTAINER (Below Number Board) -->
+            <div class="panel text-center">
+                <h3 style="font-family: var(--font-heading); color: var(--theme-text-secondary); margin-top: 0; font-size: 1.1rem;">All Called Numbers</h3>
+                <div id="playerCalledNumbers" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px;">
+                    <!-- Numbers will populate here dynamically -->
+                </div>
+            </div>
+
+            <!-- PLAYER TICKET LIST WITH VISUAL TICKET & SEARCH -->
+            <div class="panel">
+                <h3 class="section-title mt-0 text-center">🎟️ All Game Tickets</h3>
+                <p style="text-align: center; color: var(--theme-text-secondary); font-size: 0.9rem; margin-bottom: 15px;">Search and view your visual Tambola tickets live.</p>
+                
+                <input type="text" id="playerTicketSearch" class="search-bar" placeholder="🔍 Search by Ticket ID or Player Name..." onkeyup="PlayerController.filterTickets()">
+                
+                <div id="playerTicketGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; max-height: 500px; overflow-y: auto; padding-right: 5px;">
+                    <div style="color: gray; font-size: 0.9rem; text-align: center; width: 100%;">No active game tickets found.</div>
+                </div>
+            </div>
+
+            <!-- PLAYER WINNERS DISPLAY -->
+            <div class="panel text-left">
+                <h3 class="section-title mt-0 text-center">🏆 Prize Winners</h3>
+                <div id="playerWinnerList" class="winner-list-box mt-10">
+                    <div style="color: gray; text-align: center;">Waiting for game data...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: MASTER ADMIN & AGENT PORTAL -->
+    <!-- ========================================== -->
+    <div id="view-admin" class="app-view">
+        <div class="container" style="padding-top: 40px;">
+            
+            <!-- ADMIN LOGIN BOX -->
+            <div id="adminLoginSection" class="panel container-sm text-center">
+                <h2 style="color: var(--theme-accent); font-family: var(--font-heading); font-size: clamp(1.5rem, 5vw, 2rem); margin-top: 0;">Admin Portal</h2>
+                <p style="color: var(--theme-text-secondary); margin-bottom: 25px; font-size: 0.95rem;">Login as Master Admin or Agent</p>
+                <div id="adminLoginError" style="color: var(--theme-accent-secondary); background: rgba(255,0,127,0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--theme-accent-secondary); margin-bottom: 15px; display: none; font-size: 0.9rem;">Invalid Credentials</div>
+                
+                <input type="text" id="adminUsername" class="form-control" placeholder="Username">
+                <input type="password" id="adminPassword" class="form-control" placeholder="Password">
+                <button class="btn btn-primary w-100" onclick="AdminController.login()">Secure Login</button>
+            </div>
+
+            <!-- ADMIN DASHBOARD -->
+            <div id="adminDashboardSection" style="display: none;">
+                <div class="dashboard-header">
+                    <div>
+                        <h1 style="color: var(--theme-accent);">Admin Control Center</h1>
+                        <div style="color: var(--theme-text-secondary); margin-top: 5px; font-size: 0.9rem;">
+                            Logged in as: <strong id="adminLoggedInName" style="color: var(--theme-text-primary);"></strong> 
+                            (<span id="adminLoggedInRole" style="text-transform: uppercase;"></span>)
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-warning" onclick="AppRouter.navigate('rolemanager')">⚙️ Manage Roles</button>
+                        <button class="btn btn-danger" onclick="AdminController.logout()">Logout</button>
+                    </div>
+                </div>
+
+                <!-- GAME CONTROLS & NUMBER BOARD -->
+                <div class="panel">
+                    <h2 class="section-title">Active Game & Announcer</h2>
+                    <div class="active-game-box">
+                        <!-- Info Row -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <div>
+                                <span class="text-muted">Current Game ID</span>
+                                <div id="adminActiveGameId" style="font-size: clamp(1.4rem, 5vw, 1.8rem); font-family: var(--font-heading); font-weight: bold; color: var(--theme-accent);">No Game Active</div>
+                            </div>
+                            <div id="adminGameDateTime" style="color: var(--theme-text-secondary); font-size: 0.9rem; text-align: right;"></div>
+                        </div>
+
+                        <!-- Manual Call Controls AND Search Ticket Input combined under this section -->
+                        <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                            
+                            <label style="display: block; font-size: 0.8rem; color: var(--theme-text-secondary); margin-bottom: 5px;">Manual Call Number</label>
+                            <div style="display: flex; gap: 10px; max-width: 400px; margin-bottom: 15px;">
+                                <input type="number" id="manualCallInput" class="form-control mb-0" placeholder="1-90" min="1" max="90" style="width: 100px;">
+                                <button class="btn" style="flex: 1; background: var(--theme-button-text); border: 1px solid var(--theme-accent); color: var(--theme-accent);" onclick="AdminController.callManualNumber()">🎯 Call Manual</button>
+                            </div>
+
+                            <label style="display: block; font-size: 0.8rem; color: var(--theme-text-secondary); margin-bottom: 5px;">Search Player Tickets</label>
+                            <input type="text" id="adminTicketSearch" class="search-bar mb-0" placeholder="🔍 Search by Ticket ID or Player Name..." onkeyup="AdminController.filterTickets()">
+                            
+                        </div>
+                    </div>
+
+                    <!-- ADMIN NUMBER BOARD -->
+                    <h3 style="color: var(--theme-text-secondary); font-size: 1.1rem; margin-top: 25px; margin-bottom: 0; font-family: var(--font-heading);">Live Number Board (1-90)</h3>
+                    <div id="adminNumberBoard" class="number-board">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- ADMIN CALLED NUMBERS CONTAINER -->
+                    <h3 style="color: var(--theme-text-secondary); font-size: 1.1rem; margin-top: 25px; margin-bottom: 10px; font-family: var(--font-heading);">All Called Numbers</h3>
+                    <div id="adminCalledNumbers" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- ADMIN WINNERS MANAGEMENT -->
+                <div class="panel">
+                    <h2 class="section-title">Prize Winners Management</h2>
+                    <p style="color: var(--theme-text-secondary); font-size: 0.9rem; margin-bottom: 10px;">Declare winners to show them on the main player screen.</p>
+                    <div id="adminWinnerList" class="winner-list-box">
+                        <div style="color: gray;">No active game.</div>
+                    </div>
+                </div>
+
+                <!-- Admin Ticket Management -->
+                <div class="panel">
+                    <h2 class="section-title">Live Visual Ticket Grids</h2>
+                    <p style="color: var(--theme-text-secondary); font-size: 0.9rem; margin-bottom: 15px;">Search and manage tickets (use the search box in the active game panel above).</p>
+                    
+                    <div id="adminTicketGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; max-height: 600px; overflow-y: auto; padding-right: 5px;">
+                        <div style="color: gray; font-size: 0.9rem;">No active game tickets found.</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: SUB-AGENT PORTAL -->
+    <!-- ========================================== -->
+    <div id="view-subagent" class="app-view">
+        <div class="container" style="padding-top: 40px;">
+            
+            <!-- SUB-AGENT LOGIN -->
+            <div id="saLoginSection" class="panel container-sm text-center">
+                <h2 style="color: var(--sa-accent-cyan); font-family: var(--font-heading); font-size: clamp(1.5rem, 5vw, 2rem); margin-top: 0;">Sub-Agent Portal</h2>
+                <p style="color: var(--theme-text-secondary); margin-bottom: 25px; font-size: 0.95rem;">Login to book tickets for players</p>
+                <div id="saLoginError" style="color: var(--theme-accent-secondary); background: rgba(255,0,127,0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--theme-accent-secondary); margin-bottom: 15px; display: none; font-size: 0.9rem;">Invalid Credentials</div>
+                
+                <input type="text" id="saLoginUsername" class="form-control" placeholder="Username">
+                <input type="password" id="saLoginPassword" class="form-control" placeholder="Password">
+                <button class="btn w-100" style="background: var(--sa-accent-cyan); color: #000;" onclick="SubAgentController.handleLogin()">Login</button>
+            </div>
+
+            <!-- SUB-AGENT DASHBOARD -->
+            <div id="saDashboardSection" style="display: none;">
+                <div class="dashboard-header" style="border-color: var(--sa-accent-cyan);">
+                    <div>
+                        <h1 style="color: var(--sa-accent-cyan);">Sub-Agent Dashboard</h1>
+                        <div style="color: var(--sa-text-muted); margin-top: 5px; font-size: 0.9rem;">Welcome, <strong id="saDisplayName" style="color: white;"></strong> (<span id="saSubAgentIdBadge"></span>)</div>
+                    </div>
+                    <button class="btn btn-danger" onclick="SubAgentController.handleLogout()">Logout</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="panel text-center mb-0 mt-0">
+                        <span class="text-muted">Active Game ID</span>
+                        <h2 id="saActiveGameIdDisplay" style="color: var(--theme-accent); margin: 5px 0; font-family: var(--font-heading); font-size: clamp(1.2rem, 4vw, 1.8rem);">Loading...</h2>
+                        <div id="saGameDateTime" class="text-small" style="color: var(--theme-text-secondary);"></div>
+                    </div>
+                    <div class="panel text-center mb-0 mt-0">
+                        <span class="text-muted">Available Tickets</span>
+                        <h2 id="saActiveGameAvailableCount" style="color: var(--theme-accent); margin: 5px 0; font-family: var(--font-heading); font-size: clamp(1.2rem, 4vw, 1.8rem);">0</h2>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2 class="section-title">Book a Ticket</h2>
+                    <p style="color: var(--theme-text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Click on available tickets to select them.</p>
+                    
+                    <div id="saTicketSelectionGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 6px; max-height: 250px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+                        <!-- Tickets populated here -->
+                    </div>
+
+                    <div class="control-group mb-0">
+                        <input type="text" id="saBookingNameInput" class="form-control" placeholder="Enter Customer / Player Name">
+                        <button class="btn" style="background: var(--sa-accent-cyan); color: #000;" onclick="SubAgentController.bookTicket()">Confirm Booking</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 4: ROLE MANAGER (MASTER ADMINS, AGENTS, SUB-AGENTS) -->
+    <!-- ========================================== -->
+    <div id="view-role-manager" class="app-view">
+        <div class="container-lg" style="padding-top: 40px;">
+            <button class="btn mb-20" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 0.85rem;" onclick="AppRouter.navigate('player')">← Back to Main Menu</button>
+            
+            <div class="text-center mb-20">
+                <h1 style="font-family: var(--font-heading); color: var(--color-accent-yellow); font-size: clamp(1.8rem, 6vw, 2.8rem); margin: 0; text-shadow: 0 0 20px rgba(255, 210, 28, 0.4);">System Role Management</h1>
+                <p style="color: var(--theme-text-secondary); margin-top: 5px; font-size: 0.9rem;">Create, Manage, and Ban Master Admins, Agents, and Sub-Agents.</p>
+            </div>
+
+            <!-- CREATE USER PANEL -->
+            <div class="panel">
+                <h2 class="mt-0" style="border-bottom: 1px solid var(--theme-panel-border); padding-bottom: 15px; font-size: 1.3rem;">➕ Create New Role</h2>
+                <form id="rmCreateUserForm">
+                    <div class="form-grid">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; color: var(--theme-text-secondary); font-size: 0.85rem;">Full Name</label>
+                            <input type="text" id="rmRegName" class="form-control" placeholder="E.g. Rahul Sharma" required>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; color: var(--theme-text-secondary); font-size: 0.85rem;">Username (Login ID)</label>
+                            <input type="text" id="rmRegUsername" class="form-control" placeholder="E.g. rahul_agent" required>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; color: var(--theme-text-secondary); font-size: 0.85rem;">Password</label>
+                            <input type="text" id="rmRegPassword" class="form-control" placeholder="Set a strong password" required>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; color: var(--theme-text-secondary); font-size: 0.85rem;">Assign Role</label>
+                            <select id="rmRegRole" class="form-control" required>
+                                <option value="" disabled selected>-- Select Role --</option>
+                                <option value="admin">Master Admin (Full Access)</option>
+                                <option value="agent">Agent (Game Creator)</option>
+                                <option value="sub_agent">Sub-Agent (Ticket Booker)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; text-align: right;">
+                        <button type="submit" class="btn btn-primary" id="rmSubmitBtn">Create User Account</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- USERS LIST PANEL (ALL ROLES COMPILED) -->
+            <div class="panel" style="padding-left: 0; padding-right: 0; overflow: hidden;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--theme-panel-border); padding: 0 20px 15px 20px; flex-wrap: wrap; gap: 10px;">
+                    <h2 class="mt-0 mb-0" style="font-size: 1.3rem;">👥 All Registered Users List</h2>
+                    <button class="btn" style="padding: 8px 15px; font-size: 0.8rem; background: rgba(255,255,255,0.1); color: white;" onclick="RoleManager.loadUsers()">🔄 Refresh List</button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table id="rmUsersTable">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Assigned Role</th>
+                                <th>Status</th>
+                                <th>Created On</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rmUserListBody">
+                            <!-- Populated dynamically via Firebase (Master Admin, Agent, Sub-Agent) -->
+                            <tr><td colspan="7" style="text-align:center;">Loading all system users...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCRIPTS CORE (Firebase & Business Logic)   -->
+    <!-- ========================================== -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        // --- 1. FIREBASE INITIALIZATION ---
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCmmIPSO5zAX8A1K6ba53E4Ab0xiDyqSU", 
+            authDomain: "tambolaganggang.firebaseapp.com", 
+            databaseURL: "https://tambolaganggang-default-rtdb.firebaseio.com", 
+            projectId: "tambolaganggang", 
+            storageBucket: "tambolaganggang.firebasestorage.app", 
+            messagingSenderId: "191370542935", 
+            appId: "1:191370542935:web:f9831b3cf6dbe928b34812"
+        }; 
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } 
+        const database = firebase.database(); 
+        console.log("🔥 Tambola Firebase Connected!");
+
+        // --- 2. GLOBAL UTILS (Toast) ---
+        function showGlobalToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = isError ? 'error show' : 'show';
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // --- GAME PRIZES DEFINITION (Winner List Defaults) ---
+        const GAME_PRIZES = [
+            { id: 'jaldi5', title: 'Jaldi 5', amount: 500 },
+            { id: 'topLine', title: 'Top Line', amount: 1000 },
+            { id: 'middleLine', title: 'Middle Line', amount: 1000 },
+            { id: 'bottomLine', title: 'Bottom Line', amount: 1000 },
+            { id: 'fullHouse', title: 'Full House', amount: 5000 }
+        ];
+
+        // --- HELPER: RENDER WINNERS LIST ---
+        function renderWinnersList(gameId, isAdmin) {
+            database.ref(`games2/${gameId}/winners`).on('value', snap => {
+                const winners = snap.val() || {};
+                let html = '';
+                GAME_PRIZES.forEach(p => {
+                    const w = winners[p.id];
+                    if(w) {
+                        html += `
+                        <div class="winner-row">
+                            <span class="winner-title">🏆 ${p.title}</span>
+                            <span class="winner-name">${w.name} <span class="badge badge-active" style="margin-left: 8px;">Won ₹${p.amount}</span></span>
+                        </div>`;
+                    } else {
+                        html += `
+                        <div class="winner-row">
+                            <span class="winner-title">${p.title}</span>
+                            <span class="winner-pending">Pending - ₹${p.amount}</span>
+                            ${isAdmin ? `<button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="AdminController.declareWinner('${p.id}', '${p.title}', ${p.amount})">Declare Winner</button>` : ''}
+                        </div>`;
+                    }
+                });
+                
+                const targetId = isAdmin ? 'adminWinnerList' : 'playerWinnerList';
+                const container = document.getElementById(targetId);
+                if(container) container.innerHTML = html;
+            });
+        }
+
+        // --- HELPER: RENDER VISUAL TAMBOLA TICKET ---
+        function generateVisualTicketHTML(numbers, calledArray = []) {
+            let html = '<div class="visual-ticket">';
+            if(numbers && Array.isArray(numbers)) {
+                for(let r=0; r<3; r++) {
+                    for(let c=0; c<9; c++) {
+                        const num = numbers[r][c];
+                        if(num) {
+                            const isCalled = calledArray.includes(num) ? 'called' : '';
+                            html += `<div class="vt-cell ${isCalled}" data-num="${num}">${num}</div>`;
+                        } else {
+                            html += `<div class="vt-cell empty"></div>`;
+                        }
+                    }
+                }
+            } else {
+                html += '<div style="grid-column: span 9; text-align:center; padding:10px; font-size:0.8rem;">Ticket Layout Not Available</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        // --- 3. SPA ROUTER ---
+        const AppRouter = {
+            navigate: function(viewName) {
+                document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view'));
+                
+                if(viewName === 'player') {
+                    document.getElementById('view-player').classList.add('active-view');
+                }
+                else if(viewName === 'admin') {
+                    document.getElementById('view-admin').classList.add('active-view');
+                    AdminController.checkLogin();
+                }
+                else if(viewName === 'subagent') {
+                    document.getElementById('view-subagent').classList.add('active-view');
+                    SubAgentController.init();
+                }
+                else if(viewName === 'rolemanager') {
+                    document.getElementById('view-role-manager').classList.add('active-view');
+                    RoleManager.loadUsers();
+                }
+            }
+        };
+
+        function toggleRolePopup() {
+            document.getElementById('rolePopupOverlay').classList.toggle('active');
+        }
+
+        // --- 4. CORE TAMBOLA GAME LOGIC ---
+        const TambolaGame2 = {
+            init() {
+                database.ref('metadata2/activeGameId').on('value', (snapshot) => {
+                    const gameId = snapshot.val();
+                    sessionStorage.setItem('currentGameId2', gameId || '');
+                    window.dispatchEvent(new Event('gameIdChanged'));
+                });
+            },
+            async getCurrentGameId() {
+                let id = sessionStorage.getItem('currentGameId2');
+                if(!id) {
+                    const snap = await database.ref('metadata2/activeGameId').once('value');
+                    id = snap.val();
+                    if(id) sessionStorage.setItem('currentGameId2', id);
+                }
+                return id;
+            },
+            generateTicket(ticketId) {
+                const numbers = [];
+                for(let r=0; r<3; r++) {
+                    const row = [];
+                    for(let c=0; c<9; c++) { row.push(Math.random() > 0.5 ? Math.floor(Math.random() * 90) + 1 : null); }
+                    numbers.push(row);
+                }
+                return { id: ticketId, numbers: numbers, booked: false, bookedBy: null };
+            },
+            async createGame(ticketCount) {
+                const gameId = 'GAME_' + Date.now();
+                const availableBatch = {};
+                for(let i=1; i<=ticketCount; i++) {
+                    const t = this.generateTicket(`TN-${i}`);
+                    availableBatch[t.id] = t;
+                }
+                
+                await database.ref(`games2/${gameId}`).set({ 
+                    gameId, 
+                    gameActive: true, 
+                    calledNumbers: [], 
+                    createdAt: Date.now() 
+                });
+                await database.ref(`tickets/${gameId}/available`).set(availableBatch);
+                await database.ref('metadata2/activeGameId').set(gameId);
+                showGlobalToast("New Game Created: " + gameId);
+                return gameId;
+            },
+            // Note: The UI button to call this was safely removed as requested.
+            async resetGame() {
+                if(confirm("Are you sure you want to END the current game?")) {
+                    const gameId = await this.getCurrentGameId();
+                    if (gameId) {
+                        await database.ref(`games2/${gameId}`).update({ gameActive: false });
+                        await database.ref('metadata2/activeGameId').remove();
+                        sessionStorage.removeItem('currentGameId2');
+                        showGlobalToast("Game Ended.");
+                    }
+                }
+            },
+            async bookTicket(ticketId, userName, type, agent) {
+                const gameId = await this.getCurrentGameId();
+                if (!gameId) return false;
+                const ref = database.ref(`tickets/${gameId}/available/${ticketId}`);
+                const snap = await ref.once('value');
+                const t = snap.val();
+                if(!t) return false;
+
+                t.booked = true; t.bookedBy = userName; t.bookedByAgent = agent;
+                await database.ref(`tickets/${gameId}/booked/${ticketId}`).set(t);
+                await ref.remove();
+                return true;
+            }
+        };
+        TambolaGame2.init();
+
+        // --- 5. MAIN PLAYER CONTROLLER ---
+        const PlayerController = {
+            currentCalledNumbers: [],
+            init() {
+                this.initPlayerBoard();
+                this.monitorGame();
+            },
+            initPlayerBoard() {
+                const board = document.getElementById('playerNumberBoard');
+                if(!board) return;
+                board.innerHTML = '';
+                for(let i=1; i<=90; i++) {
+                    board.innerHTML += `<div class="board-num" id="player-board-num-${i}">${i}</div>`;
+                }
+            },
+            monitorGame() {
+                database.ref('metadata2/activeGameId').on('value', snap => {
+                    const id = snap.val();
+                    document.getElementById('playerGameId').textContent = id ? id : "Game Ended";
+                    
+                    if(id) {
+                        // Date Time fetch for player
+                        database.ref(`games2/${id}`).once('value').then(gSnap => {
+                            const data = gSnap.val();
+                            if(data && data.createdAt) {
+                                document.getElementById('playerGameDateTime').textContent = "Started: " + new Date(data.createdAt).toLocaleString('en-IN');
+                            }
+                        });
+
+                        renderWinnersList(id, false);
+                        this.loadPlayerTickets(id);
+
+                        // Number Sync
+                        database.ref(`games2/${id}/calledNumbers`).on('value', numSnap => {
+                            const called = numSnap.val() || [];
+                            this.currentCalledNumbers = called;
+                            const last = called.length > 0 ? called[called.length - 1] : '--';
+                            document.getElementById('lastCalledNumberDisplay').textContent = last;
+                            
+                            // Sync Player Board (1 to 90)
+                            for(let i=1; i<=90; i++) {
+                                const cell = document.getElementById(`player-board-num-${i}`);
+                                if(cell) {
+                                    if(called.includes(i)) cell.classList.add('called');
+                                    else cell.classList.remove('called');
+                                }
+                            }
+
+                            // Sync Player Called Numbers Container
+                            const playerCalledContainer = document.getElementById('playerCalledNumbers');
+                            if(playerCalledContainer) {
+                                playerCalledContainer.innerHTML = '';
+                                called.forEach(n => {
+                                    playerCalledContainer.innerHTML += `<div style="width:clamp(32px, 10vw, 42px); height:clamp(32px, 10vw, 42px); background:var(--theme-panel-border); border: 2px solid var(--theme-accent); color:var(--theme-accent); display:flex; align-items:center; justify-content:center; border-radius:50%; font-family:var(--font-heading); font-weight:bold; font-size: clamp(0.95rem, 4vw, 1.2rem); margin: 2px;">${n}</div>`;
+                                });
+                            }
+
+                            // Sync Player Visual Tickets dynamically
+                            document.querySelectorAll('#playerTicketGrid .vt-cell').forEach(el => {
+                                if(!el.classList.contains('empty')) {
+                                    const num = parseInt(el.getAttribute('data-num'));
+                                    if(called.includes(num)) el.classList.add('called');
+                                    else el.classList.remove('called');
+                                }
+                            });
+                        });
+                    } else {
+                        document.getElementById('lastCalledNumberDisplay').textContent = '--';
+                        document.getElementById('playerGameDateTime').textContent = '';
+                        document.getElementById('playerWinnerList').innerHTML = '<div style="color: gray; text-align: center;">Waiting for game data...</div>';
+                        document.getElementById('playerTicketGrid').innerHTML = '<div style="color: gray; font-size: 0.9rem; text-align: center; width: 100%;">No active game tickets found.</div>';
+                        document.getElementById('playerCalledNumbers').innerHTML = '';
+                        
+                        this.currentCalledNumbers = [];
+                        for(let i=1; i<=90; i++) {
+                            const cell = document.getElementById(`player-board-num-${i}`);
+                            if(cell) cell.classList.remove('called');
+                        }
+                    }
+                });
+            },
+            loadPlayerTickets(gameId) {
+                database.ref(`tickets/${gameId}`).on('value', snap => {
+                    const data = snap.val() || {};
+                    const avail = Object.values(data.available || {});
+                    const booked = Object.values(data.booked || {});
+                    
+                    const grid = document.getElementById('playerTicketGrid');
+                    grid.innerHTML = '';
+                    
+                    const allTickets = [...avail, ...booked].sort((a,b)=>parseInt(a.id.replace('TN-','')) - parseInt(b.id.replace('TN-','')));
+                    
+                    if(allTickets.length === 0) {
+                        grid.innerHTML = '<div style="color: gray; font-size: 0.9rem; text-align: center; width: 100%;">No active game tickets found.</div>';
+                        return;
+                    }
+
+                    allTickets.forEach(t => {
+                        let ticketHTML = generateVisualTicketHTML(t.numbers, this.currentCalledNumbers || []);
+                        let ticketIdLower = t.id.toLowerCase();
+                        let bookedByLower = (t.bookedBy || '').toLowerCase();
+
+                        if (t.booked) {
+                            grid.innerHTML += `
+                                <div class="ticket-card booked" data-search-id="${ticketIdLower}" data-search-name="${bookedByLower}">
+                                    <div class="ticket-card-header">
+                                        <span style="color:var(--theme-accent-secondary);">🎫 ${t.id}</span>
+                                        <span class="badge badge-banned" style="font-size:0.6rem;">Sold: ${t.bookedBy || 'Unknown'}</span>
+                                    </div>
+                                    ${ticketHTML}
+                                </div>
+                            `;
+                        } else {
+                            grid.innerHTML += `
+                                <div class="ticket-card" data-search-id="${ticketIdLower}" data-search-name="">
+                                    <div class="ticket-card-header">
+                                        <span style="color:var(--theme-accent);">🎫 ${t.id}</span>
+                                        <span class="badge badge-active" style="font-size:0.6rem;">Available</span>
+                                    </div>
+                                    ${ticketHTML}
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    // Re-apply search filter after update
+                    this.filterTickets();
+                });
+            },
+            filterTickets() {
+                const query = (document.getElementById('playerTicketSearch').value || '').toLowerCase().trim();
+                const cards = document.querySelectorAll('#playerTicketGrid .ticket-card');
+                cards.forEach(card => {
+                    const id = card.getAttribute('data-search-id') || '';
+                    const name = card.getAttribute('data-search-name') || '';
+                    if(id.includes(query) || name.includes(query)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        };
+        PlayerController.init();
+
+        // --- 6. MASTER ADMIN / AGENT CONTROLLER ---
+        const AdminController = {
+            currentCalledNumbers: [],
+            
+            isLoggedIn: () => localStorage.getItem('agentLoggedIn_v3') === 'true',
+            checkLogin() {
+                if(this.isLoggedIn()) {
+                    document.getElementById('adminLoginSection').style.display = 'none';
+                    document.getElementById('adminDashboardSection').style.display = 'block';
+                    document.getElementById('adminLoggedInName').textContent = localStorage.getItem('agentName') || 'Admin';
+                    document.getElementById('adminLoggedInRole').textContent = localStorage.getItem('agentRole') || 'Master Admin';
+                    this.initAdminBoard();
+                    this.monitorGame();
+                } else {
+                    document.getElementById('adminLoginSection').style.display = 'block';
+                    document.getElementById('adminDashboardSection').style.display = 'none';
+                }
+            },
+            async login() {
+                const u = document.getElementById('adminUsername').value.trim().toLowerCase();
+                const p = document.getElementById('adminPassword').value;
+                const err = document.getElementById('adminLoginError');
+                err.style.display = 'none';
+                
+                if(!u || !p) { err.textContent = "Enter username and password"; err.style.display = 'block'; return; }
+
+                try {
+                    let user = null; let role = null; let isBanned = false;
+                    
+                    let snap = await database.ref('admins2').orderByChild('username').equalTo(u).once('value');
+                    if(snap.exists()) {
+                        snap.forEach(c => { 
+                            if(c.val().password === p) {
+                                if(c.val().status === 'banned') isBanned = true;
+                                else { user = c.val(); role = 'admin'; }
+                            } 
+                        });
+                    }
+
+                    if(!user && !isBanned) {
+                        snap = await database.ref('agents2').orderByChild('username').equalTo(u).once('value');
+                        if(snap.exists()) {
+                            snap.forEach(c => { 
+                                if(c.val().password === p) {
+                                    if(c.val().status === 'banned') isBanned = true;
+                                    else { user = c.val(); role = 'agent'; }
+                                } 
+                            });
+                        }
+                    }
+
+                    if(isBanned) {
+                        err.textContent = "Your account is BANNED. Contact Master Admin."; err.style.display = 'block';
+                    } else if(user) {
+                        localStorage.setItem('agentLoggedIn_v3', 'true');
+                        localStorage.setItem('agentName', user.name || user.username);
+                        localStorage.setItem('agentRole', role);
+                        this.checkLogin();
+                        showGlobalToast("Login Successful!");
+                    } else {
+                        err.textContent = "Invalid Credentials"; err.style.display = 'block';
+                    }
+                } catch(e) { err.textContent = "Network Error"; err.style.display = 'block'; }
+            },
+            logout() { localStorage.removeItem('agentLoggedIn_v3'); this.checkLogin(); },
+            
+            // Generate Admin Number Board (1-90)
+            initAdminBoard() {
+                const board = document.getElementById('adminNumberBoard');
+                if(!board) return;
+                board.innerHTML = '';
+                for(let i=1; i<=90; i++) {
+                    board.innerHTML += `<div class="board-num" id="admin-board-num-${i}">${i}</div>`;
+                }
+            },
+
+            monitorGame() {
+                database.ref('metadata2/activeGameId').on('value', async snap => {
+                    const id = snap.val();
+                    if(id) {
+                        document.getElementById('adminActiveGameId').textContent = id;
+                        
+                        // Load Date and Time
+                        const gameSnap = await database.ref(`games2/${id}`).once('value');
+                        const gameData = gameSnap.val();
+                        if(gameData && gameData.createdAt) {
+                            const dt = new Date(gameData.createdAt).toLocaleString('en-IN');
+                            document.getElementById('adminGameDateTime').innerHTML = `Started: <strong style="color:var(--theme-text-primary);">${dt}</strong>`;
+                        }
+                        
+                        this.loadAdminTickets(id);
+                        renderWinnersList(id, true); // Admin true
+
+                        // Listen to Called Numbers to sync Number Board and Visual Tickets
+                        database.ref(`games2/${id}/calledNumbers`).on('value', numSnap => {
+                            const called = numSnap.val() || [];
+                            this.currentCalledNumbers = called;
+                            
+                            // 1. Sync 1-90 Board
+                            for(let i=1; i<=90; i++) {
+                                const cell = document.getElementById(`admin-board-num-${i}`);
+                                if(cell) {
+                                    if(called.includes(i)) cell.classList.add('called');
+                                    else cell.classList.remove('called');
+                                }
+                            }
+
+                            // 2. Sync Admin Called Numbers Container
+                            const adminCalledContainer = document.getElementById('adminCalledNumbers');
+                            if (adminCalledContainer) {
+                                adminCalledContainer.innerHTML = '';
+                                called.forEach(n => {
+                                    adminCalledContainer.innerHTML += `<div style="width:clamp(32px, 10vw, 42px); height:clamp(32px, 10vw, 42px); background:var(--theme-panel-border); border: 2px solid var(--theme-accent); color:var(--theme-accent); display:flex; align-items:center; justify-content:center; border-radius:50%; font-family:var(--font-heading); font-weight:bold; font-size: clamp(0.95rem, 4vw, 1.2rem); margin: 2px;">${n}</div>`;
+                                });
+                            }
+
+                            // 3. Sync Visual Tickets
+                            document.querySelectorAll('.vt-cell').forEach(el => {
+                                if(!el.classList.contains('empty')) {
+                                    const num = parseInt(el.getAttribute('data-num'));
+                                    if(called.includes(num)) el.classList.add('called');
+                                    else el.classList.remove('called');
+                                }
+                            });
+                        });
+                        
+                    } else {
+                        document.getElementById('adminActiveGameId').textContent = "No Game Active";
+                        document.getElementById('adminGameDateTime').textContent = "";
+                        document.getElementById('adminTicketGrid').innerHTML = '<div style="color: gray; font-size: 0.9rem;">No active game tickets found.</div>';
+                        document.getElementById('adminWinnerList').innerHTML = '<div style="color: gray;">No active game.</div>';
+                        document.getElementById('adminCalledNumbers').innerHTML = '';
+                        
+                        // Clear board
+                        for(let i=1; i<=90; i++) {
+                            const cell = document.getElementById(`admin-board-num-${i}`);
+                            if(cell) cell.classList.remove('called');
+                        }
+                    }
+                });
+            },
+            
+            // --- MANUAL CALL ---
+            async callManualNumber() {
+                const manualInput = document.getElementById('manualCallInput');
+                let num = parseInt(manualInput.value);
+                if(isNaN(num) || num < 1 || num > 90) return showGlobalToast("Enter a valid number (1-90)!", true);
+                
+                const gameId = await TambolaGame2.getCurrentGameId();
+                if(!gameId) return showGlobalToast("No active game", true);
+                
+                const snap = await database.ref(`games2/${gameId}/calledNumbers`).once('value');
+                const called = snap.val() || [];
+                
+                if(called.includes(num)) {
+                    showGlobalToast(`Number ${num} is already called!`, true);
+                } else {
+                    called.push(num);
+                    await database.ref(`games2/${gameId}/calledNumbers`).set(called);
+                    showGlobalToast(`Manually Called: ${num} ✅`);
+                    manualInput.value = '';
+                }
+            },
+
+            // --- ADMIN TICKET SEARCH / FILTER ---
+            filterTickets() {
+                const query = document.getElementById('adminTicketSearch').value.toLowerCase().trim();
+                const cards = document.querySelectorAll('#adminTicketGrid .ticket-card');
+                cards.forEach(card => {
+                    const id = card.getAttribute('data-search-id') || '';
+                    const name = card.getAttribute('data-search-name') || '';
+                    if(id.includes(query) || name.includes(query)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            },
+
+            // --- ADMIN WINNERS DECLARE ---
+            async declareWinner(prizeId, prizeTitle, amount) {
+                const name = prompt(`Enter the exact WINNER NAME for [${prizeTitle}]:`);
+                if(name && name.trim()) {
+                    const gameId = await TambolaGame2.getCurrentGameId();
+                    if(gameId) {
+                        await database.ref(`games2/${gameId}/winners/${prizeId}`).set({
+                            name: name.trim(),
+                            amount: amount
+                        });
+                        showGlobalToast(`${prizeTitle} Winner Declared Successfully!`);
+                    }
+                }
+            },
+
+            // --- TICKET LIST WITH VISUAL GRIDS ---
+            loadAdminTickets(gameId) {
+                database.ref(`tickets/${gameId}`).on('value', snap => {
+                    const data = snap.val() || {};
+                    const avail = Object.values(data.available || {});
+                    const booked = Object.values(data.booked || {});
+                    
+                    const grid = document.getElementById('adminTicketGrid');
+                    grid.innerHTML = '';
+                    
+                    const allTickets = [...avail, ...booked].sort((a,b)=>parseInt(a.id.replace('TN-','')) - parseInt(b.id.replace('TN-','')));
+                    
+                    if(allTickets.length === 0) {
+                        grid.innerHTML = '<div style="color: gray; font-size: 0.9rem;">No active game tickets found.</div>';
+                        return;
+                    }
+
+                    allTickets.forEach(t => {
+                        let ticketHTML = generateVisualTicketHTML(t.numbers, this.currentCalledNumbers || []);
+                        let ticketIdLower = t.id.toLowerCase();
+                        let bookedByLower = (t.bookedBy || '').toLowerCase();
+
+                        if (t.booked) {
+                            grid.innerHTML += `
+                                <div class="ticket-card booked" data-search-id="${ticketIdLower}" data-search-name="${bookedByLower}">
+                                    <div class="ticket-card-header">
+                                        <span style="color:var(--theme-accent-secondary);">🎫 ${t.id}</span>
+                                        <span class="badge badge-banned" style="font-size:0.6rem;">Sold</span>
+                                    </div>
+                                    <div style="font-size:0.8rem;">
+                                        <div>Player: <strong style="color:white;">${t.bookedBy || 'Unknown'}</strong></div>
+                                        <div style="color:var(--theme-text-secondary); font-size: 0.75rem;">Agent: ${t.bookedByAgent || 'N/A'}</div>
+                                    </div>
+                                    ${ticketHTML}
+                                    <button class="btn btn-warning" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 5px;" onclick="AdminController.editTicketName('${t.id}', '${t.bookedBy || ''}')">✏️ Edit Name</button>
+                                </div>
+                            `;
+                        } else {
+                            grid.innerHTML += `
+                                <div class="ticket-card" data-search-id="${ticketIdLower}" data-search-name="">
+                                    <div class="ticket-card-header">
+                                        <span style="color:var(--theme-accent);">🎫 ${t.id}</span>
+                                        <span class="badge badge-active" style="font-size:0.6rem;">Available</span>
+                                    </div>
+                                    ${ticketHTML}
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    // Re-apply search filter after update
+                    this.filterTickets();
+                });
+            },
+            async editTicketName(ticketId, oldName) {
+                const newName = prompt(`Enter new player name for Ticket ${ticketId}:`, oldName);
+                if(newName !== null && newName.trim() !== "") {
+                    const gameId = await TambolaGame2.getCurrentGameId();
+                    if(gameId) {
+                        await database.ref(`tickets/${gameId}/booked/${ticketId}`).update({ bookedBy: newName.trim() });
+                        showGlobalToast(`Ticket ${ticketId} updated successfully!`);
+                    }
+                }
+            }
+        };
+
+        // --- 7. SUB-AGENT CONTROLLER ---
+        const SubAgentController = {
+            subAgentSelectedTickets: new Set(),
+            init() {
+                if(localStorage.getItem('subAgentLoggedIn_v3') === 'true') {
+                    document.getElementById('saLoginSection').style.display = 'none';
+                    document.getElementById('saDashboardSection').style.display = 'block';
+                    document.getElementById('saDisplayName').textContent = localStorage.getItem('subAgentName');
+                    document.getElementById('saSubAgentIdBadge').textContent = localStorage.getItem('subAgentId');
+                    this.loadGameData();
+                } else {
+                    document.getElementById('saLoginSection').style.display = 'block';
+                    document.getElementById('saDashboardSection').style.display = 'none';
+                }
+            },
+            async handleLogin() {
+                const u = document.getElementById('saLoginUsername').value.trim().toLowerCase();
+                const p = document.getElementById('saLoginPassword').value;
+                const err = document.getElementById('saLoginError');
+                err.style.display = 'none';
+
+                if(!u || !p) { err.textContent = "Enter details"; err.style.display = 'block'; return; }
+
+                const snap = await database.ref('subAgents2').orderByChild('username').equalTo(u).once('value');
+                let valid = false; let isBanned = false;
+                
+                if(snap.exists()) {
+                    snap.forEach(c => {
+                        if(c.val().password === p) {
+                            if(c.val().status === 'banned') {
+                                isBanned = true;
+                            } else {
+                                localStorage.setItem('subAgentLoggedIn_v3', 'true');
+                                localStorage.setItem('subAgentName', c.val().name);
+                                localStorage.setItem('subAgentId', c.val().id);
+                                valid = true;
+                            }
+                        }
+                    });
+                }
+                
+                if(isBanned) {
+                    err.textContent = "Your account is BANNED. Contact Admin."; err.style.display = 'block';
+                } else if(valid) { 
+                    this.init(); showGlobalToast("Sub-Agent Login Success!"); 
+                } else { 
+                    err.textContent = "Invalid Sub-Agent Credentials"; err.style.display = 'block'; 
+                }
+            },
+            handleLogout() { localStorage.removeItem('subAgentLoggedIn_v3'); this.init(); },
+            async loadGameData() {
+                database.ref('metadata2/activeGameId').on('value', async snap => {
+                    const id = snap.val();
+                    if(id) {
+                        document.getElementById('saActiveGameIdDisplay').textContent = id;
+                        
+                        // Game date/time
+                        const gSnap = await database.ref(`games2/${id}`).once('value');
+                        if(gSnap.val() && gSnap.val().createdAt) {
+                            document.getElementById('saGameDateTime').textContent = new Date(gSnap.val().createdAt).toLocaleString('en-IN');
+                        }
+
+                        this.listenTickets(id);
+                    } else {
+                        document.getElementById('saActiveGameIdDisplay').textContent = "No Game Active";
+                        document.getElementById('saGameDateTime').textContent = "";
+                        document.getElementById('saActiveGameAvailableCount').textContent = "0";
+                        document.getElementById('saTicketSelectionGrid').innerHTML = '';
+                    }
+                });
+            },
+            listenTickets(gameId) {
+                database.ref(`tickets/${gameId}`).on('value', snap => {
+                    const data = snap.val() || {};
+                    const avail = Object.values(data.available || {});
+                    const booked = Object.values(data.booked || {});
+                    
+                    document.getElementById('saActiveGameAvailableCount').textContent = avail.length;
+                    const grid = document.getElementById('saTicketSelectionGrid');
+                    grid.innerHTML = '';
+                    
+                    [...avail, ...booked].sort((a,b)=>parseInt(a.id.replace('TN-','')) - parseInt(b.id.replace('TN-',''))).forEach(t => {
+                        const btn = document.createElement('button');
+                        btn.textContent = t.id.replace('TN-','');
+                        btn.style.padding = '8px 2px'; btn.style.border = '1px solid rgba(255,255,255,0.2)'; btn.style.background = 'rgba(0,0,0,0.5)'; btn.style.color = 'white'; btn.style.borderRadius = '6px'; btn.style.cursor = 'pointer'; btn.style.fontWeight = 'bold'; btn.style.fontSize = '0.85rem';
+                        
+                        if(t.booked) { 
+                            btn.style.background = 'var(--theme-accent-secondary)'; btn.style.borderColor = 'var(--theme-accent-secondary)'; btn.style.opacity = '0.5'; btn.disabled = true; 
+                        } else {
+                            btn.onclick = () => {
+                                if(this.subAgentSelectedTickets.has(t.id)) { 
+                                    this.subAgentSelectedTickets.delete(t.id); 
+                                    btn.style.background = 'rgba(0,0,0,0.5)'; btn.style.color='white'; btn.style.borderColor = 'rgba(255,255,255,0.2)'; btn.style.boxShadow = 'none';
+                                } else { 
+                                    this.subAgentSelectedTickets.add(t.id); 
+                                    btn.style.background = 'var(--sa-accent-cyan)'; btn.style.color='black'; btn.style.borderColor = 'var(--sa-accent-cyan)'; btn.style.boxShadow = '0 0 10px var(--sa-accent-cyan)';
+                                }
+                            };
+                        }
+                        grid.appendChild(btn);
+                    });
+                });
+            },
+            async bookTicket() {
+                if(this.subAgentSelectedTickets.size === 0) return showGlobalToast('Please select at least one ticket!', true);
+                const name = document.getElementById('saBookingNameInput').value.trim();
+                if(!name) return showGlobalToast('Please enter customer name!', true);
+                
+                let successCount = 0;
+                for(let tid of this.subAgentSelectedTickets) {
+                    const res = await TambolaGame2.bookTicket(tid, name, 'single', localStorage.getItem('subAgentName'));
+                    if(res) successCount++;
+                }
+                showGlobalToast(`Successfully booked ${successCount} tickets for ${name}!`);
+                this.subAgentSelectedTickets.clear();
+                document.getElementById('saBookingNameInput').value = '';
+            }
+        };
+
+        // --- 8. ROLE MANAGER CONTROLLER ---
+        const RoleManager = {
+            PATHS: { admin: 'admins2', agent: 'agents2', sub_agent: 'subAgents2' },
+            
+            init() {
+                document.getElementById('rmCreateUserForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const btn = document.getElementById('rmSubmitBtn');
+                    btn.textContent = "Processing..."; btn.disabled = true;
+
+                    const n = document.getElementById('rmRegName').value.trim();
+                    const u = document.getElementById('rmRegUsername').value.trim().toLowerCase().replace(/\s+/g, '');
+                    const p = document.getElementById('rmRegPassword').value;
+                    const r = document.getElementById('rmRegRole').value;
+                    
+                    try {
+                        const checks = await Promise.all([
+                            database.ref(this.PATHS.admin).orderByChild('username').equalTo(u).once('value'),
+                            database.ref(this.PATHS.agent).orderByChild('username').equalTo(u).once('value'),
+                            database.ref(this.PATHS.sub_agent).orderByChild('username').equalTo(u).once('value')
+                        ]);
+
+                        if (checks[0].exists() || checks[1].exists() || checks[2].exists()) {
+                            showGlobalToast(`Username '@${u}' is already taken!`, true);
+                            btn.textContent = "Create User Account"; btn.disabled = false; return;
+                        }
+
+                        const prefix = r === 'admin' ? 'AD-' : (r === 'agent' ? 'AG-' : 'SA-');
+                        const id = prefix + Math.floor(10000 + Math.random() * 90000);
+                        
+                        await database.ref(this.PATHS[r]).push({ 
+                            id: id, 
+                            name: n, 
+                            username: u, 
+                            password: p, 
+                            role: r, 
+                            status: 'active',
+                            createdAt: firebase.database.ServerValue.TIMESTAMP 
+                        });
+                        
+                        showGlobalToast("✅ Account Created Successfully!"); 
+                        e.target.reset(); 
+                        this.loadUsers();
+                    } catch(err) {
+                        showGlobalToast("Error creating account.", true);
+                    } finally {
+                        btn.textContent = "Create User Account"; btn.disabled = false;
+                    }
+                });
+            },
+            
+            async loadUsers() {
+                const tb = document.getElementById('rmUserListBody');
+                tb.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading all system users...</td></tr>';
+                
+                try {
+                    const [adminsSnap, agentsSnap, subAgentsSnap] = await Promise.all([
+                        database.ref(this.PATHS.admin).once('value'),
+                        database.ref(this.PATHS.agent).once('value'),
+                        database.ref(this.PATHS.sub_agent).once('value')
+                    ]);
+
+                    let allUsers = [];
+                    
+                    if (adminsSnap.exists()) { adminsSnap.forEach(c => allUsers.push({ key: c.key, path: this.PATHS.admin, ...c.val() })); }
+                    if (agentsSnap.exists()) { agentsSnap.forEach(c => allUsers.push({ key: c.key, path: this.PATHS.agent, ...c.val() })); }
+                    if (subAgentsSnap.exists()) { subAgentsSnap.forEach(c => allUsers.push({ key: c.key, path: this.PATHS.sub_agent, ...c.val() })); }
+
+                    allUsers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                    if (allUsers.length === 0) {
+                        tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--theme-text-secondary);">No users found in the database.</td></tr>`;
+                    } else {
+                        tb.innerHTML = '';
+                        allUsers.forEach(u => {
+                            let bClass = u.role === 'admin' ? 'badge-admin' : (u.role === 'agent' ? 'badge-agent' : 'badge-subagent');
+                            let roleDisplay = u.role === 'admin' ? 'Master Admin' : (u.role === 'agent' ? 'Agent' : 'Sub-Agent');
+                            let dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN') : 'Unknown';
+                            
+                            let statusBadge = u.status === 'banned' ? '<span class="badge badge-banned">Banned</span>' : '<span class="badge badge-active">Active</span>';
+                            let banBtnHtml = u.status === 'banned' 
+                                ? `<button class="btn btn-warning" style="padding: 6px 12px; font-size: 0.8rem; margin-right:5px;" onclick="RoleManager.toggleBan('${u.path}', '${u.key}', 'active')">Unban</button>`
+                                : `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem; margin-right:5px; background: rgba(255, 51, 51, 0.2);" onclick="RoleManager.toggleBan('${u.path}', '${u.key}', 'banned')">Ban</button>`;
+
+                            tb.innerHTML += `
+                                <tr>
+                                    <td style="font-family:'Space Grotesk'; font-weight:bold;">${u.id || '-'}</td>
+                                    <td>${u.name}</td>
+                                    <td style="color:var(--theme-accent);">@${u.username}</td>
+                                    <td><span class="badge ${bClass}">${roleDisplay}</span></td>
+                                    <td>${statusBadge}</td>
+                                    <td style="font-size:0.8rem; color:var(--theme-text-secondary);">${dateStr}</td>
+                                    <td style="white-space: nowrap;">
+                                        ${banBtnHtml}
+                                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="RoleManager.deleteUser('${u.path}', '${u.key}')">Remove</button>
+                                    </td>
+                                </tr>`;
+                        });
+                    }
+                } catch(e) { 
+                    console.error("Load users error:", e);
+                    tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Error loading user data from Firebase</td></tr>`; 
+                }
+            },
+            
+            async toggleBan(path, key, newStatus) {
+                const actionText = newStatus === 'banned' ? 'BAN' : 'UNBAN';
+                if(confirm(`Are you sure you want to ${actionText} this user?`)) {
+                    try {
+                        await database.ref(`${path}/${key}`).update({ status: newStatus });
+                        showGlobalToast(`User has been ${actionText}NED successfully.`);
+                        this.loadUsers(); 
+                    } catch(err) {
+                        showGlobalToast("Failed to update status", true);
+                    }
+                }
+            },
+            
+            async deleteUser(path, key) {
+                if(confirm("Are you sure you want to PERMANENTLY delete this user?")) {
+                    try {
+                        await database.ref(`${path}/${key}`).remove();
+                        showGlobalToast("User deleted successfully.");
+                        this.loadUsers();
+                    } catch(err) {
+                        showGlobalToast("Failed to delete user", true);
+                    }
+                }
+            }
+        };
+        RoleManager.init();
+
+    </script>
+</body>
+</html>
