@@ -69,6 +69,7 @@
             /* This single line guarantees all pages start EXACTLY below the header with a 2px gap */
             margin-top: calc(var(--header-height) + var(--header-gap));
             min-height: calc(100vh - var(--header-height) - var(--header-gap));
+            min-height: calc(100dvh - var(--header-height) - var(--header-gap));
         }
         .blur-bg { filter: blur(8px); pointer-events: none; user-select: none; }
 
@@ -105,7 +106,7 @@
 
         /* Side Menu (Off-canvas) */
         .side-menu {
-            position: fixed; top: 0; right: -280px; width: 260px; height: 100vh;
+            position: fixed; top: 0; right: -280px; width: 260px; height: 100vh; height: 100dvh;
             background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border-left: 1px solid var(--glass-border); box-shadow: -5px 0 20px rgba(0,0,0,0.1);
             z-index: 2000; transition: right 0.4s ease-in-out; display: flex; flex-direction: column; padding: 25px 15px; overflow-y: auto;
@@ -123,7 +124,7 @@
         .side-menu-links .menu-box:hover, .side-menu-links .menu-box.active { background: var(--primary); color: white; transform: translateX(-4px); }
         .side-menu-links .menu-box:hover i, .side-menu-links .menu-box.active i { color: white; }
 
-        .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 1500; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(0,0,0,0.4); z-index: 1500; opacity: 0; visibility: hidden; transition: var(--transition); }
         .menu-overlay.active { opacity: 1; visibility: visible; }
 
         /* ==========================================================================
@@ -146,14 +147,14 @@
         /* ==========================================================================
            LAYOUTS & SECTIONS
            ========================================================================== */
-        .page-section { min-height: calc(100vh - var(--header-height) - var(--header-gap)); padding-bottom: 40px; }
+        .page-section { min-height: calc(100vh - var(--header-height) - var(--header-gap)); min-height: calc(100dvh - var(--header-height) - var(--header-gap)); padding-bottom: 40px; }
         .content-page { padding-top: 30px; } /* Gives inner breathing room for standard pages */
         
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; position: relative; }
         .section-title { text-align: center; font-size: 26px; margin-bottom: 25px; color: var(--primary); font-weight: 700; }
         
         /* Hero height adjusted to fit perfectly below the 2px gap */
-        .hero { position: relative; height: calc(100vh - var(--header-height) - var(--header-gap)); display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 15px; background: linear-gradient(to bottom, #063c1a, #021a0a); transition: background 0.5s ease; }
+        .hero { position: relative; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 15px; background: linear-gradient(to bottom, #063c1a, #021a0a); transition: background 0.5s ease; }
         .hero-content { position: relative; z-index: 1; color: white; max-width: 700px; }
         .hero-title { font-size: 3.2rem; font-weight: 700; margin-bottom: 15px; animation: fadeInUp 1s; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
         .hero-subtitle { font-size: 1.2rem; margin-bottom: 25px; animation: fadeInUp 1.2s; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); }
@@ -189,7 +190,7 @@
         .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
         
         /* Sticky Sidebar for Admin Dashboard */
-        .sidebar { padding: 15px; position: sticky; top: 20px; height: calc(100vh - var(--header-height) - var(--header-gap) - 40px); overflow-y: auto; }
+        .sidebar { padding: 15px; position: sticky; top: 20px; height: calc(100vh - var(--header-height) - var(--header-gap) - 40px); height: calc(100dvh - var(--header-height) - var(--header-gap) - 40px); overflow-y: auto; }
         .sidebar::-webkit-scrollbar { width: 4px; }
         .sidebar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
         
@@ -209,7 +210,7 @@
            MLA PAGE (TIKTOK STYLE)
            ========================================================================== */
         /* Takes exact remaining height below the 2px gap natively */
-        #page-mla { padding: 0 !important; height: calc(100vh - var(--header-height) - var(--header-gap)); overflow: hidden; position: relative; background: #000; display: flex; flex-direction: column; }
+        #page-mla { padding: 0 !important; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); overflow: hidden; position: relative; background: #000; display: flex; flex-direction: column; }
         
         .mla-top-nav { background: #111; display: flex; align-items: center; padding: 8px 12px; overflow-x: auto; z-index: 100; border-bottom: 1px solid #333; flex-shrink: 0; }
         .mla-top-nav::-webkit-scrollbar { display: none; }
@@ -230,7 +231,7 @@
         .read-more-btn { cursor: pointer; font-weight: bold; color: var(--accent); font-size: 0.85rem; }
 
         /* Comments Modal */
-        #comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: var(--bg-card); backdrop-filter: blur(20px); border-top-left-radius: 16px; border-top-right-radius: 16px; z-index: 2500; display: flex; flex-direction: column; transition: bottom 0.4s ease-in-out; border-top: 1px solid var(--glass-border); box-shadow: 0 -10px 30px rgba(0,0,0,0.3); }
+        #comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; height: 60dvh; background: var(--bg-card); backdrop-filter: blur(20px); border-top-left-radius: 16px; border-top-right-radius: 16px; z-index: 2500; display: flex; flex-direction: column; transition: bottom 0.4s ease-in-out; border-top: 1px solid var(--glass-border); box-shadow: 0 -10px 30px rgba(0,0,0,0.3); }
         #comments-modal.active { bottom: 0; }
 
         /* Responsive */
@@ -244,6 +245,18 @@
             .side-menu { width: 240px; right: -240px; }
             .list-item { flex-direction: column; text-align: center; }
             .list-item img { width: 100%; height: 120px; }
+            
+            /* Fix for MLA Candidate Post height on small screens */
+            #page-mla {
+                height: calc(100vh - var(--header-height) - 15px) !important;
+                height: calc(100dvh - var(--header-height) - 15px) !important;
+            }
+            .mla-overlay-bottom {
+                padding-bottom: 25px; /* Lift text above mobile nav elements */
+            }
+            .mla-overlay-right {
+                bottom: 25px; /* Lift action icons up */
+            }
         }
     </style>
 </head>
