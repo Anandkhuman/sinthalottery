@@ -494,7 +494,10 @@
         <section id="page-item-details" class="page-section content-page d-none container">
             <div class="glass" style="padding: 30px; overflow: hidden;">
                 <img id="det-img" src="" alt="Image" style="width: 100%; height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                <h2 id="det-title" style="color: var(--primary); margin-bottom: 8px;">Title</h2>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+                    <h2 id="det-title" style="color: var(--primary); margin-bottom: 8px;">Title</h2>
+                    <button id="det-share-btn" class="btn btn-primary btn-small" style="flex-shrink: 0;"><i class="fas fa-share-alt"></i> Share</button>
+                </div>
                 <p class="text-muted" style="margin-bottom: 15px;" id="det-loc"><i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> Location</p>
                 <hr style="border-color: var(--glass-border); margin-bottom: 15px;">
                 <div id="det-desc" style="line-height: 1.7;">Description...</div>
@@ -551,27 +554,54 @@
         <!-- ================= AUTH PAGE ================= -->
         <section id="page-auth" class="page-section content-page d-none container">
             <div class="auth-container glass" data-aos="zoom-in">
-                <h2 style="margin-bottom: 15px; color: var(--primary);" id="auth-title">Member Login</h2>
-                
-                <!-- Display Error Information Here -->
-                <div id="auth-error" style="color: var(--danger); margin-bottom: 12px; font-weight: 500; font-size: 0.9rem; background: rgba(239, 71, 111, 0.1); padding: 8px; border-radius: 6px; display: none;"></div>
-                
-                <form id="auth-form" onsubmit="handleAuth(event)">
-                    <div class="form-group" id="name-group" style="display: none;"><input type="text" id="auth-name" class="form-control" placeholder="Full Name"></div>
-                    <div class="form-group"><input type="email" id="auth-email" class="form-control" placeholder="Email Address" required></div>
-                    <div class="form-group"><input type="password" id="auth-password" class="form-control" placeholder="Password" required></div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;" id="auth-submit">Login</button>
-                </form>
-                
-                <div style="margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <hr style="flex: 1; border-color: var(--glass-border);"> <span>OR</span> <hr style="flex: 1; border-color: var(--glass-border);">
+                <!-- Main Login/Register UI -->
+                <div id="main-auth-ui">
+                    <h2 style="margin-bottom: 15px; color: var(--primary);" id="auth-title">Member Login</h2>
+                    
+                    <!-- Display Error Information Here -->
+                    <div id="auth-error" style="color: var(--danger); margin-bottom: 12px; font-weight: 500; font-size: 0.9rem; background: rgba(239, 71, 111, 0.1); padding: 8px; border-radius: 6px; display: none;"></div>
+                    
+                    <form id="auth-form" onsubmit="handleAuth(event)">
+                        <div class="form-group" id="name-group" style="display: none;"><input type="text" id="auth-name" class="form-control" placeholder="Full Name"></div>
+                        <div class="form-group"><input type="email" id="auth-email" class="form-control" placeholder="Email Address" required></div>
+                        <div class="form-group"><input type="password" id="auth-password" class="form-control" placeholder="Password" required></div>
+                        
+                        <!-- Forgot Password Feature added here -->
+                        <div style="text-align: right; margin-top: -8px; margin-bottom: 12px;" id="forgot-pwd-container">
+                            <a href="#" onclick="forgotPassword()" style="font-size: 0.8rem; color: var(--primary);">Forgot Password?</a>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;" id="auth-submit">Login</button>
+                    </form>
+                    
+                    <div style="margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <hr style="flex: 1; border-color: var(--glass-border);"> <span>OR</span> <hr style="flex: 1; border-color: var(--glass-border);">
+                    </div>
+                    
+                    <button class="btn glass" style="width: 100%; justify-content: center; margin-bottom: 12px; display: flex; gap: 10px; align-items: center;" onclick="signInWithGoogle()">
+                        <!-- Colorful Google Icon instead of font-awesome -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                        Sign in with Google
+                    </button>
+                    
+                    <p style="font-size: 0.85rem; cursor: pointer; color: var(--primary);" onclick="toggleAuthMode()" id="auth-switch">Don't have an account? Register</p>
                 </div>
-                
-                <button class="btn glass" style="width: 100%; justify-content: center; margin-bottom: 12px;" onclick="signInWithGoogle()">
-                    <i class="fab fa-google text-danger"></i> Sign in with Google
-                </button>
-                
-                <p style="font-size: 0.85rem; cursor: pointer; color: var(--primary);" onclick="toggleAuthMode()" id="auth-switch">Don't have an account? Register</p>
+
+                <!-- Google New Account Password UI -->
+                <div id="google-password-setup" style="display: none;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">Set a Password</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.5;">You're creating a new account via Google. Please set a password to complete registration.</p>
+                    <div class="form-group">
+                        <input type="password" id="google-new-password" class="form-control" placeholder="New Password" required minlength="6">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="completeGoogleSignIn()">Complete Registration</button>
+                    <button class="btn glass" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="cancelGoogleSignIn()">Cancel</button>
+                </div>
             </div>
         </section>
 
@@ -590,6 +620,7 @@
                         
                         <li class="active" onclick="switchAdminTab('tab-profile')"><i class="fas fa-user"></i> My Profile</li>
                         <div id="admin-menus" class="d-none">
+                            <li onclick="switchAdminTab('tab-users')"><i class="fas fa-users-cog"></i> Manage Users</li>
                             <li onclick="switchAdminTab('tab-settings')"><i class="fas fa-cogs"></i> Site Settings</li>
                             <li onclick="switchAdminTab('tab-mla-candidates')"><i class="fas fa-user-tie"></i> Manage Candidates</li>
                             <li onclick="switchAdminTab('tab-mla-admin')"><i class="fas fa-video"></i> Manage MLA Posts</li>
@@ -628,6 +659,37 @@
                             </div>
                             <button type="submit" class="btn btn-primary">Save Profile</button>
                         </form>
+
+                        <hr style="margin: 25px 0; border-color: var(--glass-border);">
+                        
+                        <!-- Change Password Profile Section -->
+                        <h3>Change Password</h3>
+                        <form id="form-change-pwd" onsubmit="changePassword(event)" style="margin-top: 15px; max-width: 450px;">
+                            <div class="form-group"><label>New Password</label><input type="password" id="prof-new-pwd" class="form-control" required minlength="6"></div>
+                            <div class="form-group"><label>Confirm Password</label><input type="password" id="prof-conf-pwd" class="form-control" required minlength="6"></div>
+                            <button type="submit" class="btn btn-secondary" style="background: var(--secondary); color: white; border: none;">Update Password</button>
+                        </form>
+                    </div>
+
+                    <!-- USERS MANAGEMENT (NEW) -->
+                    <div id="tab-users" class="admin-tab d-none">
+                        <h3 id="users-title">Manage Users</h3>
+                        <p class="text-muted" style="font-size: 0.85rem; margin-top: 5px;">Change user roles or ban/unban users from accessing the system.</p>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-list">
+                                <tr><td colspan="5" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading users...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
 
                     <!-- SITE SETTINGS (Hero Background & Footer Details) -->
@@ -1168,6 +1230,11 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if(document.getElementById('side-menu').classList.contains('active')) toggleMenu();
             
+            // Push base page routing to History state
+            if(pageId !== 'page-item-details') {
+                window.history.replaceState(null, "", "?page=" + pageId);
+            }
+            
             if (pageId === 'page-home') runCounters();
         }
 
@@ -1261,9 +1328,14 @@
             });
         }
 
-        /* 5. AUTHENTICATION */
+        /* 5. AUTHENTICATION & ROLE MANAGEMENT */
         let isRegisterMode = false;
         let currentUserRole = 'guest';
+
+        // Variables for custom Google registration flow
+        let pendingGoogleUser = null;
+        let pendingGoogleData = null;
+        window.isSettingGooglePassword = false;
 
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
@@ -1272,6 +1344,33 @@
             document.getElementById('auth-submit').innerText = isRegisterMode ? 'Register' : 'Login';
             document.getElementById('auth-switch').innerText = isRegisterMode ? 'Already have an account? Login' : "Don't have an account? Register";
             document.getElementById('auth-error').style.display = 'none';
+            document.getElementById('forgot-pwd-container').style.display = isRegisterMode ? 'none' : 'block';
+        }
+
+        // New Forgot Password Function
+        async function forgotPassword() {
+            const email = document.getElementById('auth-email').value;
+            const errorDiv = document.getElementById('auth-error');
+            
+            if(!email) {
+                errorDiv.style.display = 'block';
+                errorDiv.style.background = 'rgba(239, 71, 111, 0.1)';
+                errorDiv.style.color = 'var(--danger)';
+                errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Please enter your email address in the field above first.";
+                return;
+            }
+            try {
+                await auth.sendPasswordResetEmail(email);
+                errorDiv.style.display = 'block';
+                errorDiv.style.background = 'rgba(6, 214, 160, 0.1)';
+                errorDiv.style.color = 'var(--secondary)';
+                errorDiv.innerHTML = "<i class='fas fa-check-circle'></i> Password reset email sent! Please check your inbox.";
+            } catch (err) {
+                errorDiv.style.display = 'block';
+                errorDiv.style.background = 'rgba(239, 71, 111, 0.1)';
+                errorDiv.style.color = 'var(--danger)';
+                errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> " + err.message;
+            }
         }
 
         async function handleAuth(e) {
@@ -1286,15 +1385,18 @@
                     const name = document.getElementById('auth-name').value;
                     const cred = await auth.createUserWithEmailAndPassword(email, password);
                     await db.ref('users/' + cred.user.uid).set({
-                        name: name, email: email, role: 'admin', 
+                        name: name, email: email, role: 'admin', // Default register is admin in original logic
                         photo: 'https://ui-avatars.com/api/?name='+name+'&background=random',
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                        createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        banned: false
                     });
                 } else { await auth.signInWithEmailAndPassword(email, password); }
                 document.getElementById('auth-form').reset();
                 navigate('page-admin', document.getElementById('menu-auth-btn'));
             } catch (err) { 
                 errorDiv.style.display = 'block';
+                errorDiv.style.background = 'rgba(239, 71, 111, 0.1)';
+                errorDiv.style.color = 'var(--danger)';
                 if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
                     errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Account not found. Please register or check your email.";
                 } else if(err.code === 'auth/wrong-password') {
@@ -1303,22 +1405,73 @@
             }
         }
 
+        // Updated Sign In with Google Logic
         async function signInWithGoogle() {
             try {
                 const result = await auth.signInWithPopup(provider);
                 const snapshot = await db.ref('users/' + result.user.uid).once('value');
+                
+                // Check if user is newly registered by verifying database entry
                 if (!snapshot.exists()) {
-                    await db.ref('users/' + result.user.uid).set({
-                        name: result.user.displayName, email: result.user.email,
-                        photo: result.user.photoURL || 'https://ui-avatars.com/api/?name='+result.user.displayName,
-                        role: 'admin', createdAt: firebase.database.ServerValue.TIMESTAMP
-                    });
+                    // Activate Setup Flow
+                    window.isSettingGooglePassword = true;
+                    pendingGoogleUser = result.user;
+                    pendingGoogleData = {
+                        name: result.user.displayName || 'User', email: result.user.email,
+                        photo: result.user.photoURL || 'https://ui-avatars.com/api/?name='+(result.user.displayName||'User'),
+                        role: 'admin', // matching original logic default
+                        createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        banned: false
+                    };
+                    
+                    // Switch UI
+                    document.getElementById('main-auth-ui').style.display = 'none';
+                    document.getElementById('google-password-setup').style.display = 'block';
+                } else {
+                    // Pre-existing User: Login directly
+                    window.isSettingGooglePassword = false;
+                    navigate('page-admin', document.getElementById('menu-auth-btn'));
                 }
-                navigate('page-admin', document.getElementById('menu-auth-btn'));
             } catch (error) { 
-                document.getElementById('auth-error').style.display = 'block';
-                document.getElementById('auth-error').innerHTML = "<i class='fas fa-exclamation-circle'></i> " + error.message; 
+                const errorDiv = document.getElementById('auth-error');
+                errorDiv.style.display = 'block';
+                errorDiv.style.background = 'rgba(239, 71, 111, 0.1)';
+                errorDiv.style.color = 'var(--danger)';
+                errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> " + error.message; 
             }
+        }
+
+        async function completeGoogleSignIn() {
+            const pwd = document.getElementById('google-new-password').value;
+            if(!pwd || pwd.length < 6) {
+                alert("Please enter a password with at least 6 characters.");
+                return;
+            }
+            try {
+                await pendingGoogleUser.updatePassword(pwd); // Securely set the custom password
+                await db.ref('users/' + pendingGoogleUser.uid).set(pendingGoogleData); // Save to DB
+                
+                // Clear UI & navigate
+                window.isSettingGooglePassword = false;
+                document.getElementById('google-password-setup').style.display = 'none';
+                document.getElementById('main-auth-ui').style.display = 'block';
+                document.getElementById('google-new-password').value = '';
+                
+                navigate('page-admin', document.getElementById('menu-auth-btn'));
+            } catch (err) {
+                alert("Error setting password: " + err.message);
+            }
+        }
+
+        async function cancelGoogleSignIn() {
+            if(pendingGoogleUser) {
+                try { await pendingGoogleUser.delete(); } catch(e) { auth.signOut(); }
+            } else { auth.signOut(); }
+            
+            window.isSettingGooglePassword = false;
+            document.getElementById('google-password-setup').style.display = 'none';
+            document.getElementById('main-auth-ui').style.display = 'block';
+            document.getElementById('google-new-password').value = '';
         }
 
         function logout() { auth.signOut(); navigate('page-home', document.querySelectorAll('.nav-menu-item')[0]); }
@@ -1326,12 +1479,16 @@
         auth.onAuthStateChanged((user) => {
             const authBtn = document.getElementById('menu-auth-btn');
             if (user) {
-                authBtn.querySelector('span').innerText = 'Dashboard';
-                authBtn.setAttribute('onclick', "navigate('page-admin', this)");
-                
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const data = snapshot.val();
                     if(data) {
+                        // Check if the user is banned
+                        if (data.banned) {
+                            alert("Your account has been banned. You can no longer access this system.");
+                            auth.signOut();
+                            return; 
+                        }
+
                         currentUserRole = data.role || 'member';
                         document.getElementById('user-name').innerText = data.name;
                         document.getElementById('user-role').innerText = currentUserRole.toUpperCase();
@@ -1345,18 +1502,43 @@
                             pPreview.src = data.photo; pPreview.style.display = 'block';
                         }
 
-                        if (currentUserRole === 'admin' || currentUserRole === 'superadmin') { document.getElementById('admin-menus').classList.remove('d-none'); } 
-                        else { document.getElementById('admin-menus').classList.add('d-none'); }
+                        if (currentUserRole === 'admin' || currentUserRole === 'superadmin') { 
+                            document.getElementById('admin-menus').classList.remove('d-none'); 
+                        } else { 
+                            document.getElementById('admin-menus').classList.add('d-none'); 
+                        }
+
+                        // Allow auto-navigation ONLY if not currently stuck setting google password
+                        if (document.getElementById('page-auth').classList.contains('active') && !document.getElementById('page-auth').classList.contains('d-none')) { 
+                            if (!window.isSettingGooglePassword) navigate('page-admin', authBtn); 
+                        }
+                    } else {
+                        // User Authenticated but no DB mapping (Interrupted Google Registration Process)
+                        window.isSettingGooglePassword = true;
+                        pendingGoogleUser = user;
+                        pendingGoogleData = {
+                            name: user.displayName || 'User', email: user.email,
+                            photo: user.photoURL || 'https://ui-avatars.com/api/?name='+(user.displayName||'User'),
+                            role: 'admin', createdAt: firebase.database.ServerValue.TIMESTAMP,
+                            banned: false
+                        };
+                        navigate('page-auth', authBtn);
+                        document.getElementById('main-auth-ui').style.display = 'none';
+                        document.getElementById('google-password-setup').style.display = 'block';
                     }
                 });
                 
-                if (document.getElementById('page-auth').classList.contains('active') && !document.getElementById('page-auth').classList.contains('d-none')) { navigate('page-admin', authBtn); }
+                authBtn.querySelector('span').innerText = 'Dashboard';
+                authBtn.setAttribute('onclick', "navigate('page-admin', this)");
+                
             } else {
                 authBtn.querySelector('span').innerText = 'Login';
                 authBtn.setAttribute('onclick', "navigate('page-auth', this)");
                 currentUserRole = 'guest';
                 
-                if (document.getElementById('page-admin').classList.contains('active') && !document.getElementById('page-admin').classList.contains('d-none')) { navigate('page-auth', authBtn); }
+                if (document.getElementById('page-admin').classList.contains('active') && !document.getElementById('page-admin').classList.contains('d-none')) { 
+                    navigate('page-auth', authBtn); 
+                }
             }
         });
 
@@ -1383,14 +1565,13 @@
                 if(inp.id.includes('img') || inp.id.includes('photo') || inp.id.includes('vid') || inp.id.includes('aud')) inp.value = '';
             });
             
-            // Clean up family details if it's the directory form
             if(formId === 'form-directory') {
                 const familyList = document.getElementById('d-family-list');
                 if(familyList) familyList.innerHTML = '';
             }
         }
 
-        // --- PROFILE ---
+        // --- PROFILE LOGIC ---
         function updateProfile(e) {
             e.preventDefault();
             const user = auth.currentUser;
@@ -1402,23 +1583,110 @@
             }
         }
 
+        async function changePassword(e) {
+            e.preventDefault();
+            const newPwd = document.getElementById('prof-new-pwd').value;
+            const confPwd = document.getElementById('prof-conf-pwd').value;
+            
+            if(newPwd !== confPwd) {
+                alert("Passwords do not match!");
+                return;
+            }
+            
+            try {
+                const user = auth.currentUser;
+                if(user) {
+                    await user.updatePassword(newPwd);
+                    alert("Password updated successfully!");
+                    document.getElementById('form-change-pwd').reset();
+                }
+            } catch(err) {
+                if(err.code === 'auth/requires-recent-login') {
+                    alert("For security reasons, please log out and log in again before changing your password.");
+                } else {
+                    alert("Error: " + err.message);
+                }
+            }
+        }
+
+        // --- USERS MANAGEMENT (Role change & Ban/Unban) ---
+        let adminUsersData = [];
+        db.ref('users').on('value', snap => {
+            const adminList = document.getElementById('admin-users-list');
+            if (!adminList) return;
+            adminList.innerHTML = ''; 
+            adminUsersData = [];
+            
+            snap.forEach(child => { adminUsersData.push({ uid: child.key, ...child.val() }); });
+
+            if(adminUsersData.length === 0) {
+                adminList.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No users found.</td></tr>';
+            }
+
+            adminUsersData.forEach(user => {
+                const isBanned = user.banned ? true : false;
+                const isSelf = auth.currentUser && user.uid === auth.currentUser.uid;
+                
+                const statusBadge = isBanned 
+                    ? `<span class="badge" style="background:var(--danger); color:white; padding:2px 6px; border-radius:4px; font-size: 0.75rem;">Banned</span>` 
+                    : `<span class="badge" style="background:var(--secondary); color:white; padding:2px 6px; border-radius:4px; font-size: 0.75rem;">Active</span>`;
+
+                adminList.innerHTML += `
+                    <tr>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <img src="${user.photo || 'https://ui-avatars.com/api/?name='+user.name}" style="width:25px; height:25px; border-radius:50%; object-fit:cover;">
+                                <span>${user.name || 'N/A'}</span>
+                            </div>
+                        </td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td>
+                            <select class="form-control" style="width: 100px; padding: 4px; font-size: 0.8rem;" onchange="changeUserRole('${user.uid}', this.value)" ${isSelf ? 'disabled title="Cannot change your own role"' : ''}>
+                                <option value="member" ${user.role === 'member' ? 'selected' : ''}>Member</option>
+                                <option value="admin" ${user.role === 'admin' || user.role === 'superadmin' ? 'selected' : ''}>Admin</option>
+                            </select>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td class="action-btns">
+                            ${!isSelf ? 
+                                `<button class="btn btn-small ${isBanned ? 'btn-primary' : 'btn-danger'}" onclick="toggleUserBan('${user.uid}', ${isBanned})">
+                                    <i class="fas ${isBanned ? 'fa-check-circle' : 'fa-ban'}"></i> ${isBanned ? 'Unban' : 'Ban'}
+                                </button>` 
+                            : '<span style="font-size:0.8rem; color:var(--text-muted); display:inline-block; padding:5px;">Self</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+
+        function changeUserRole(uid, newRole) {
+            if (confirm(`Are you sure you want to assign the '${newRole}' role to this user?`)) {
+                db.ref(`users/${uid}`).update({ role: newRole })
+                    .then(() => alert("User role updated successfully."))
+                    .catch(err => alert("Error updating role: " + err.message));
+            }
+        }
+
+        function toggleUserBan(uid, currentlyBanned) {
+            const action = currentlyBanned ? "unban" : "ban";
+            if (confirm(`Are you sure you want to ${action} this user?`)) {
+                db.ref(`users/${uid}`).update({ banned: !currentlyBanned })
+                    .then(() => alert(`User has been ${action}ned successfully.`))
+                    .catch(err => alert("Error: " + err.message));
+            }
+        }
+
         // --- HERO BACKGROUND HANDLING ---
         let currentHeroImage = 'https://images.unsplash.com/photo-1626025176767-742721fdf644?q=80&w=2000&auto=format&fit=crop';
         
         function setHeroBackground(imageUrl) {
             const heroEl = document.querySelector('.hero');
-            // Show dark green gradient pre-load state
             heroEl.style.background = 'linear-gradient(to bottom, #063c1a, #021a0a)';
-            
             const img = new Image();
-            img.onload = function() {
-                // Remove the gradient overlay permanently when the image loads, no blur/opacity
-                heroEl.style.background = `url('${imageUrl}') center/cover no-repeat`;
-            };
+            img.onload = function() { heroEl.style.background = `url('${imageUrl}') center/cover no-repeat`; };
             img.src = imageUrl;
         }
 
-        // Apply immediately upon logic load
         setHeroBackground(currentHeroImage);
 
         // --- SITE SETTINGS (Hero Bg & Footer) ---
@@ -1662,27 +1930,31 @@
             });
         }
 
+        function submitComment() {
+            if(!auth.currentUser) return alert("Please login to comment!");
+            const postId = document.getElementById('active-comment-post-id').value;
+            const text = document.getElementById('comment-input').value;
+            if(!text.trim()) return;
+            
+            db.ref(`users/${auth.currentUser.uid}`).once('value').then(snap => {
+                const name = snap.exists() ? snap.val().name : 'User';
+                db.ref(`mla_posts/${postId}/comments`).push({ uid: auth.currentUser.uid, name: name, text: text, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                document.getElementById('comment-input').value = '';
+            });
+        }
+
         function closeComments() {
             document.getElementById('comments-modal').classList.remove('active');
             const activeId = document.getElementById('active-comment-post-id').value;
             if(activeId) db.ref(`mla_posts/${activeId}/comments`).off(); 
         }
 
-        function submitComment() {
-            if(!auth.currentUser) return alert("Please login via the menu to comment!");
-            const postId = document.getElementById('active-comment-post-id').value;
-            const textEl = document.getElementById('comment-input');
-            const text = textEl.value.trim();
-            if(!text || !postId) return;
-            db.ref(`mla_posts/${postId}/comments`).push({
-                uid: auth.currentUser.uid, name: auth.currentUser.displayName || auth.currentUser.email.split('@')[0], text: text, timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-            textEl.value = '';
-        }
-
-        function sharePost(title) {
-            if (navigator.share) { navigator.share({ title: `Check out this update: ${title}`, url: window.location.href }).catch(console.error); } 
-            else { alert("Sharing is not supported on this browser."); }
+        function sharePost(title, postId) {
+            const shareUrl = window.location.origin + window.location.pathname + '?page=mla&post=' + postId;
+            if (navigator.share) { navigator.share({ title: `Check out this update: ${title}`, url: shareUrl }).catch(console.error); } 
+            else { 
+                navigator.clipboard.writeText(shareUrl).then(() => alert("Separate link for this post copied to clipboard!")); 
+            }
         }
 
         function renderMLAFeed() {
@@ -1723,7 +1995,7 @@
                             <div class="mla-overlay-right">
                                 <div class="action-icon" onclick="toggleLike('${post.id}')"><i class="fas fa-heart" style="${isLiked}"></i><span>${likeCount}</span></div>
                                 <div class="action-icon" onclick="openComments('${post.id}')"><i class="fas fa-comment"></i><span>${commentCount}</span></div>
-                                <div class="action-icon" onclick="sharePost('${post.title.replace(/'/g, "\\'")}')"><i class="fas fa-share"></i><span>Share</span></div>
+                                <div class="action-icon" onclick="sharePost('${post.title.replace(/'/g, "\\'")}', '${post.id}')"><i class="fas fa-share"></i><span>Share</span></div>
                             </div>
                         </div>
                     `;
@@ -1732,6 +2004,21 @@
 
             if (mlaSwiperInstance) mlaSwiperInstance.destroy();
             mlaSwiperInstance = new Swiper('.mla-swiper', { direction: 'vertical' });
+
+            if (window.pendingMlaScroll) {
+                const targetId = window.pendingMlaScroll;
+                const slideIndex = filteredPosts.findIndex(p => p.id === targetId);
+                
+                if (slideIndex !== -1) {
+                    setTimeout(() => { mlaSwiperInstance.slideTo(slideIndex, 0); }, 100);
+                    window.pendingMlaScroll = null;
+                } else {
+                    const postData = allMLAPosts.find(p => p.id === targetId);
+                    if (postData && activeMLACandidateId !== postData.candId) {
+                        selectMLACandidate(postData.candId);
+                    }
+                }
+            }
         }
 
         db.ref('mla_posts').orderByChild('timestamp').on('value', snap => {
@@ -1788,7 +2075,7 @@
         });
 
         // --- ITEM DETAILS PAGE RENDERER (For Schools, Health & Notices) ---
-        function openDetailsPage(dataObj, sourcePageId) {
+        function openDetailsPage(dataObj, sourcePageId, type, id) {
             window.lastListPage = sourcePageId;
             const detImg = document.getElementById('det-img');
             
@@ -1803,10 +2090,17 @@
 
             document.getElementById('det-desc').innerHTML = (dataObj.description || dataObj.content || 'No details provided.').replace(/\n/g, '<br>');
             
-            // Navigate to the details page, then optionally override the header title with specific name
+            const shareUrl = window.location.origin + window.location.pathname + `?page=details&type=${type}&id=${id}`;
+            document.getElementById('det-share-btn').onclick = function() {
+                if (navigator.share) { navigator.share({ title: dataObj.title || dataObj.name, url: shareUrl }).catch(console.error); } 
+                else { navigator.clipboard.writeText(shareUrl).then(() => alert("Separate link copied to clipboard!")); }
+            };
+
             navigate('page-item-details');
             const dynTitle = document.getElementById('dynamic-header-title');
             if (dynTitle) dynTitle.innerText = dataObj.name || dataObj.title || 'Details';
+
+            window.history.replaceState(null, "", shareUrl);
         }
 
         // --- SCHOOLS ---
@@ -1844,7 +2138,7 @@
             schoolsData.forEach(item => {
                 const safeData = encodeURIComponent(JSON.stringify(item));
                 container.innerHTML += `
-                    <div class="list-item glass" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-schools')">
+                    <div class="list-item glass" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-schools', 'schools', '${item.id}')">
                         <img src="${item.image}" alt="Img" onerror="this.style.display='none'">
                         <div class="list-item-content">
                             <h3>${item.name}</h3><p><i class="fas fa-map-marker-alt"></i> ${item.location}</p>
@@ -1895,7 +2189,7 @@
             healthData.forEach(item => {
                 const safeData = encodeURIComponent(JSON.stringify(item));
                 container.innerHTML += `
-                    <div class="list-item glass" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-health')">
+                    <div class="list-item glass" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-health', 'health', '${item.id}')">
                         <img src="${item.image}" alt="Img" onerror="this.style.display='none'">
                         <div class="list-item-content">
                             <h3>${item.name}</h3><p><i class="fas fa-map-marker-alt"></i> ${item.location}</p>
@@ -1942,7 +2236,7 @@
             newsData.forEach(news => {
                 const safeData = encodeURIComponent(JSON.stringify(news));
                 container.innerHTML += `
-                    <div class="card glass animate__animated animate__fadeInUp" style="cursor:pointer;" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-news')">
+                    <div class="card glass animate__animated animate__fadeInUp" style="cursor:pointer;" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-news', 'news', '${news.id}')">
                         <img src="${news.image}" alt="Img" onerror="this.style.display='none'">
                         <div class="card-meta"><i class="far fa-calendar"></i> ${news.date}</div>
                         <h3 class="card-title">${news.title}</h3>
@@ -1996,7 +2290,7 @@
                 const safeData = encodeURIComponent(JSON.stringify(n));
                 
                 list.innerHTML += `
-                    <li style="padding: 12px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='inherit';" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-notices')">
+                    <li style="padding: 12px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='inherit';" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-notices', 'notices', '${n.id}')">
                         <div>
                             <span class="badge" style="background: ${color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">${n.type.toUpperCase()}</span>
                             <strong style="font-size: 0.95rem;">${n.title}</strong>
@@ -2005,7 +2299,7 @@
                     </li>
                 `;
                 
-                tickerText += ` <span style="margin: 0 30px; cursor: pointer;" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-home')">• <strong style="color: ${n.type === 'urgent' ? '#ffd166' : 'inherit'}">${n.type.toUpperCase()}</strong>: ${n.title} (${n.date})</span> `;
+                tickerText += ` <span style="margin: 0 30px; cursor: pointer;" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-home', 'notices', '${n.id}')">• <strong style="color: ${n.type === 'urgent' ? '#ffd166' : 'inherit'}">${n.type.toUpperCase()}</strong>: ${n.title} (${n.date})</span> `;
                 
                 adminList.innerHTML += `
                     <tr><td>${n.title}</td><td>${n.type}</td>
@@ -2047,7 +2341,6 @@
             e.preventDefault();
             const id = document.getElementById('edit-dir-id').value;
             
-            // Gather all family details
             let family = [];
             document.querySelectorAll('#d-family-list .family-member-row').forEach(row => {
                 let n = row.querySelector('.fam-name').value.trim();
@@ -2111,7 +2404,6 @@
                 rows.forEach((row, index) => {
                     if(index === 0 || !row.trim()) return;
                     const cols = row.split(',');
-                    // Mapping mapping to: Name, Mobile, Category, Address, ImageURL, DOB, Email, Aadhar
                     if(cols.length >= 3) {
                         db.ref('directory').push({
                             name: cols[0]?.trim() || '', 
@@ -2136,16 +2428,21 @@
             dirData = []; snap.forEach(child => { dirData.push({id: child.key, ...child.val()}); }); renderDirectory(dirData);
         });
 
-        // Hides Custom Directory Details Modal
         function hideDirDetails() {
             const modal = document.getElementById('dir-modal');
             if(modal) {
                 modal.style.opacity = '0';
                 setTimeout(() => { modal.style.display = 'none'; }, 200);
+                window.history.replaceState(null, "", "?page=page-directory");
             }
         }
+        
+        function shareDirectory(id, name) {
+            const shareUrl = window.location.origin + window.location.pathname + `?page=dir&id=${id}`;
+            if (navigator.share) { navigator.share({ title: `Contact ${name}`, url: shareUrl }).catch(console.error); } 
+            else { navigator.clipboard.writeText(shareUrl).then(() => alert("Separate link copied to clipboard!")); }
+        }
 
-        // Shows Custom Directory Details Modal with all information
         function showDirDetails(id) {
             const item = dirData.find(d => d.id === id);
             if(!item) return;
@@ -2177,6 +2474,7 @@
 
             modal.innerHTML = `
                 <div class="glass animate__animated animate__zoomIn" style="background:var(--bg-main); width:100%; max-width:400px; max-height:90vh; overflow-y:auto; border-radius:12px; position:relative; padding:30px 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                    <i class="fas fa-share-alt" onclick="shareDirectory('${item.id}', '${item.name.replace(/'/g, "\\'")}')" style="position:absolute; top:15px; right:55px; font-size:16px; color:var(--primary); cursor:pointer; background:rgba(17, 138, 178, 0.1); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:0.2s;"></i>
                     <i class="fas fa-times" onclick="hideDirDetails()" style="position:absolute; top:15px; right:15px; font-size:18px; color:var(--danger); cursor:pointer; background:rgba(239, 71, 111, 0.1); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:0.2s;"></i>
                     
                     ${imgHTML}
@@ -2195,9 +2493,10 @@
             `;
             modal.style.display = 'flex';
             setTimeout(() => { modal.style.opacity = '1'; }, 10);
+            
+            window.history.replaceState(null, "", "?page=dir&id=" + id);
         }
 
-        // REDESIGNED DIRECTORY CONTAINER - Horizontal Flex Layout
         function renderDirectory(data) {
             const container = document.getElementById('directory-container'); const adminList = document.getElementById('admin-dir-list');
             container.innerHTML = ''; adminList.innerHTML = '';
@@ -2320,6 +2619,50 @@
                         <button class="btn btn-small btn-danger" onclick="deleteItem('projects', '${item.id}')"><i class="fas fa-trash"></i></button></td>
                     </tr>`;
             });
+        });
+
+        // ================= URL ROUTING / DEEP LINK RESOLUTION =================
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const p = urlParams.get('page');
+            
+            if (p === 'details') {
+                const t = urlParams.get('type');
+                const i = urlParams.get('id');
+                if (t && i) {
+                    db.ref(t + '/' + i).once('value').then(snap => {
+                        if (snap.exists()) {
+                            const data = snap.val();
+                            data.id = snap.key;
+                            openDetailsPage(data, 'page-home', t, i);
+                        } else {
+                            alert("The shared item could not be found or has been removed.");
+                            navigate('page-home');
+                        }
+                    });
+                }
+            } else if (p === 'mla') {
+                const post = urlParams.get('post');
+                if (post) {
+                    navigate('page-mla');
+                    window.pendingMlaScroll = post;
+                }
+            } else if (p === 'dir') {
+                const i = urlParams.get('id');
+                if (i) {
+                    db.ref('directory/' + i).once('value').then(snap => {
+                        if (snap.exists()) {
+                            if (!dirData.find(d => d.id === i)) {
+                                dirData.push({id: snap.key, ...snap.val()});
+                            }
+                            navigate('page-directory');
+                            showDirDetails(i);
+                        }
+                    });
+                }
+            } else if (p && document.getElementById(p)) {
+                navigate(p);
+            }
         });
 
     </script>
