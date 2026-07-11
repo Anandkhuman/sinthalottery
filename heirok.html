@@ -1,0 +1,2314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heirok Smart Village Portal | Manipur</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Libraries -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        /* ==========================================================================
+           CSS VARIABLES & THEMING
+           ========================================================================== */
+        :root {
+            --primary: #118ab2;
+            --secondary: #06d6a0;
+            --accent: #ffd166;
+            --danger: #ef476f;
+            --dark: #073b4c;
+            --bg-main: #f0f8ff;
+            --bg-card: rgba(255, 255, 255, 0.7);
+            --text-main: #333333;
+            --text-muted: #666666;
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow: 0 4px 20px 0 rgba(31, 38, 135, 0.1);
+            --transition: all 0.3s ease-in-out;
+            
+            /* Dynamic Header Height & Exact 2px Gap Configuration */
+            --header-height: 75px;
+            --header-gap: 2px;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        /* ==========================================================================
+           RESET & GLOBAL STYLES (Compact Scaling)
+           ========================================================================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        html { font-size: 14px; } 
+        body { background: var(--bg-main); color: var(--text-main); transition: var(--transition); overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        .d-none { display: none !important; }
+        
+        .glass {
+            background: var(--bg-card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: var(--shadow);
+        }
+
+        /* Blur Effect for Main Container when Menu is Open */
+        #app-container { 
+            transition: filter 0.4s ease; 
+            /* This single line guarantees all pages start EXACTLY below the header with a 2px gap */
+            margin-top: calc(var(--header-height) + var(--header-gap));
+            min-height: calc(100vh - var(--header-height) - var(--header-gap));
+        }
+        .blur-bg { filter: blur(8px); pointer-events: none; user-select: none; }
+
+        /* ==========================================================================
+           NAVIGATION, HEADER & HAMBURGER MENU
+           ========================================================================== */
+        header { 
+            position: fixed; top: 0; width: 100%; height: var(--header-height); z-index: 1000; 
+            padding: 0 5%; display: flex; align-items: center; transition: var(--transition); 
+            background: var(--bg-card); backdrop-filter: blur(15px); 
+            border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow); 
+        }
+        /* Removed padding shrinkage on scroll to keep height stable for perfect 2px gap */
+        header.scrolled { box-shadow: 0 8px 30px 0 rgba(0,0,0,0.3); } 
+        
+        .nav-container { display: flex; justify-content: space-between; align-items: center; position: relative; width: 100%; }
+        
+        .logo { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
+        
+        .animated-css-logo { display: flex; align-items: center; height: 50px; width: 140px; gap: 6px; cursor: pointer; }
+        .logo-icon-wrap { display: flex; align-items: center; justify-content: center; animation: pulseGlowIcon 2.5s infinite ease-in-out; }
+        .logo-icon { font-size: 24px; background: linear-gradient(135deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 4px rgba(6, 214, 160, 0.4)); }
+        .logo-text-anim { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(to right, var(--primary) 0%, var(--secondary) 25%, var(--accent) 50%, var(--secondary) 75%, var(--primary) 100%); background-size: 200% auto; color: var(--primary); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shineText 3s linear infinite; }
+        
+        @keyframes shineText { to { background-position: -200% center; } }
+        @keyframes pulseGlowIcon { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--secondary)); } 50% { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--accent)); } }
+
+        .dynamic-header-title { flex: 2; text-align: center; font-weight: 600; font-size: 1.1rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; }
+        .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 15px; flex: 1; }
+        
+        .btn-theme { background: transparent; border: none; font-size: 20px; color: var(--text-main); cursor: pointer; }
+        .hamburger-btn { font-size: 22px; color: var(--primary); cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; background: var(--bg-card); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--glass-border); }
+        .hamburger-btn:hover { background: var(--primary); color: white; }
+
+        /* Side Menu (Off-canvas) */
+        .side-menu {
+            position: fixed; top: 0; right: -280px; width: 260px; height: 100vh;
+            background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border); box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+            z-index: 2000; transition: right 0.4s ease-in-out; display: flex; flex-direction: column; padding: 25px 15px; overflow-y: auto;
+        }
+        .side-menu.active { right: 0; }
+        .side-menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .close-menu { font-size: 24px; color: var(--danger); cursor: pointer; transition: transform 0.3s; }
+        .close-menu:hover { transform: rotate(90deg); }
+        
+        .side-menu-links { display: flex; flex-direction: column; gap: 10px; }
+        .side-menu-links .menu-box {
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-radius: 10px; background: var(--bg-main); border: 1px solid var(--glass-border); cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: var(--transition);
+        }
+        .side-menu-links .menu-box i { font-size: 18px; color: var(--secondary); width: 22px; text-align: center; transition: var(--transition); }
+        .side-menu-links .menu-box:hover, .side-menu-links .menu-box.active { background: var(--primary); color: white; transform: translateX(-4px); }
+        .side-menu-links .menu-box:hover i, .side-menu-links .menu-box.active i { color: white; }
+
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 1500; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .menu-overlay.active { opacity: 1; visibility: visible; }
+
+        /* ==========================================================================
+           BUTTONS, INPUTS & PROGRESS
+           ========================================================================== */
+        .btn { padding: 8px 18px; border-radius: 6px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(17, 138, 178, 0.4); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-small { padding: 5px 10px; font-size: 0.8rem; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 0.85rem; }
+        .form-control { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--glass-border); background: var(--bg-main); color: var(--text-main); outline: none; font-size: 0.9rem; }
+        .form-control:focus { border-color: var(--primary); }
+
+        .progress { width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress-bar { height: 100%; background: var(--secondary); width: 0%; transition: width 0.3s; }
+
+        /* ==========================================================================
+           LAYOUTS & SECTIONS
+           ========================================================================== */
+        .page-section { min-height: calc(100vh - var(--header-height) - var(--header-gap)); padding-bottom: 40px; }
+        .content-page { padding-top: 30px; } /* Gives inner breathing room for standard pages */
+        
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; position: relative; }
+        .section-title { text-align: center; font-size: 26px; margin-bottom: 25px; color: var(--primary); font-weight: 700; }
+        
+        /* Hero height adjusted to fit perfectly below the 2px gap */
+        .hero { position: relative; height: calc(100vh - var(--header-height) - var(--header-gap)); display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 15px; background: linear-gradient(to bottom, #063c1a, #021a0a); transition: background 0.5s ease; }
+        .hero-content { position: relative; z-index: 1; color: white; max-width: 700px; }
+        .hero-title { font-size: 3.2rem; font-weight: 700; margin-bottom: 15px; animation: fadeInUp 1s; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
+        .hero-subtitle { font-size: 1.2rem; margin-bottom: 25px; animation: fadeInUp 1.2s; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: -30px; position: relative; z-index: 10; padding: 0 15px; }
+        .stat-card { text-align: center; padding: 20px; cursor: pointer; transition: var(--transition); border-bottom: 3px solid transparent; }
+        .stat-card:hover { transform: translateY(-5px); border-bottom: 3px solid var(--secondary); }
+        .stat-card i { font-size: 30px; color: var(--secondary); margin-bottom: 10px; }
+        .stat-card h3 { font-size: 28px; font-weight: 700; color: var(--primary); }
+        
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .card { padding: 15px; border-radius: 12px; overflow: hidden; transition: var(--transition); }
+        .card:hover { transform: translateY(-4px); }
+        .card img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+        .card-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+        
+        .list-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 10px; cursor: pointer; transition: var(--transition); margin-bottom: 12px; }
+        .list-item:hover { transform: translateX(4px); box-shadow: var(--shadow); background: var(--primary); color: white; }
+        .list-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .list-item-content h3 { font-size: 1rem; margin-bottom: 4px; }
+        .list-item-content p { font-size: 0.85rem; opacity: 0.8; }
+        .list-item:hover .list-item-content p { color: white; }
+
+        .notice-ticker { display: flex; align-items: center; background: var(--primary); color: white; padding: 8px 15px; border-radius: 8px; margin-bottom: 25px; font-size: 0.9rem; }
+        .ticker-title { font-weight: 700; margin-right: 15px; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+        .ticker-wrap { overflow: hidden; width: 100%; }
+        .ticker-move { display: inline-block; white-space: nowrap; animation: ticker 25s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* Dashboard & Auth */
+        .auth-container { max-width: 360px; margin: 30px auto; padding: 30px; text-align: center; }
+        .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
+        
+        /* Sticky Sidebar for Admin Dashboard */
+        .sidebar { padding: 15px; position: sticky; top: 20px; height: calc(100vh - var(--header-height) - var(--header-gap) - 40px); overflow-y: auto; }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        
+        .sidebar ul li { margin-bottom: 8px; padding: 8px; border-radius: 6px; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .sidebar ul li:hover, .sidebar ul li.active { background: var(--primary); color: white; }
+        
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+        .admin-table th, .admin-table td { padding: 10px; border-bottom: 1px solid var(--glass-border); text-align: left; }
+        .admin-table th { background: rgba(0,0,0,0.05); font-weight: 600; }
+        .action-btns { display: flex; gap: 4px; }
+
+        footer { background: var(--dark); color: white; padding: 40px 15px 15px; text-align: center; font-size: 0.9rem; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto 30px; text-align: left; }
+        .social-links a { font-size: 20px; margin-right: 12px; color: white; transition: var(--transition); }
+
+        /* ==========================================================================
+           MLA PAGE (TIKTOK STYLE)
+           ========================================================================== */
+        /* Takes exact remaining height below the 2px gap natively */
+        #page-mla { padding: 0 !important; height: calc(100vh - var(--header-height) - var(--header-gap)); overflow: hidden; position: relative; background: #000; display: flex; flex-direction: column; }
+        
+        .mla-top-nav { background: #111; display: flex; align-items: center; padding: 8px 12px; overflow-x: auto; z-index: 100; border-bottom: 1px solid #333; flex-shrink: 0; }
+        .mla-top-nav::-webkit-scrollbar { display: none; }
+        .mla-top-nav { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .candidate-nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 65px; }
+
+        .mla-swiper { flex: 1; width: 100%; height: 100%; }
+        .swiper-slide.mla-slide { position: relative; display: flex; align-items: center; justify-content: center; background: #111; color: white; overflow: hidden; }
+        .mla-media { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .mla-overlay-bottom { position: absolute; bottom: 0; left: 0; right: 60px; padding: 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; }
+        .mla-overlay-right { position: absolute; bottom: 15px; right: 10px; display: flex; flex-direction: column; gap: 15px; z-index: 10; align-items: center; }
+        .action-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: white; font-size: 24px; transition: transform 0.2s; }
+        .action-icon:hover { transform: scale(1.1); }
+        .action-icon span { font-size: 11px; font-weight: 600; }
+        .mla-text-container { max-height: 55px; overflow: hidden; transition: var(--transition); margin-bottom: 4px; font-size: 0.9rem; line-height: 1.4; }
+        .mla-text-container.expanded { max-height: 50vh; overflow-y: auto; background: rgba(0,0,0,0.7); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); }
+        .read-more-btn { cursor: pointer; font-weight: bold; color: var(--accent); font-size: 0.85rem; }
+
+        /* Comments Modal */
+        #comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: var(--bg-card); backdrop-filter: blur(20px); border-top-left-radius: 16px; border-top-right-radius: 16px; z-index: 2500; display: flex; flex-direction: column; transition: bottom 0.4s ease-in-out; border-top: 1px solid var(--glass-border); box-shadow: 0 -10px 30px rgba(0,0,0,0.3); }
+        #comments-modal.active { bottom: 0; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .dashboard-layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; height: auto; } 
+        }
+        @media (max-width: 600px) {
+            .dynamic-header-title { font-size: 1rem; }
+            .hero-title { font-size: 2.2rem; }
+            .side-menu { width: 240px; right: -240px; }
+            .list-item { flex-direction: column; text-align: center; }
+            .list-item img { width: 100%; height: 120px; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <!-- HEADER & HAMBURGER MENU -->
+    <header id="navbar">
+        <div class="container nav-container">
+            <!-- Animated CSS Logo replacing the GIF -->
+            <div class="logo" id="header-logo" onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])">
+                <div class="animated-css-logo">
+                    <div class="logo-icon-wrap">
+                        <i class="fas fa-leaf logo-icon"></i>
+                    </div>
+                    <span class="logo-text-anim">HEIROK</span>
+                </div>
+            </div>
+            
+            <!-- Dynamic Page Title injected here -->
+            <div id="dynamic-header-title" class="dynamic-header-title">Home</div>
+            
+            <div class="header-actions">
+                <button class="btn-theme" id="theme-toggle"><i class="fas fa-moon"></i></button>
+                <div class="hamburger-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SIDE MENU -->
+    <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+    <div class="side-menu" id="side-menu">
+        <div class="side-menu-header">
+            <h3 style="color: var(--primary);">Menu</h3>
+            <i class="fas fa-times close-menu" onclick="toggleMenu()"></i>
+        </div>
+        <div class="side-menu-links">
+            <div class="menu-box active nav-menu-item" onclick="navigate('page-home', this)">
+                <i class="fas fa-home"></i><span>Home</span>
+            </div>
+            <div class="menu-box nav-menu-item" onclick="navigate('page-mla', this)">
+                <i class="fas fa-user-tie"></i><span>MLA Candidate</span>
+            </div>
+            <div class="menu-box nav-menu-item" onclick="navigate('page-about', this)">
+                <i class="fas fa-info-circle"></i><span>About Us</span>
+            </div>
+            <div class="menu-box nav-menu-item" onclick="navigate('page-news', this)">
+                <i class="fas fa-newspaper"></i><span>News</span>
+            </div>
+            <div class="menu-box nav-menu-item" onclick="navigate('page-notices', this)">
+                <i class="fas fa-bullhorn"></i><span>Notices</span>
+            </div>
+            <div class="menu-box nav-menu-item" onclick="navigate('page-directory', this)">
+                <i class="fas fa-address-book"></i><span>Directory</span>
+            </div>
+            <div class="menu-box nav-menu-item" onclick="navigate('page-panchayat', this)">
+                <i class="fas fa-users"></i><span>Panchayat</span>
+            </div>
+            <div class="menu-box nav-menu-item" onclick="navigate('page-projects', this)">
+                <i class="fas fa-hard-hat"></i><span>Projects</span>
+            </div>
+            <div class="menu-box nav-menu-item" id="menu-auth-btn" onclick="navigate('page-auth', this)">
+                <i class="fas fa-user-circle"></i><span>Login</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN SPA CONTAINER (Has strict margin-top matching Header Height + 2px Gap) -->
+    <main id="app-container">
+
+        <!-- ================= HOME PAGE ================= -->
+        <section id="page-home" class="page-section active" style="padding-top: 0;">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1 class="hero-title animate__animated animate__fadeInDown">Welcome to Heirok</h1>
+                    <p class="hero-subtitle animate__animated animate__fadeInUp">The Smart & Digital Village of Thoubal District, Manipur</p>
+                    <div class="animate__animated animate__zoomIn">
+                        <button class="btn btn-primary" onclick="navigate('page-about', document.querySelectorAll('.nav-menu-item')[2])">Explore Village</button>
+                        <button class="btn glass text-white" onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[5])">Directory</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Stats Container -->
+            <div class="stats-grid container" data-aos="fade-up">
+                <div class="stat-card glass" onclick="navigate('page-population', null)">
+                    <i class="fas fa-users"></i>
+                    <h3 class="counter" id="stat-pop-count" data-target="0">0</h3>
+                    <p>Population</p>
+                    <small class="text-muted">View Census Details</small>
+                </div>
+                <div class="stat-card glass" onclick="navigate('page-schools', null)">
+                    <i class="fas fa-school"></i>
+                    <h3 class="counter" id="stat-school-count" data-target="0">0</h3>
+                    <p>Schools</p>
+                    <small class="text-muted">View Institutes</small>
+                </div>
+                <div class="stat-card glass" onclick="navigate('page-health', null)">
+                    <i class="fas fa-hospital"></i>
+                    <h3 class="counter" id="stat-health-count" data-target="0">0</h3>
+                    <p>Health Centres</p>
+                    <small class="text-muted">View Hospitals</small>
+                </div>
+                <div class="stat-card glass" onclick="navigate('page-agri', null)">
+                    <i class="fas fa-seedling"></i>
+                    <h3 class="counter" id="stat-agri-count" data-target="0">0</h3>
+                    <p>Agri Farms (%)</p>
+                    <small class="text-muted">View Agriculture Info</small>
+                </div>
+            </div>
+
+            <!-- Notice Ticker -->
+            <div class="container" style="margin-top: 40px;">
+                <div class="notice-ticker glass">
+                    <div class="ticker-title">
+                        LATEST ALERTS:
+                        <i class="fas fa-external-link-alt" style="cursor:pointer; color:var(--accent);" onclick="navigate('page-notices', document.querySelectorAll('.nav-menu-item')[4])" title="View All Alerts"></i>
+                    </div>
+                    <div class="ticker-wrap">
+                        <div class="ticker-move" id="home-ticker-content">
+                            Loading official notices...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Access Grid -->
+            <div class="container" style="margin-top: 40px;" data-aos="fade-up">
+                <h2 class="section-title">Quick Services</h2>
+                <div class="grid-3">
+                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[5])">
+                        <i class="fas fa-address-book" style="font-size:36px; color:var(--primary); margin-bottom:12px;"></i>
+                        <h3>Business Directory</h3>
+                        <p class="text-muted">Find local shops, plumbers, electricians.</p>
+                    </div>
+                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-panchayat', document.querySelectorAll('.nav-menu-item')[6])">
+                        <i class="fas fa-gavel" style="font-size:36px; color:var(--primary); margin-bottom:12px;"></i>
+                        <h3>Panchayat</h3>
+                        <p class="text-muted">Meet the Nagar Panchayat members.</p>
+                    </div>
+                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-projects', document.querySelectorAll('.nav-menu-item')[7])">
+                        <i class="fas fa-road" style="font-size:36px; color:var(--primary); margin-bottom:12px;"></i>
+                        <h3>Development Projects</h3>
+                        <p class="text-muted">Track village development progress.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="container" style="margin-top: 40px; margin-bottom: 20px;" data-aos="fade-up">
+                <h2 class="section-title">Village Map</h2>
+                <div class="glass" style="padding: 8px; border-radius: 16px; overflow: hidden;">
+                  <iframe src="https://maps.google.com/maps?q=Heirok,%20Manipur&t=k&z=13&output=embed" width="100%" height="350" style="border:0; border-radius: 10px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MLA CANDIDATE TIKTOK STYLE PAGE ================= -->
+        <section id="page-mla" class="page-section d-none">
+            
+            <!-- Dynamic Candidate Top Navbar Menu -->
+            <div class="mla-top-nav">
+                <!-- Back Button -->
+                <div onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])" class="candidate-nav-item" style="margin-right: 15px;">
+                    <div style="width: 45px; height: 45px; display:flex; align-items:center; justify-content:center; background:#333; border-radius:50%; color: white; font-size: 18px;">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <span style="font-size: 0.7rem; color: white; margin-top: 5px;">Back</span>
+                </div>
+                <!-- Candidate List will be injected here -->
+                <div id="mla-candidate-list" style="display: flex; gap: 12px;"></div>
+            </div>
+
+            <!-- Swiper Container for vertical full-screen posts -->
+            <div class="swiper mla-swiper">
+                <div class="swiper-wrapper" id="mla-posts-container">
+                    <div class="swiper-slide mla-slide">
+                        <div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading Posts...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Candidate Personal Info Modal -->
+            <div id="mla-about-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.9); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+                <!-- Dynamically injected via JS -->
+            </div>
+
+            <!-- Sliding Comments Modal -->
+            <div id="comments-modal">
+                <div style="padding: 12px 15px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 1.1rem;">Comments</h3>
+                    <i class="fas fa-times" onclick="closeComments()" style="cursor:pointer; font-size: 20px; color: var(--danger);"></i>
+                </div>
+                <div id="comments-list" style="flex: 1; overflow-y: auto; padding: 15px; display:flex; flex-direction: column; gap: 10px;">
+                    <!-- comments load here -->
+                </div>
+                <div style="padding: 12px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; background: var(--bg-main);">
+                    <input type="hidden" id="active-comment-post-id">
+                    <input type="text" id="comment-input" class="form-control" placeholder="Write a comment..." onkeypress="if(event.key === 'Enter') submitComment()">
+                    <button class="btn btn-primary" onclick="submitComment()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STATS PAGES ================= -->
+        <section id="page-population" class="page-section content-page d-none container">
+            <h2 class="section-title">Population & Census</h2>
+            <div class="glass" style="padding: 30px; line-height: 1.7;">
+                <h3 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 15px;">Total Population: <span id="pub-pop-count">...</span></h3>
+                <div id="pub-pop-details">Loading census details...</div>
+            </div>
+        </section>
+        
+        <section id="page-agri" class="page-section content-page d-none container">
+            <h2 class="section-title">Agriculture & Farming</h2>
+            <div class="glass" style="padding: 30px; line-height: 1.7;">
+                <h3 style="color: var(--secondary); font-size: 1.8rem; margin-bottom: 15px;">Farming Land: <span id="pub-agri-count">...</span>%</h3>
+                <div id="pub-agri-details">Loading agriculture details...</div>
+            </div>
+        </section>
+
+        <section id="page-schools" class="page-section content-page d-none container">
+            <h2 class="section-title">Educational Institutions</h2>
+            <div class="glass" style="padding: 20px;" id="schools-list-container">
+                <div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading schools...</div>
+            </div>
+        </section>
+
+        <section id="page-health" class="page-section content-page d-none container">
+            <h2 class="section-title">Health Centres & Hospitals</h2>
+            <div class="glass" style="padding: 20px;" id="health-list-container">
+                <div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading health centres...</div>
+            </div>
+        </section>
+
+        <!-- Dynamic Details Page for School/Health/Notices -->
+        <section id="page-item-details" class="page-section content-page d-none container">
+            <div class="glass" style="padding: 30px; overflow: hidden;">
+                <img id="det-img" src="" alt="Image" style="width: 100%; height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                <h2 id="det-title" style="color: var(--primary); margin-bottom: 8px;">Title</h2>
+                <p class="text-muted" style="margin-bottom: 15px;" id="det-loc"><i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> Location</p>
+                <hr style="border-color: var(--glass-border); margin-bottom: 15px;">
+                <div id="det-desc" style="line-height: 1.7;">Description...</div>
+            </div>
+        </section>
+
+        <!-- ================= OTHER PAGES ================= -->
+        <section id="page-about" class="page-section content-page d-none container">
+            <h2 class="section-title">About Heirok Village</h2>
+            <div class="glass" style="padding: 30px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+                    <div><img src="https://images.unsplash.com/photo-1596704179357-195c808f0294?q=80&w=800&auto=format&fit=crop" alt="Heirok Landscape" style="width: 100%; border-radius: 10px; box-shadow: var(--shadow);"></div>
+                    <div>
+                        <h3>History & Geography</h3>
+                        <p style="margin-top: 12px; line-height: 1.7;">Heirok is a prominent town and Nagar Panchayat located in the <strong>Thoubal district</strong> of Manipur, India. Situated near the Wangjing River, it is known for its fertile lands and rich agricultural heritage.</p>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <h4>Quick Facts</h4>
+                        <ul style="margin-top: 8px; line-height: 1.8;">
+                            <li><i class="fas fa-map-marker-alt" style="color: var(--danger); width: 22px;"></i> District: Thoubal</li>
+                            <li><i class="fas fa-flag" style="color: var(--secondary); width: 22px;"></i> State: Manipur [IN-MN]</li>
+                            <li><i class="fas fa-language" style="color: var(--primary); width: 22px;"></i> Language: Meiteilon</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-news" class="page-section content-page d-none container">
+            <h2 class="section-title">Village News</h2>
+            <div class="grid-3" id="news-container"><div class="text-center" style="grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading news...</div></div>
+        </section>
+
+        <section id="page-notices" class="page-section content-page d-none container">
+            <h2 class="section-title">Notice Board</h2>
+            <div class="glass" style="padding: 20px;"><ul id="notices-list" style="list-style: none;"><div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading notices...</div></ul></div>
+        </section>
+
+        <section id="page-directory" class="page-section content-page d-none container">
+            <h2 class="section-title">Business & Emergency Directory</h2>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;"><input type="text" id="dir-search" class="form-control glass" placeholder="Search by name, category, or service..." oninput="filterDirectory()"></div>
+            <div class="grid-3" id="directory-container"><div class="text-center" style="grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading directory...</div></div>
+        </section>
+
+        <section id="page-panchayat" class="page-section content-page d-none container">
+            <h2 class="section-title">Nagar Panchayat Members</h2>
+            <div class="grid-3" id="panchayat-container"><div class="text-center" style="grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading members...</div></div>
+        </section>
+
+        <section id="page-projects" class="page-section content-page d-none container">
+            <h2 class="section-title">Development Projects</h2>
+            <div class="grid-3" id="projects-container"><div class="text-center" style="grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading projects...</div></div>
+        </section>
+
+        <!-- ================= AUTH PAGE ================= -->
+        <section id="page-auth" class="page-section content-page d-none container">
+            <div class="auth-container glass" data-aos="zoom-in">
+                <h2 style="margin-bottom: 15px; color: var(--primary);" id="auth-title">Member Login</h2>
+                
+                <!-- Display Error Information Here -->
+                <div id="auth-error" style="color: var(--danger); margin-bottom: 12px; font-weight: 500; font-size: 0.9rem; background: rgba(239, 71, 111, 0.1); padding: 8px; border-radius: 6px; display: none;"></div>
+                
+                <form id="auth-form" onsubmit="handleAuth(event)">
+                    <div class="form-group" id="name-group" style="display: none;"><input type="text" id="auth-name" class="form-control" placeholder="Full Name"></div>
+                    <div class="form-group"><input type="email" id="auth-email" class="form-control" placeholder="Email Address" required></div>
+                    <div class="form-group"><input type="password" id="auth-password" class="form-control" placeholder="Password" required></div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;" id="auth-submit">Login</button>
+                </form>
+                
+                <div style="margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <hr style="flex: 1; border-color: var(--glass-border);"> <span>OR</span> <hr style="flex: 1; border-color: var(--glass-border);">
+                </div>
+                
+                <button class="btn glass" style="width: 100%; justify-content: center; margin-bottom: 12px;" onclick="signInWithGoogle()">
+                    <i class="fab fa-google text-danger"></i> Sign in with Google
+                </button>
+                
+                <p style="font-size: 0.85rem; cursor: pointer; color: var(--primary);" onclick="toggleAuthMode()" id="auth-switch">Don't have an account? Register</p>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN DASHBOARD ================= -->
+        <section id="page-admin" class="page-section content-page d-none container" style="margin-bottom: 50px;">
+            <div class="dashboard-layout">
+                <!-- Sidebar -->
+                <div class="sidebar glass">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <img src="https://ui-avatars.com/api/?name=User&background=random" id="user-avatar" style="border-radius: 50%; width: 70px; margin-bottom: 8px; object-fit: cover; height: 70px;">
+                        <h4 id="user-name">User Name</h4>
+                        <span class="badge" id="user-role" style="background: var(--secondary); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.75rem;">Member</span>
+                    </div>
+                    <ul>
+                        <li onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])" style="background: var(--primary); color: white; margin-bottom: 12px;"><i class="fas fa-arrow-left"></i> Back to Home</li>
+                        
+                        <li class="active" onclick="switchAdminTab('tab-profile')"><i class="fas fa-user"></i> My Profile</li>
+                        <div id="admin-menus" class="d-none">
+                            <li onclick="switchAdminTab('tab-settings')"><i class="fas fa-cogs"></i> Site Settings</li>
+                            <li onclick="switchAdminTab('tab-mla-candidates')"><i class="fas fa-user-tie"></i> Manage Candidates</li>
+                            <li onclick="switchAdminTab('tab-mla-admin')"><i class="fas fa-video"></i> Manage MLA Posts</li>
+                            <li onclick="switchAdminTab('tab-stats')"><i class="fas fa-chart-bar"></i> Population & Agri</li>
+                            <li onclick="switchAdminTab('tab-schools')"><i class="fas fa-school"></i> Manage Schools</li>
+                            <li onclick="switchAdminTab('tab-health')"><i class="fas fa-hospital"></i> Manage Health</li>
+                            <li onclick="switchAdminTab('tab-news')"><i class="fas fa-newspaper"></i> Manage News</li>
+                            <li onclick="switchAdminTab('tab-notices')"><i class="fas fa-bullhorn"></i> Manage Notices</li>
+                            <li onclick="switchAdminTab('tab-directory')"><i class="fas fa-address-book"></i> Manage Directory</li>
+                            <li onclick="switchAdminTab('tab-panchayat')"><i class="fas fa-users"></i> Manage Panchayat</li>
+                            <li onclick="switchAdminTab('tab-projects')"><i class="fas fa-hard-hat"></i> Manage Projects</li>
+                        </div>
+                        <li onclick="logout()" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> Logout</li>
+                    </ul>
+                </div>
+
+                <!-- Content Area -->
+                <div class="admin-content glass" style="padding: 20px; min-height: 400px; overflow-x: auto;">
+                    
+                    <div id="tab-profile" class="admin-tab">
+                        <h3>Edit My Profile</h3>
+                        <form id="form-profile" onsubmit="updateProfile(event)" style="margin-top: 15px; max-width: 450px;">
+                            <div class="form-group"><label>Full Name</label><input type="text" id="prof-name" class="form-control" required></div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Profile Photo</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('prof-img-container', 'prof-photo', 'prof-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
+                                </div>
+                                <div id="prof-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'prof-preview', 'prof-photo', 'prof-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'prof-photo', 'prof-preview', 'image')">
+                                    <div class="progress d-none" id="prof-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="prof-photo">
+                                <img id="prof-preview" src="" style="height: 90px; display: none; margin-top: 10px; border-radius: 6px;">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Profile</button>
+                        </form>
+                    </div>
+
+                    <!-- SITE SETTINGS (Hero Background & Footer Details) -->
+                    <div id="tab-settings" class="admin-tab d-none">
+                        <h3>Site Settings</h3>
+                        <form id="form-settings" onsubmit="saveSiteSettings(event)" style="margin-top: 15px; max-width: 600px;">
+                            <h4 style="margin-bottom: 10px; color: var(--primary);">Hero Section</h4>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Hero Background Image</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('hero-img-container', 'hero-bg', 'hero-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
+                                </div>
+                                <div id="hero-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'hero-preview', 'hero-bg', 'hero-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'hero-bg', 'hero-preview', 'image')">
+                                    <div class="progress d-none" id="hero-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="hero-bg">
+                                <img id="hero-preview" src="" style="height: 120px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            </div>
+                            
+                            <hr style="margin: 20px 0; border-color: var(--glass-border);">
+                            
+                            <h4 style="margin-bottom: 10px; color: var(--primary);">Footer Details</h4>
+                            <div class="form-group">
+                                <label>Village Name</label>
+                                <input type="text" id="set-vname" class="form-control" placeholder="e.g. Heirok Village">
+                            </div>
+                            <div class="form-group">
+                                <label>Tagline / Description</label>
+                                <textarea id="set-tagline" class="form-control" rows="2" placeholder="Tagline / Description"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Contact Address</label>
+                                <input type="text" id="set-address" class="form-control" placeholder="Full Address">
+                            </div>
+                            <div class="form-group">
+                                <label>Contact Email</label>
+                                <input type="email" id="set-email" class="form-control" placeholder="Contact Email">
+                            </div>
+                            <div class="form-group">
+                                <label>Contact Phone</label>
+                                <input type="text" id="set-phone" class="form-control" placeholder="Contact Phone">
+                            </div>
+                            <div class="form-group">
+                                <label>Facebook Link</label>
+                                <input type="url" id="set-fb" class="form-control" placeholder="https://facebook.com/...">
+                            </div>
+                            <div class="form-group">
+                                <label>Twitter Link</label>
+                                <input type="url" id="set-tw" class="form-control" placeholder="https://twitter.com/...">
+                            </div>
+                            <div class="form-group">
+                                <label>Instagram Link</label>
+                                <input type="url" id="set-ig" class="form-control" placeholder="https://instagram.com/...">
+                            </div>
+                            <div class="form-group">
+                                <label>Copyright Text</label>
+                                <input type="text" id="set-copy" class="form-control" placeholder="e.g. &copy; 2026 Heirok...">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Save Settings</button>
+                        </form>
+                    </div>
+
+                    <!-- MLA CANDIDATES ADMIN -->
+                    <div id="tab-mla-candidates" class="admin-tab d-none">
+                        <div style="display:flex; justify-content: space-between; align-items:center;">
+                            <h3 id="mlac-form-title">MLA Candidates</h3>
+                            <button class="btn btn-primary btn-small" onclick="document.getElementById('form-mlac-container').classList.toggle('d-none')"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                        
+                        <div id="form-mlac-container" class="d-none" style="margin-top:15px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
+                            <form id="form-mlac" onsubmit="saveMLACandidate(event)">
+                                <input type="hidden" id="edit-mlac-id">
+                                <div class="form-group"><input type="text" id="mlac-name" class="form-control" placeholder="Candidate Full Name" required></div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <label>Profile Image</label>
+                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('mlac-img-container', 'mlac-img', 'mlac-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
+                                    </div>
+                                    <div id="mlac-img-container" data-mode="file">
+                                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'mlac-preview', 'mlac-img', 'mlac-progress', 'image')">
+                                        <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'mlac-img', 'mlac-preview', 'image')">
+                                        <div class="progress d-none" id="mlac-progress"><div class="progress-bar"></div></div>
+                                    </div>
+                                    <input type="hidden" id="mlac-img">
+                                    <img id="mlac-preview" style="height: 90px; display: none; margin-top: 10px; border-radius: 6px; object-fit:cover;">
+                                </div>
+                                <div class="form-group"><textarea id="mlac-about" class="form-control" rows="2" placeholder="About Candidate (Optional)"></textarea></div>
+                                <button type="submit" class="btn btn-primary btn-small">Save Candidate</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-mlac', 'mlac-form-title', 'MLA Candidates'); document.getElementById('form-mlac-container').classList.add('d-none');">Cancel</button>
+                            </form>
+                        </div>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Name</th><th>Actions</th></tr></thead><tbody id="admin-mlac-list"></tbody></table>
+                    </div>
+
+                    <!-- MLA CANDIDATE POSTS ADMIN -->
+                    <div id="tab-mla-admin" class="admin-tab d-none">
+                        <div style="display:flex; justify-content: space-between; align-items:center;">
+                            <h3 id="mla-form-title">MLA Posts</h3>
+                            <button class="btn btn-primary btn-small" onclick="document.getElementById('form-mla-container').classList.toggle('d-none')"><i class="fas fa-plus"></i> Add Post</button>
+                        </div>
+                        
+                        <div id="form-mla-container" class="d-none" style="margin-top:15px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
+                            <form id="form-mla" onsubmit="saveMLAPost(event)">
+                                <input type="hidden" id="edit-mla-id">
+                                <div class="form-group">
+                                    <select id="mla-cand-id" class="form-control" required><option value="">Select Candidate</option></select>
+                                </div>
+                                <div class="form-group"><input type="text" id="mla-title" class="form-control" placeholder="Post Title" required></div>
+                                
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <label>Image</label>
+                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('mla-img-container', 'mla-img', 'mla-img-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                    </div>
+                                    <div id="mla-img-container" data-mode="file">
+                                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'mla-img-preview', 'mla-img', 'mla-img-progress', 'image')">
+                                        <input type="url" class="form-control link-input d-none" placeholder="URL..." oninput="handleLinkInput(this.value, 'mla-img', 'mla-img-preview', 'image')">
+                                        <div class="progress d-none" id="mla-img-progress"><div class="progress-bar"></div></div>
+                                    </div>
+                                    <input type="hidden" id="mla-img">
+                                    <img id="mla-img-preview" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <label>Video (Max 5MB)</label>
+                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('mla-vid-container', 'mla-vid', 'mla-vid-preview', 'video')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                    </div>
+                                    <div id="mla-vid-container" data-mode="file">
+                                        <input type="file" class="form-control file-input" accept="video/*" onchange="handleMediaUpload(event, 'mla-vid-preview', 'mla-vid', 'mla-vid-progress', 'video')">
+                                        <input type="url" class="form-control link-input d-none" placeholder="URL..." oninput="handleLinkInput(this.value, 'mla-vid', 'mla-vid-preview', 'video')">
+                                        <div class="progress d-none" id="mla-vid-progress"><div class="progress-bar"></div></div>
+                                    </div>
+                                    <input type="hidden" id="mla-vid">
+                                    <video id="mla-vid-preview" controls style="height: 90px; display: none; margin-top: 8px; border-radius: 6px;"></video>
+                                </div>
+
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <label>Audio (Max 5MB)</label>
+                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('mla-aud-container', 'mla-aud', 'mla-aud-preview', 'audio')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                    </div>
+                                    <div id="mla-aud-container" data-mode="file">
+                                        <input type="file" class="form-control file-input" accept="audio/*" onchange="handleMediaUpload(event, 'mla-aud-preview', 'mla-aud', 'mla-aud-progress', 'audio')">
+                                        <input type="url" class="form-control link-input d-none" placeholder="URL..." oninput="handleLinkInput(this.value, 'mla-aud', 'mla-aud-preview', 'audio')">
+                                        <div class="progress d-none" id="mla-aud-progress"><div class="progress-bar"></div></div>
+                                    </div>
+                                    <input type="hidden" id="mla-aud">
+                                    <audio id="mla-aud-preview" controls style="display: none; margin-top: 8px; width: 100%;"></audio>
+                                </div>
+
+                                <div class="form-group"><textarea id="mla-content" class="form-control" rows="3" placeholder="Post Text..."></textarea></div>
+                                <button type="submit" class="btn btn-primary btn-small">Publish</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-mla', 'mla-form-title', 'MLA Posts'); document.getElementById('form-mla-container').classList.add('d-none');">Cancel</button>
+                            </form>
+                        </div>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Title</th><th>Date</th><th>Actions</th></tr></thead><tbody id="admin-mla-list"></tbody></table>
+                    </div>
+
+                    <!-- POPULATION & AGRI -->
+                    <div id="tab-stats" class="admin-tab d-none">
+                        <h3>Update Stats Data</h3>
+                        <form onsubmit="updateStats(event)" style="margin-top: 15px;">
+                            <div class="form-group"><label>Category</label>
+                                <select id="stat-category" class="form-control" onchange="loadStatCategory()">
+                                    <option value="population">Population Census</option>
+                                    <option value="agri">Agriculture & Farms (%)</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Value</label><input type="number" id="stat-count" class="form-control" required></div>
+                            <div class="form-group"><label>Details</label>
+                                <textarea id="stat-details" class="form-control" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-small">Update</button>
+                        </form>
+                    </div>
+
+                    <!-- SCHOOLS -->
+                    <div id="tab-schools" class="admin-tab d-none">
+                        <h3 id="school-form-title">Add School</h3>
+                        <form id="form-school" onsubmit="saveSchool(event)" style="margin-top: 15px;">
+                            <input type="hidden" id="edit-school-id">
+                            <div class="form-group"><input type="text" id="sch-name" class="form-control" placeholder="Name" required></div>
+                            <div class="form-group"><input type="text" id="sch-loc" class="form-control" placeholder="Location" required></div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Image</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('sch-img-container', 'sch-img', 'sch-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
+                                </div>
+                                <div id="sch-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'sch-preview', 'sch-img', 'sch-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'sch-img', 'sch-preview', 'image')">
+                                    <div class="progress d-none" id="sch-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="sch-img">
+                                <img id="sch-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            </div>
+                            <div class="form-group"><textarea id="sch-desc" class="form-control" rows="3" placeholder="Description..." required></textarea></div>
+                            <button type="submit" class="btn btn-primary btn-small">Save</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-school', 'school-form-title', 'Add School')">Cancel</button>
+                        </form>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Name</th><th>Loc</th><th>Actions</th></tr></thead><tbody id="admin-schools-list"></tbody></table>
+                    </div>
+
+                    <!-- HEALTH -->
+                    <div id="tab-health" class="admin-tab d-none">
+                        <h3 id="health-form-title">Add Health Centre</h3>
+                        <form id="form-health" onsubmit="saveHealth(event)" style="margin-top: 15px;">
+                            <input type="hidden" id="edit-health-id">
+                            <div class="form-group"><input type="text" id="hlth-name" class="form-control" placeholder="Name" required></div>
+                            <div class="form-group"><input type="text" id="hlth-loc" class="form-control" placeholder="Location" required></div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Image</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('hlth-img-container', 'hlth-img', 'hlth-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
+                                </div>
+                                <div id="hlth-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'hlth-preview', 'hlth-img', 'hlth-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'hlth-img', 'hlth-preview', 'image')">
+                                    <div class="progress d-none" id="hlth-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="hlth-img">
+                                <img id="hlth-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            </div>
+                            <div class="form-group"><textarea id="hlth-desc" class="form-control" rows="3" placeholder="Description..." required></textarea></div>
+                            <button type="submit" class="btn btn-primary btn-small">Save</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-health', 'health-form-title', 'Add Health Centre')">Cancel</button>
+                        </form>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Name</th><th>Loc</th><th>Actions</th></tr></thead><tbody id="admin-health-list"></tbody></table>
+                    </div>
+
+                    <!-- NEWS -->
+                    <div id="tab-news" class="admin-tab d-none">
+                        <h3 id="news-form-title">Add News</h3>
+                        <form id="form-news" onsubmit="saveNews(event)" style="margin-top: 15px;">
+                            <input type="hidden" id="edit-news-id">
+                            <div class="form-group"><input type="text" id="n-title" class="form-control" placeholder="Title" required></div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Cover Image</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('n-img-container', 'n-img', 'n-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                </div>
+                                <div id="n-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'n-preview', 'n-img', 'n-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'n-img', 'n-preview', 'image')">
+                                    <div class="progress d-none" id="n-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="n-img">
+                                <img id="n-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            </div>
+                            <div class="form-group"><textarea id="n-content" class="form-control" rows="3" placeholder="Content..." required></textarea></div>
+                            <button type="submit" class="btn btn-primary btn-small">Save</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-news', 'news-form-title', 'Add News')">Cancel</button>
+                        </form>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Title</th><th>Date</th><th>Actions</th></tr></thead><tbody id="admin-news-list"></tbody></table>
+                    </div>
+
+                    <!-- NOTICES -->
+                    <div id="tab-notices" class="admin-tab d-none">
+                        <div style="display:flex; justify-content: space-between; align-items:center;">
+                            <h3 id="notice-form-title">Notices</h3>
+                            <button class="btn btn-primary btn-small" onclick="document.getElementById('form-notices-container').classList.toggle('d-none')"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                        <div id="form-notices-container" class="d-none" style="margin-top:15px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
+                            <form id="form-notices" onsubmit="saveNotice(event)">
+                                <input type="hidden" id="edit-notice-id">
+                                <div class="form-group"><input type="text" id="not-title" class="form-control" placeholder="Title/Subject" required></div>
+                                <div class="form-group">
+                                    <select id="not-type" class="form-control"><option value="info">General Info</option><option value="urgent">Urgent</option></select>
+                                </div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <label>Image Snippet (Opt)</label>
+                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('not-img-container', 'not-img', 'not-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                    </div>
+                                    <div id="not-img-container" data-mode="file">
+                                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'not-preview', 'not-img', 'not-progress', 'image')">
+                                        <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'not-img', 'not-preview', 'image')">
+                                        <div class="progress d-none" id="not-progress"><div class="progress-bar"></div></div>
+                                    </div>
+                                    <input type="hidden" id="not-img">
+                                    <img id="not-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                                </div>
+                                <div class="form-group"><textarea id="not-content" class="form-control" rows="3" placeholder="Full Details (Opt)"></textarea></div>
+                                <button type="submit" class="btn btn-primary btn-small">Save</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-notices', 'notice-form-title', 'Notices'); document.getElementById('form-notices-container').classList.add('d-none');">Cancel</button>
+                            </form>
+                        </div>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Title</th><th>Type</th><th>Actions</th></tr></thead><tbody id="admin-notices-list"></tbody></table>
+                    </div>
+                    
+                    <!-- DIRECTORY -->
+                    <div id="tab-directory" class="admin-tab d-none">
+                        <h3 id="dir-form-title">Add to Directory</h3>
+                        <form id="form-directory" onsubmit="saveDirectory(event)" style="margin-top: 10px;">
+                            <input type="hidden" id="edit-dir-id">
+                            <div class="form-group"><input type="text" id="d-name" class="form-control" placeholder="Name" required></div>
+                            
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Image (Optional)</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('d-img-container', 'd-img', 'd-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                </div>
+                                <div id="d-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'd-preview', 'd-img', 'd-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'd-img', 'd-preview', 'image')">
+                                    <div class="progress d-none" id="d-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="d-img">
+                                <img id="d-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            </div>
+
+                            <div class="form-group"><input type="text" id="d-cat" class="form-control" placeholder="Category" required></div>
+                            <div class="form-group"><input type="text" id="d-phone" class="form-control" placeholder="Phone" required></div>
+                            <div class="form-group"><input type="text" id="d-address" class="form-control" placeholder="Address"></div>
+                            
+                            <!-- NEW OPTIONAL FIELDS -->
+                            <div class="form-group"><input type="date" id="d-dob" class="form-control" title="Date of Birth (Optional)"></div>
+                            <div class="form-group"><input type="email" id="d-email" class="form-control" placeholder="Email (Optional)"></div>
+                            <div class="form-group"><input type="text" id="d-aadhar" class="form-control" placeholder="Aadhar Number (Optional)"></div>
+                            
+                            <!-- NEW FAMILY DETAILS -->
+                            <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
+                                <label style="display:block; margin-bottom:8px; font-weight:600;">Family Details (Optional)</label>
+                                <div id="d-family-list"></div>
+                                <button type="button" class="btn glass btn-small" onclick="addFamilyMember()"><i class="fas fa-plus"></i> Add Family Member</button>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-small">Save</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-directory', 'dir-form-title', 'Add to Directory')">Cancel</button>
+                        </form>
+                        
+                        <div style="margin: 15px 0; padding: 12px; border: 1px dashed var(--primary); border-radius: 8px;">
+                            <h4>Upload via CSV</h4>
+                            <!-- Updated CSV format representation -->
+                            <p style="font-size: 0.8rem; margin-bottom: 8px;">Format: Name, Mobile, Category, Address, ImageURL, DOB, Email, Aadhar</p>
+                            <input type="file" id="csv-file" accept=".csv" class="form-control" style="margin-bottom: 8px;">
+                            <button class="btn btn-secondary btn-small" style="background: var(--secondary); color: white; border: none;" onclick="uploadCSV()">Upload CSV</button>
+                        </div>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Name</th><th>Cat</th><th>Phone</th><th>Actions</th></tr></thead><tbody id="admin-dir-list"></tbody></table>
+                    </div>
+
+                    <!-- PANCHAYAT -->
+                    <div id="tab-panchayat" class="admin-tab d-none">
+                        <h3 id="panchayat-form-title">Add Panchayat Member</h3>
+                        <form id="form-panchayat" onsubmit="savePanchayat(event)" style="margin-top: 15px;">
+                            <input type="hidden" id="edit-panchayat-id">
+                            <div class="form-group"><input type="text" id="p-name" class="form-control" placeholder="Name" required></div>
+                            <div class="form-group"><input type="text" id="p-role" class="form-control" placeholder="Role / Position" required></div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Photo</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('p-img-container', 'p-photo', 'p-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                </div>
+                                <div id="p-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'p-preview', 'p-photo', 'p-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste URL..." oninput="handleLinkInput(this.value, 'p-photo', 'p-preview', 'image')">
+                                    <div class="progress d-none" id="p-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="p-photo">
+                                <img id="p-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            </div>
+                            <div class="form-group"><input type="text" id="p-contact" class="form-control" placeholder="Contact"></div>
+                            <button type="submit" class="btn btn-primary btn-small">Save</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-panchayat', 'panchayat-form-title', 'Add Panchayat Member')">Cancel</button>
+                        </form>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Name</th><th>Role</th><th>Actions</th></tr></thead><tbody id="admin-panchayat-list"></tbody></table>
+                    </div>
+
+                    <!-- PROJECTS -->
+                    <div id="tab-projects" class="admin-tab d-none">
+                        <h3 id="project-form-title">Add Project</h3>
+                        <form id="form-projects" onsubmit="saveProject(event)" style="margin-top: 15px;">
+                            <input type="hidden" id="edit-project-id">
+                            <div class="form-group"><input type="text" id="proj-title" class="form-control" placeholder="Title" required></div>
+                            <div class="form-group">
+                                <select id="proj-status" class="form-control"><option value="Planned">Planned</option><option value="Ongoing">Ongoing</option><option value="Completed">Completed</option></select>
+                            </div>
+                            <div class="form-group"><input type="text" id="proj-budget" class="form-control" placeholder="Budget (Opt)"></div>
+                            <div class="form-group"><textarea id="proj-desc" class="form-control" rows="2" placeholder="Description"></textarea></div>
+                            <button type="submit" class="btn btn-primary btn-small">Save</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-projects', 'project-form-title', 'Add Project')">Cancel</button>
+                        </form>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table"><thead><tr><th>Title</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-projects-list"></tbody></table>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-grid">
+            <div>
+                <h4 id="footer-village-name" style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-leaf"></i> Heirok Village</h4>
+                <p id="footer-tagline" class="text-muted" style="margin-top: 10px;">Empowering the people through digital governance & connectivity.</p>
+            </div>
+            <div>
+                <h4>Quick Links</h4>
+                <ul style="line-height: 1.8; margin-top: 10px;">
+                    <li><a onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])" style="cursor:pointer">Home</a></li>
+                    <li><a onclick="navigate('page-notices', document.querySelectorAll('.nav-menu-item')[4])" style="cursor:pointer">Notices</a></li>
+                    <li><a onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[5])" style="cursor:pointer">Directory</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <ul style="line-height: 1.8; color: var(--text-muted); margin-top: 10px;">
+                    <li id="footer-address"><i class="fas fa-map-marker-alt"></i> Heirok NP, Thoubal</li>
+                    <li id="footer-email"><i class="fas fa-envelope"></i> info@heirok.in</li>
+                    <li id="footer-phone"><i class="fas fa-phone"></i> +91 0000 0000</li>
+                </ul>
+                <div class="social-links" style="margin-top: 12px;">
+                    <a href="#" id="footer-fb"><i class="fab fa-facebook"></i></a>
+                    <a href="#" id="footer-tw"><i class="fab fa-twitter"></i></a>
+                    <a href="#" id="footer-ig"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div id="footer-copyright" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; font-size: 0.85rem; color: var(--text-muted);">
+            &copy; 2026 Heirok Smart Village. All Rights Reserved.
+        </div>
+    </footer>
+
+    <!-- ================= JAVASCRIPT LIBRARIES ================= -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- ================= APPLICATION LOGIC ================= -->
+    <script>
+        /* 1. FIREBASE CONFIGURATION */
+        const firebaseConfig = {
+            apiKey: "AIzaSyB2imEIvh_bWbYD_yPB7p3af7bV9OWdA5A",
+            authDomain: "sinthahousie-1dd3b.firebaseapp.com",
+            databaseURL: "https://sinthahousie-1dd3b-default-rtdb.firebaseio.com",
+            projectId: "sinthahousie-1dd3b",
+            storageBucket: "sinthahousie-1dd3b.firebasestorage.app",
+            messagingSenderId: "76567991256",
+            appId: "1:76567991256:web:c58b127b8d86d8a1c598ad"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        /* 2. UI, ROUTING & MENU LOGIC */
+        AOS.init({ duration: 800, once: true });
+
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.getElementById('theme-toggle').innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+        });
+
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 30);
+        });
+
+        function toggleMenu() {
+            const menu = document.getElementById('side-menu');
+            const overlay = document.getElementById('menu-overlay');
+            const app = document.getElementById('app-container');
+            
+            menu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            if(menu.classList.contains('active')) {
+                app.classList.add('blur-bg');
+            } else {
+                app.classList.remove('blur-bg');
+            }
+        }
+
+        window.lastListPage = 'page-home';
+
+        function navigate(pageId, menuItemElement = null) {
+            
+            if (pageId === 'page-auth' && auth.currentUser) {
+                pageId = 'page-admin';
+                menuItemElement = document.getElementById('menu-auth-btn');
+            } else if (pageId === 'page-admin' && !auth.currentUser) {
+                pageId = 'page-auth';
+                menuItemElement = document.getElementById('menu-auth-btn');
+            }
+
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('d-none'));
+            document.getElementById(pageId).classList.remove('d-none');
+            
+            // Header should be visible on all pages as requested
+            document.getElementById('navbar').classList.remove('d-none');
+
+            // Update Dynamic Header Title
+            const titles = {
+                'page-home': 'Home',
+                'page-about': 'About Us',
+                'page-news': 'Village News',
+                'page-notices': 'Notice Board',
+                'page-directory': 'Directory',
+                'page-panchayat': 'Panchayat',
+                'page-projects': 'Projects',
+                'page-auth': 'Member Login',
+                'page-admin': 'Admin Dashboard',
+                'page-population': 'Population',
+                'page-agri': 'Agriculture',
+                'page-schools': 'Schools',
+                'page-health': 'Health Centres',
+                'page-item-details': 'Details'
+            };
+            
+            const dynamicTitle = document.getElementById('dynamic-header-title');
+            if (dynamicTitle) {
+                dynamicTitle.innerText = titles[pageId] || 'Heirok Portal';
+            }
+
+            if(menuItemElement) {
+                document.querySelectorAll('.menu-box').forEach(box => box.classList.remove('active'));
+                menuItemElement.classList.add('active');
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if(document.getElementById('side-menu').classList.contains('active')) toggleMenu();
+            
+            if (pageId === 'page-home') runCounters();
+        }
+
+        /* 3. UPLOAD / LINK MEDIA TOGGLE LOGIC */
+        function toggleMediaInput(containerId, hiddenId, previewId, type) {
+            const container = document.getElementById(containerId);
+            const fileIn = container.querySelector('.file-input');
+            const linkIn = container.querySelector('.link-input');
+            const hidden = document.getElementById(hiddenId);
+            const preview = document.getElementById(previewId);
+
+            fileIn.value = ''; linkIn.value = ''; hidden.value = '';
+            if(preview) { preview.src = ''; preview.style.display = 'none'; }
+
+            if(container.dataset.mode === 'file') {
+                container.dataset.mode = 'link';
+                fileIn.classList.add('d-none'); linkIn.classList.remove('d-none');
+            } else {
+                container.dataset.mode = 'file';
+                fileIn.classList.remove('d-none'); linkIn.classList.add('d-none');
+            }
+        }
+
+        function handleLinkInput(val, hiddenId, previewId, type) {
+            document.getElementById(hiddenId).value = val;
+            const preview = document.getElementById(previewId);
+            if(preview) {
+                preview.src = val; preview.style.display = val ? 'block' : 'none';
+            }
+        }
+
+        function handleMediaUpload(event, previewId, hiddenId, progressId, type) {
+            const file = event.target.files[0];
+            if(!file) return;
+            
+            const progress = document.getElementById(progressId);
+            const progressBar = progress.querySelector('.progress-bar');
+            const preview = document.getElementById(previewId);
+            const hidden = document.getElementById(hiddenId);
+            
+            if((type === 'video' || type === 'audio') && file.size > 5 * 1024 * 1024) {
+                alert("File is too large! Please upload a file smaller than 5MB.");
+                event.target.value = ''; return;
+            }
+
+            progress.classList.remove('d-none'); progressBar.style.width = '10%'; 
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                progressBar.style.width = '60%'; 
+                if (type === 'image') {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; 
+                        const scaleSize = img.width > MAX_WIDTH ? (MAX_WIDTH / img.width) : 1;
+                        canvas.width = img.width * scaleSize; canvas.height = img.height * scaleSize;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const base64 = canvas.toDataURL('image/jpeg', 0.8);
+                        
+                        hidden.value = base64; preview.src = base64; preview.style.display = 'block';
+                        progressBar.style.width = '100%';
+                        setTimeout(() => { progress.classList.add('d-none'); progressBar.style.width = '0%'; }, 1000);
+                    }
+                    img.src = e.target.result;
+                } else {
+                    hidden.value = e.target.result; preview.src = e.target.result; preview.style.display = 'block';
+                    progressBar.style.width = '100%';
+                    setTimeout(() => { progress.classList.add('d-none'); progressBar.style.width = '0%'; }, 1000);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* 4. COUNTER ANIMATION */
+        function runCounters() {
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const speed = 200;
+                const updateCount = () => {
+                    const c = +counter.innerText;
+                    const inc = target / speed;
+                    if (c < target && target > 0) {
+                        counter.innerText = Math.ceil(c + inc); setTimeout(updateCount, 10);
+                    } else { counter.innerText = target; }
+                };
+                updateCount();
+            });
+        }
+
+        /* 5. AUTHENTICATION */
+        let isRegisterMode = false;
+        let currentUserRole = 'guest';
+
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('auth-title').innerText = isRegisterMode ? 'Register Account' : 'Member Login';
+            document.getElementById('name-group').style.display = isRegisterMode ? 'block' : 'none';
+            document.getElementById('auth-submit').innerText = isRegisterMode ? 'Register' : 'Login';
+            document.getElementById('auth-switch').innerText = isRegisterMode ? 'Already have an account? Login' : "Don't have an account? Register";
+            document.getElementById('auth-error').style.display = 'none';
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const errorDiv = document.getElementById('auth-error');
+            errorDiv.style.display = 'none';
+            
+            try {
+                if (isRegisterMode) {
+                    const name = document.getElementById('auth-name').value;
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    await db.ref('users/' + cred.user.uid).set({
+                        name: name, email: email, role: 'admin', 
+                        photo: 'https://ui-avatars.com/api/?name='+name+'&background=random',
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                } else { await auth.signInWithEmailAndPassword(email, password); }
+                document.getElementById('auth-form').reset();
+                navigate('page-admin', document.getElementById('menu-auth-btn'));
+            } catch (err) { 
+                errorDiv.style.display = 'block';
+                if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                    errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Account not found. Please register or check your email.";
+                } else if(err.code === 'auth/wrong-password') {
+                    errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Incorrect password. Please try again.";
+                } else { errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> " + err.message; }
+            }
+        }
+
+        async function signInWithGoogle() {
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const snapshot = await db.ref('users/' + result.user.uid).once('value');
+                if (!snapshot.exists()) {
+                    await db.ref('users/' + result.user.uid).set({
+                        name: result.user.displayName, email: result.user.email,
+                        photo: result.user.photoURL || 'https://ui-avatars.com/api/?name='+result.user.displayName,
+                        role: 'admin', createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                }
+                navigate('page-admin', document.getElementById('menu-auth-btn'));
+            } catch (error) { 
+                document.getElementById('auth-error').style.display = 'block';
+                document.getElementById('auth-error').innerHTML = "<i class='fas fa-exclamation-circle'></i> " + error.message; 
+            }
+        }
+
+        function logout() { auth.signOut(); navigate('page-home', document.querySelectorAll('.nav-menu-item')[0]); }
+
+        auth.onAuthStateChanged((user) => {
+            const authBtn = document.getElementById('menu-auth-btn');
+            if (user) {
+                authBtn.querySelector('span').innerText = 'Dashboard';
+                authBtn.setAttribute('onclick', "navigate('page-admin', this)");
+                
+                db.ref('users/' + user.uid).on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if(data) {
+                        currentUserRole = data.role || 'member';
+                        document.getElementById('user-name').innerText = data.name;
+                        document.getElementById('user-role').innerText = currentUserRole.toUpperCase();
+                        document.getElementById('user-avatar').src = data.photo || 'https://ui-avatars.com/api/?name='+data.name;
+                        
+                        document.getElementById('prof-name').value = data.name;
+                        const pPhoto = document.getElementById('prof-photo');
+                        if (pPhoto) pPhoto.value = data.photo || '';
+                        const pPreview = document.getElementById('prof-preview');
+                        if(pPreview && data.photo && !data.photo.includes('ui-avatars')) {
+                            pPreview.src = data.photo; pPreview.style.display = 'block';
+                        }
+
+                        if (currentUserRole === 'admin' || currentUserRole === 'superadmin') { document.getElementById('admin-menus').classList.remove('d-none'); } 
+                        else { document.getElementById('admin-menus').classList.add('d-none'); }
+                    }
+                });
+                
+                if (document.getElementById('page-auth').classList.contains('active') && !document.getElementById('page-auth').classList.contains('d-none')) { navigate('page-admin', authBtn); }
+            } else {
+                authBtn.querySelector('span').innerText = 'Login';
+                authBtn.setAttribute('onclick', "navigate('page-auth', this)");
+                currentUserRole = 'guest';
+                
+                if (document.getElementById('page-admin').classList.contains('active') && !document.getElementById('page-admin').classList.contains('d-none')) { navigate('page-auth', authBtn); }
+            }
+        });
+
+        function switchAdminTab(tabId) {
+            document.querySelectorAll('.admin-tab').forEach(el => el.classList.add('d-none'));
+            document.getElementById(tabId).classList.remove('d-none');
+            document.querySelectorAll('.sidebar ul li').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        /* 6. DATABASE CRUD LOGIC */
+        function deleteItem(path, id) { if(confirm('Are you sure you want to delete this item?')) db.ref(path + '/' + id).remove(); }
+        
+        function resetForm(formId, titleId, originalTitle) {
+            const form = document.getElementById(formId);
+            form.reset();
+            const editIdField = form.querySelector('input[type="hidden"]');
+            if(editIdField) editIdField.value = '';
+            if(titleId) document.getElementById(titleId).innerText = originalTitle;
+            
+            form.querySelectorAll('.link-input, .file-input').forEach(el => el.value = '');
+            form.querySelectorAll('img, video, audio').forEach(media => { media.style.display = 'none'; media.src = ''; });
+            form.querySelectorAll('input[type="hidden"]').forEach(inp => {
+                if(inp.id.includes('img') || inp.id.includes('photo') || inp.id.includes('vid') || inp.id.includes('aud')) inp.value = '';
+            });
+            
+            // Clean up family details if it's the directory form
+            if(formId === 'form-directory') {
+                const familyList = document.getElementById('d-family-list');
+                if(familyList) familyList.innerHTML = '';
+            }
+        }
+
+        // --- PROFILE ---
+        function updateProfile(e) {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if(user) {
+                db.ref('users/' + user.uid).update({
+                    name: document.getElementById('prof-name').value,
+                    photo: document.getElementById('prof-photo').value || 'https://ui-avatars.com/api/?name='+document.getElementById('prof-name').value
+                }).then(() => alert('Profile Updated!'));
+            }
+        }
+
+        // --- HERO BACKGROUND HANDLING ---
+        let currentHeroImage = 'https://images.unsplash.com/photo-1626025176767-742721fdf644?q=80&w=2000&auto=format&fit=crop';
+        
+        function setHeroBackground(imageUrl) {
+            const heroEl = document.querySelector('.hero');
+            // Show dark green gradient pre-load state
+            heroEl.style.background = 'linear-gradient(to bottom, #063c1a, #021a0a)';
+            
+            const img = new Image();
+            img.onload = function() {
+                // Remove the gradient overlay permanently when the image loads, no blur/opacity
+                heroEl.style.background = `url('${imageUrl}') center/cover no-repeat`;
+            };
+            img.src = imageUrl;
+        }
+
+        // Apply immediately upon logic load
+        setHeroBackground(currentHeroImage);
+
+        // --- SITE SETTINGS (Hero Bg & Footer) ---
+        function saveSiteSettings(e) {
+            e.preventDefault();
+            const data = {
+                heroImage: document.getElementById('hero-bg').value,
+                footer: {
+                    villageName: document.getElementById('set-vname').value,
+                    tagline: document.getElementById('set-tagline').value,
+                    address: document.getElementById('set-address').value,
+                    email: document.getElementById('set-email').value,
+                    phone: document.getElementById('set-phone').value,
+                    fb: document.getElementById('set-fb').value,
+                    tw: document.getElementById('set-tw').value,
+                    ig: document.getElementById('set-ig').value,
+                    copyright: document.getElementById('set-copy').value
+                }
+            };
+            db.ref('settings').set(data).then(() => alert('Site Settings Saved Successfully!'));
+        }
+
+        db.ref('settings').on('value', snap => {
+            if(snap.exists()) {
+                const data = snap.val();
+                
+                // Update Hero Background UI dynamically
+                if(data.heroImage) {
+                    if(data.heroImage !== currentHeroImage) {
+                        currentHeroImage = data.heroImage;
+                        setHeroBackground(currentHeroImage);
+                    }
+                    document.getElementById('hero-bg').value = data.heroImage;
+                    const prev = document.getElementById('hero-preview');
+                    if (prev) { prev.src = data.heroImage; prev.style.display = 'block'; }
+                }
+                
+                // Update Footer UI & Form fields
+                if(data.footer) {
+                    const f = data.footer;
+                    if(document.getElementById('footer-village-name')) document.getElementById('footer-village-name').innerHTML = `<i class="fas fa-leaf"></i> ${f.villageName || 'Heirok Village'}`;
+                    if(document.getElementById('footer-tagline')) document.getElementById('footer-tagline').innerText = f.tagline || 'Empowering the people through digital governance & connectivity.';
+                    if(document.getElementById('footer-address')) document.getElementById('footer-address').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${f.address || 'Heirok NP, Thoubal'}`;
+                    if(document.getElementById('footer-email')) document.getElementById('footer-email').innerHTML = `<i class="fas fa-envelope"></i> ${f.email || 'info@heirok.in'}`;
+                    if(document.getElementById('footer-phone')) document.getElementById('footer-phone').innerHTML = `<i class="fas fa-phone"></i> ${f.phone || '+91 0000 0000'}`;
+                    
+                    if(document.getElementById('footer-fb')) document.getElementById('footer-fb').href = f.fb || '#';
+                    if(document.getElementById('footer-tw')) document.getElementById('footer-tw').href = f.tw || '#';
+                    if(document.getElementById('footer-ig')) document.getElementById('footer-ig').href = f.ig || '#';
+                    
+                    if(document.getElementById('footer-copyright')) document.getElementById('footer-copyright').innerHTML = f.copyright || '&copy; 2026 Heirok Smart Village. All Rights Reserved.';
+
+                    // Populate Admin Form inputs
+                    document.getElementById('set-vname').value = f.villageName || '';
+                    document.getElementById('set-tagline').value = f.tagline || '';
+                    document.getElementById('set-address').value = f.address || '';
+                    document.getElementById('set-email').value = f.email || '';
+                    document.getElementById('set-phone').value = f.phone || '';
+                    document.getElementById('set-fb').value = f.fb || '';
+                    document.getElementById('set-tw').value = f.tw || '';
+                    document.getElementById('set-ig').value = f.ig || '';
+                    document.getElementById('set-copy').value = f.copyright || '';
+                }
+            }
+        });
+
+
+        // --- MLA CANDIDATES ---
+        let mlaCandidatesData = [];
+        let activeMLACandidateId = null;
+
+        function saveMLACandidate(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-mlac-id').value;
+            const data = {
+                name: document.getElementById('mlac-name').value,
+                image: document.getElementById('mlac-img').value || 'https://ui-avatars.com/api/?name='+document.getElementById('mlac-name').value,
+                about: document.getElementById('mlac-about').value || '',
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            if(id) { db.ref('mla_candidates/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-mlac', 'mlac-form-title', 'MLA Candidates'); document.getElementById('form-mlac-container').classList.add('d-none'); }); } 
+            else { db.ref('mla_candidates').push(data).then(()=>{ alert('Added'); resetForm('form-mlac'); document.getElementById('form-mlac-container').classList.add('d-none'); }); }
+        }
+
+        function editMLACandidate(id) {
+            const item = mlaCandidatesData.find(n => n.id === id);
+            if(item) {
+                document.getElementById('form-mlac-container').classList.remove('d-none');
+                document.getElementById('edit-mlac-id').value = id;
+                document.getElementById('mlac-name').value = item.name;
+                document.getElementById('mlac-about').value = item.about || '';
+                
+                document.getElementById('mlac-img').value = item.image || '';
+                const imgPrev = document.getElementById('mlac-preview');
+                if(item.image && !item.image.includes('ui-avatars')) { imgPrev.src = item.image; imgPrev.style.display = 'block'; } else { imgPrev.style.display = 'none'; }
+                
+                document.getElementById('mlac-form-title').innerText = "Edit Candidate";
+            }
+        }
+
+        function updateMLATopNav() {
+            const mlaNavList = document.getElementById('mla-candidate-list');
+            if(mlaNavList && mlaCandidatesData) {
+                mlaNavList.innerHTML = '';
+                mlaCandidatesData.forEach(c => {
+                    const isActive = (c.id === activeMLACandidateId);
+                    const borderStyle = isActive ? 'border: 2px solid var(--secondary); transform: scale(1.05);' : 'border: 2px solid transparent; opacity: 0.8;';
+                    mlaNavList.innerHTML += `
+                        <div class="candidate-nav-item">
+                            <img src="${c.image}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; ${borderStyle} transition: 0.3s;" onclick="selectMLACandidate('${c.id}')">
+                            <span style="font-size: 0.7rem; color: white; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65px;" onclick="selectMLACandidate('${c.id}')">${c.name}</span>
+                            <button style="font-size: 0.6rem; background: var(--primary); padding: 2px 8px; border-radius: 8px; margin-top: 3px; color: white; border: none; cursor: pointer;" onclick="showCandidateAbout('${c.id}')">About</button>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function selectMLACandidate(candId) {
+            activeMLACandidateId = candId;
+            updateMLATopNav();
+            renderMLAFeed();
+        }
+
+        function showCandidateAbout(candId) {
+            const c = mlaCandidatesData.find(x => x.id === candId);
+            if(!c) return;
+            const modal = document.getElementById('mla-about-modal');
+            modal.innerHTML = `
+                <div class="glass" style="padding: 25px; text-align: center; max-width: 350px; width: 90%; background: var(--bg-card); position: relative; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                    <i class="fas fa-times" onclick="document.getElementById('mla-about-modal').style.display='none'" style="position: absolute; top: 15px; right: 20px; font-size: 22px; color: var(--danger); cursor: pointer; z-index: 10;"></i>
+                    <img src="${c.image}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin-bottom: 15px; background: white;">
+                    <h2 style="color: var(--primary); margin-bottom: 10px; font-size: 1.4rem;">${c.name}</h2>
+                    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.6; text-align: left; max-height: 50vh; overflow-y: auto; padding: 10px;">
+                        ${c.about ? c.about.replace(/\n/g, '<br>') : 'No personal info provided.'}
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        db.ref('mla_candidates').on('value', snap => {
+            const adminList = document.getElementById('admin-mlac-list');
+            const selectList = document.getElementById('mla-cand-id');
+            adminList.innerHTML = '';
+            let selectOptions = '<option value="">Select Candidate First</option>';
+            mlaCandidatesData = [];
+            
+            snap.forEach(child => {
+                const c = { id: child.key, ...child.val() };
+                mlaCandidatesData.push(c);
+                adminList.innerHTML += `
+                    <tr>
+                        <td>${c.name}</td>
+                        <td class="action-btns">
+                            <button class="btn btn-small btn-primary" onclick="editMLACandidate('${c.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-small btn-danger" onclick="deleteItem('mla_candidates', '${c.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                selectOptions += `<option value="${c.id}">${c.name}</option>`;
+            });
+            if(selectList) selectList.innerHTML = selectOptions;
+            
+            if(!activeMLACandidateId && mlaCandidatesData.length > 0) {
+                selectMLACandidate(mlaCandidatesData[0].id);
+            } else {
+                updateMLATopNav();
+            }
+        });
+
+
+        // --- MLA CANDIDATE POSTS & TIKTOK UI ---
+        let allMLAPosts = [];
+        let mlaSwiperInstance = null;
+
+        function saveMLAPost(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-mla-id').value;
+            const data = {
+                candId: document.getElementById('mla-cand-id').value, title: document.getElementById('mla-title').value,
+                content: document.getElementById('mla-content').value || '', image: document.getElementById('mla-img').value || '',
+                video: document.getElementById('mla-vid').value || '', audio: document.getElementById('mla-aud').value || '',
+                date: new Date().toLocaleString(), timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            if(id) { db.ref('mla_posts/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-mla', 'mla-form-title', 'MLA Candidate Posts'); document.getElementById('form-mla-container').classList.add('d-none'); }); } 
+            else { db.ref('mla_posts').push(data).then(()=>{ alert('Published'); resetForm('form-mla'); document.getElementById('form-mla-container').classList.add('d-none'); }); }
+        }
+
+        function editMLAPost(id) {
+            const item = allMLAPosts.find(n => n.id === id);
+            if(item) {
+                document.getElementById('form-mla-container').classList.remove('d-none');
+                document.getElementById('edit-mla-id').value = id; document.getElementById('mla-cand-id').value = item.candId;
+                document.getElementById('mla-title').value = item.title; document.getElementById('mla-content').value = item.content || '';
+                
+                document.getElementById('mla-img').value = item.image || ''; const imgPrev = document.getElementById('mla-img-preview');
+                if(item.image) { imgPrev.src = item.image; imgPrev.style.display = 'block'; } else { imgPrev.style.display = 'none'; }
+                
+                document.getElementById('mla-vid').value = item.video || ''; const vidPrev = document.getElementById('mla-vid-preview');
+                if(item.video) { vidPrev.src = item.video; vidPrev.style.display = 'block'; } else { vidPrev.style.display = 'none'; }
+
+                document.getElementById('mla-aud').value = item.audio || ''; const audPrev = document.getElementById('mla-aud-preview');
+                if(item.audio) { audPrev.src = item.audio; audPrev.style.display = 'block'; } else { audPrev.style.display = 'none'; }
+                
+                document.getElementById('mla-form-title').innerText = "Edit MLA Post";
+            }
+        }
+
+        function toggleReadMore(textId) {
+            const el = document.getElementById(textId);
+            const btn = el.nextElementSibling;
+            if(el.classList.contains('expanded')) { el.classList.remove('expanded'); btn.innerText = 'Read More'; } 
+            else { el.classList.add('expanded'); btn.innerText = 'Show Less'; }
+        }
+
+        function toggleLike(postId) {
+            if(!auth.currentUser) return alert("Please login via the menu to like posts!");
+            const uid = auth.currentUser.uid;
+            const ref = db.ref(`mla_posts/${postId}/likes/${uid}`);
+            ref.once('value').then(snap => { if(snap.exists()) ref.remove(); else ref.set(true); });
+        }
+
+        function openComments(postId) {
+            document.getElementById('active-comment-post-id').value = postId; document.getElementById('comments-modal').classList.add('active');
+            db.ref(`mla_posts/${postId}/comments`).on('value', snap => {
+                const list = document.getElementById('comments-list');
+                list.innerHTML = '';
+                if(!snap.exists()) { list.innerHTML = '<p class="text-muted text-center">No comments yet. Be the first!</p>'; return; }
+                
+                snap.forEach(child => {
+                    const c = child.val();
+                    list.innerHTML += `
+                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                            <strong style="color: var(--primary); font-size: 0.85rem;">${c.name}</strong>
+                            <p style="margin: 0; font-size: 0.9rem;">${c.text}</p>
+                        </div>
+                    `;
+                });
+                list.scrollTop = list.scrollHeight;
+            });
+        }
+
+        function closeComments() {
+            document.getElementById('comments-modal').classList.remove('active');
+            const activeId = document.getElementById('active-comment-post-id').value;
+            if(activeId) db.ref(`mla_posts/${activeId}/comments`).off(); 
+        }
+
+        function submitComment() {
+            if(!auth.currentUser) return alert("Please login via the menu to comment!");
+            const postId = document.getElementById('active-comment-post-id').value;
+            const textEl = document.getElementById('comment-input');
+            const text = textEl.value.trim();
+            if(!text || !postId) return;
+            db.ref(`mla_posts/${postId}/comments`).push({
+                uid: auth.currentUser.uid, name: auth.currentUser.displayName || auth.currentUser.email.split('@')[0], text: text, timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            textEl.value = '';
+        }
+
+        function sharePost(title) {
+            if (navigator.share) { navigator.share({ title: `Check out this update: ${title}`, url: window.location.href }).catch(console.error); } 
+            else { alert("Sharing is not supported on this browser."); }
+        }
+
+        function renderMLAFeed() {
+            const container = document.getElementById('mla-posts-container');
+            container.innerHTML = '';
+            
+            let filteredPosts = allMLAPosts;
+            if (activeMLACandidateId) {
+                filteredPosts = allMLAPosts.filter(p => p.candId === activeMLACandidateId);
+            }
+
+            if(filteredPosts.length === 0) {
+                container.innerHTML = '<div class="swiper-slide mla-slide"><p class="text-muted text-center" style="opacity:0.5;">No posts available for this candidate.</p></div>';
+            } else {
+                filteredPosts.forEach(post => {
+                    let mediaHTML = '';
+                    if(post.video) mediaHTML += `<video src="${post.video}" class="mla-media" controls></video>`;
+                    else if(post.image) mediaHTML += `<img src="${post.image}" class="mla-media">`;
+                    
+                    let audioHTML = '';
+                    if(post.audio) audioHTML = `<audio src="${post.audio}" controls style="width: 100%; margin-top: 8px;"></audio>`;
+                    
+                    let likeCount = post.likes ? Object.keys(post.likes).length : 0;
+                    let commentCount = post.comments ? Object.keys(post.comments).length : 0;
+                    let isLiked = auth.currentUser && post.likes && post.likes[auth.currentUser.uid] ? 'color: var(--danger);' : '';
+                    let textId = `mla-text-${post.id}`;
+
+                    container.innerHTML += `
+                        <div class="swiper-slide mla-slide">
+                            ${mediaHTML}
+                            <div class="mla-overlay-bottom">
+                                <h3 style="margin-bottom: 5px; font-size: 1.05rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${post.title}</h3>
+                                <div id="${textId}" class="mla-text-container">${post.content}</div>
+                                ${post.content.length > 80 ? `<div class="read-more-btn" onclick="toggleReadMore('${textId}')">Read More</div>` : ''}
+                                ${audioHTML}
+                                <p style="font-size: 0.75rem; margin-top: 8px; opacity: 0.7;">${post.date}</p>
+                            </div>
+                            <div class="mla-overlay-right">
+                                <div class="action-icon" onclick="toggleLike('${post.id}')"><i class="fas fa-heart" style="${isLiked}"></i><span>${likeCount}</span></div>
+                                <div class="action-icon" onclick="openComments('${post.id}')"><i class="fas fa-comment"></i><span>${commentCount}</span></div>
+                                <div class="action-icon" onclick="sharePost('${post.title.replace(/'/g, "\\'")}')"><i class="fas fa-share"></i><span>Share</span></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (mlaSwiperInstance) mlaSwiperInstance.destroy();
+            mlaSwiperInstance = new Swiper('.mla-swiper', { direction: 'vertical' });
+        }
+
+        db.ref('mla_posts').orderByChild('timestamp').on('value', snap => {
+            const adminList = document.getElementById('admin-mla-list');
+            adminList.innerHTML = ''; allMLAPosts = [];
+            snap.forEach(child => { allMLAPosts.unshift({ id: child.key, ...child.val() }); });
+
+            allMLAPosts.forEach(post => {
+                adminList.innerHTML += `
+                    <tr>
+                        <td>${post.title}</td><td>${post.date}</td>
+                        <td class="action-btns">
+                            <button class="btn btn-small btn-primary" onclick="editMLAPost('${post.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-small btn-danger" onclick="deleteItem('mla_posts', '${post.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            renderMLAFeed();
+        });
+
+        // --- STATS UPDATE (POPULATION & AGRI) ---
+        let homeStatsData = {};
+        function loadStatCategory() {
+            const cat = document.getElementById('stat-category').value;
+            if(homeStatsData[cat]) { document.getElementById('stat-count').value = homeStatsData[cat].count || 0; document.getElementById('stat-details').value = homeStatsData[cat].details || ''; }
+        }
+        function updateStats(e) {
+            e.preventDefault(); const cat = document.getElementById('stat-category').value;
+            db.ref('stats/' + cat).set({ count: Number(document.getElementById('stat-count').value), details: document.getElementById('stat-details').value }).then(() => alert('Data Updated!'));
+        }
+
+        db.ref('stats').on('value', snap => {
+            if(snap.exists()) {
+                homeStatsData = snap.val();
+                if(homeStatsData.population) {
+                    document.getElementById('stat-pop-count').setAttribute('data-target', homeStatsData.population.count);
+                    document.getElementById('pub-pop-count').innerText = homeStatsData.population.count;
+                    document.getElementById('pub-pop-details').innerHTML = homeStatsData.population.details.replace(/\n/g, '<br>');
+                }
+                if(homeStatsData.agri) {
+                    document.getElementById('stat-agri-count').setAttribute('data-target', homeStatsData.agri.count);
+                    document.getElementById('pub-agri-count').innerText = homeStatsData.agri.count;
+                    document.getElementById('pub-agri-details').innerHTML = homeStatsData.agri.details.replace(/\n/g, '<br>');
+                }
+                if(document.getElementById('page-home').classList.contains('active')) runCounters();
+                if(document.getElementById('tab-stats') && !document.getElementById('tab-stats').classList.contains('d-none')) { loadStatCategory(); }
+            } else {
+                db.ref('stats').set({
+                    population: { count: 9574, details: "Heirok Part I recorded a population of roughly 9,574 in 2011..." },
+                    agri: { count: 85, details: "Over 85% of the land is actively used for agriculture." }
+                });
+            }
+        });
+
+        // --- ITEM DETAILS PAGE RENDERER (For Schools, Health & Notices) ---
+        function openDetailsPage(dataObj, sourcePageId) {
+            window.lastListPage = sourcePageId;
+            const detImg = document.getElementById('det-img');
+            
+            if (dataObj.image) { detImg.src = dataObj.image; detImg.style.display = 'block'; } 
+            else { detImg.style.display = 'none'; }
+
+            document.getElementById('det-title').innerText = dataObj.name || dataObj.title;
+            
+            if (dataObj.location) { document.getElementById('det-loc').innerHTML = `<i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> ${dataObj.location}`; } 
+            else if (dataObj.date) { document.getElementById('det-loc').innerHTML = `<i class="far fa-clock" style="color: var(--primary);"></i> ${dataObj.date} | ${dataObj.type ? dataObj.type.toUpperCase() : ''}`; } 
+            else { document.getElementById('det-loc').innerHTML = ''; }
+
+            document.getElementById('det-desc').innerHTML = (dataObj.description || dataObj.content || 'No details provided.').replace(/\n/g, '<br>');
+            
+            // Navigate to the details page, then optionally override the header title with specific name
+            navigate('page-item-details');
+            const dynTitle = document.getElementById('dynamic-header-title');
+            if (dynTitle) dynTitle.innerText = dataObj.name || dataObj.title || 'Details';
+        }
+
+        // --- SCHOOLS ---
+        let schoolsData = [];
+        function saveSchool(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-school-id').value;
+            const data = {
+                name: document.getElementById('sch-name').value, location: document.getElementById('sch-loc').value,
+                image: document.getElementById('sch-img').value, description: document.getElementById('sch-desc').value, timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            if(id) { db.ref('schools/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-school', 'school-form-title', 'Add School'); }); } 
+            else { db.ref('schools').push(data).then(()=>{ alert('Added'); resetForm('form-school'); }); }
+        }
+        function editSchool(id) {
+            const item = schoolsData.find(n => n.id === id);
+            if(item) {
+                document.getElementById('edit-school-id').value = id; document.getElementById('sch-name').value = item.name;
+                document.getElementById('sch-loc').value = item.location; document.getElementById('sch-img').value = item.image;
+                const prev = document.getElementById('sch-preview');
+                if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+                document.getElementById('sch-desc').value = item.description; document.getElementById('school-form-title').innerText = "Edit School";
+            }
+        }
+        db.ref('schools').orderByChild('timestamp').on('value', snap => {
+            const container = document.getElementById('schools-list-container'); const adminList = document.getElementById('admin-schools-list');
+            container.innerHTML = ''; adminList.innerHTML = ''; schoolsData = [];
+            snap.forEach(child => { schoolsData.unshift({ id: child.key, ...child.val() }); });
+
+            document.getElementById('stat-school-count').setAttribute('data-target', schoolsData.length);
+            if(document.getElementById('page-home').classList.contains('active')) runCounters();
+
+            if(schoolsData.length===0) container.innerHTML = '<p class="text-muted text-center">No schools listed yet.</p>';
+            
+            schoolsData.forEach(item => {
+                const safeData = encodeURIComponent(JSON.stringify(item));
+                container.innerHTML += `
+                    <div class="list-item glass" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-schools')">
+                        <img src="${item.image}" alt="Img" onerror="this.style.display='none'">
+                        <div class="list-item-content">
+                            <h3>${item.name}</h3><p><i class="fas fa-map-marker-alt"></i> ${item.location}</p>
+                        </div>
+                    </div>
+                `;
+                adminList.innerHTML += `
+                    <tr><td>${item.name}</td><td>${item.location}</td>
+                        <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editSchool('${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-small btn-danger" onclick="deleteItem('schools', '${item.id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+        });
+
+        // --- HEALTH ---
+        let healthData = [];
+        function saveHealth(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-health-id').value;
+            const data = {
+                name: document.getElementById('hlth-name').value, location: document.getElementById('hlth-loc').value,
+                image: document.getElementById('hlth-img').value, description: document.getElementById('hlth-desc').value, timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            if(id) { db.ref('health/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-health', 'health-form-title', 'Add Health Centre'); }); } 
+            else { db.ref('health').push(data).then(()=>{ alert('Added'); resetForm('form-health'); }); }
+        }
+        function editHealth(id) {
+            const item = healthData.find(n => n.id === id);
+            if(item) {
+                document.getElementById('edit-health-id').value = id; document.getElementById('hlth-name').value = item.name;
+                document.getElementById('hlth-loc').value = item.location; document.getElementById('hlth-img').value = item.image;
+                const prev = document.getElementById('hlth-preview');
+                if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+                document.getElementById('hlth-desc').value = item.description; document.getElementById('health-form-title').innerText = "Edit Health Centre";
+            }
+        }
+        db.ref('health').orderByChild('timestamp').on('value', snap => {
+            const container = document.getElementById('health-list-container'); const adminList = document.getElementById('admin-health-list');
+            container.innerHTML = ''; adminList.innerHTML = ''; healthData = [];
+            snap.forEach(child => { healthData.unshift({ id: child.key, ...child.val() }); });
+
+            document.getElementById('stat-health-count').setAttribute('data-target', healthData.length);
+            if(document.getElementById('page-home').classList.contains('active')) runCounters();
+
+            if(healthData.length===0) container.innerHTML = '<p class="text-muted text-center">No health centres listed yet.</p>';
+            
+            healthData.forEach(item => {
+                const safeData = encodeURIComponent(JSON.stringify(item));
+                container.innerHTML += `
+                    <div class="list-item glass" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-health')">
+                        <img src="${item.image}" alt="Img" onerror="this.style.display='none'">
+                        <div class="list-item-content">
+                            <h3>${item.name}</h3><p><i class="fas fa-map-marker-alt"></i> ${item.location}</p>
+                        </div>
+                    </div>
+                `;
+                adminList.innerHTML += `
+                    <tr><td>${item.name}</td><td>${item.location}</td>
+                        <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editHealth('${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-small btn-danger" onclick="deleteItem('health', '${item.id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+        });
+
+        // --- NEWS ---
+        let newsData = [];
+        function saveNews(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-news-id').value;
+            const data = {
+                title: document.getElementById('n-title').value, image: document.getElementById('n-img').value,
+                content: document.getElementById('n-content').value, date: new Date().toLocaleDateString(), timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            if(id) { db.ref('news/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-news', 'news-form-title', 'Add Village News'); }); } 
+            else { db.ref('news').push(data).then(()=>{ alert('Published'); resetForm('form-news'); }); }
+        }
+        function editNews(id) {
+            const item = newsData.find(n => n.id === id);
+            if(item) {
+                document.getElementById('edit-news-id').value = id; document.getElementById('n-title').value = item.title;
+                document.getElementById('n-img').value = item.image; const prev = document.getElementById('n-preview');
+                if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+                document.getElementById('n-content').value = item.content; document.getElementById('news-form-title').innerText = "Edit News";
+            }
+        }
+        db.ref('news').orderByChild('timestamp').on('value', snap => {
+            const container = document.getElementById('news-container'); const adminList = document.getElementById('admin-news-list');
+            container.innerHTML = ''; adminList.innerHTML = ''; newsData = [];
+            snap.forEach(child => { newsData.unshift({ id: child.key, ...child.val() }); });
+
+            if(newsData.length===0) container.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1;">No news available.</p>';
+            
+            newsData.forEach(news => {
+                const safeData = encodeURIComponent(JSON.stringify(news));
+                container.innerHTML += `
+                    <div class="card glass animate__animated animate__fadeInUp" style="cursor:pointer;" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-news')">
+                        <img src="${news.image}" alt="Img" onerror="this.style.display='none'">
+                        <div class="card-meta"><i class="far fa-calendar"></i> ${news.date}</div>
+                        <h3 class="card-title">${news.title}</h3>
+                        <p class="text-muted" style="font-size: 0.85rem;">${news.content.substring(0, 100)}...</p>
+                    </div>
+                `;
+                adminList.innerHTML += `
+                    <tr><td>${news.title}</td><td>${news.date}</td>
+                        <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editNews('${news.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-small btn-danger" onclick="deleteItem('news', '${news.id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+        });
+
+        // --- NOTICES ---
+        let noticesData = [];
+        function saveNotice(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-notice-id').value;
+            const data = {
+                title: document.getElementById('not-title').value, type: document.getElementById('not-type').value,
+                image: document.getElementById('not-img').value || '', content: document.getElementById('not-content').value || '',
+                date: new Date().toLocaleDateString(), timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            if(id) { db.ref('notices/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-notices', 'notice-form-title', 'Notices'); document.getElementById('form-notices-container').classList.add('d-none'); }); } 
+            else { db.ref('notices').push(data).then(()=>{ alert('Posted'); resetForm('form-notices'); document.getElementById('form-notices-container').classList.add('d-none'); }); }
+        }
+        function editNotice(id) {
+            const item = noticesData.find(n => n.id === id);
+            if(item) {
+                document.getElementById('form-notices-container').classList.remove('d-none');
+                document.getElementById('edit-notice-id').value = id; document.getElementById('not-title').value = item.title;
+                document.getElementById('not-type').value = item.type; document.getElementById('not-img').value = item.image || '';
+                const preview = document.getElementById('not-preview');
+                if(item.image) { preview.src = item.image; preview.style.display = 'block'; } else { preview.style.display = 'none'; }
+                document.getElementById('not-content').value = item.content || ''; document.getElementById('notice-form-title').innerText = "Edit Notice";
+            }
+        }
+        db.ref('notices').orderByChild('timestamp').limitToLast(15).on('value', snap => {
+            const list = document.getElementById('notices-list'); const ticker = document.getElementById('home-ticker-content');
+            const adminList = document.getElementById('admin-notices-list');
+            list.innerHTML = ''; ticker.innerHTML = ''; adminList.innerHTML = ''; noticesData = [];
+            snap.forEach(child => { noticesData.unshift({id: child.key, ...child.val()}); });
+
+            if(noticesData.length === 0) list.innerHTML = '<li>No recent notices.</li>';
+            
+            let tickerText = '';
+            noticesData.forEach(n => {
+                const color = n.type === 'urgent' ? 'var(--danger)' : 'var(--primary)';
+                const safeData = encodeURIComponent(JSON.stringify(n));
+                
+                list.innerHTML += `
+                    <li style="padding: 12px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='inherit';" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-notices')">
+                        <div>
+                            <span class="badge" style="background: ${color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">${n.type.toUpperCase()}</span>
+                            <strong style="font-size: 0.95rem;">${n.title}</strong>
+                        </div>
+                        <span style="font-size: 0.8rem; opacity: 0.8;"><i class="far fa-clock"></i> ${n.date}</span>
+                    </li>
+                `;
+                
+                tickerText += ` <span style="margin: 0 30px; cursor: pointer;" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-home')">• <strong style="color: ${n.type === 'urgent' ? '#ffd166' : 'inherit'}">${n.type.toUpperCase()}</strong>: ${n.title} (${n.date})</span> `;
+                
+                adminList.innerHTML += `
+                    <tr><td>${n.title}</td><td>${n.type}</td>
+                        <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editNotice('${n.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-small btn-danger" onclick="deleteItem('notices', '${n.id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+            ticker.innerHTML = tickerText + tickerText; 
+        });
+
+        // --- DIRECTORY ---
+        let dirData = [];
+
+        function addFamilyMember(name = '', relation = '') {
+            const list = document.getElementById('d-family-list');
+            const div = document.createElement('div');
+            div.className = 'family-member-row';
+            div.style.cssText = 'display:flex; gap:10px; margin-bottom:8px;';
+            div.innerHTML = `
+                <input type="text" class="form-control fam-name" placeholder="Name" value="${name}">
+                <select class="form-control fam-relation">
+                    <option value="">Relation</option>
+                    <option value="Father" ${relation==='Father'?'selected':''}>Father</option>
+                    <option value="Mother" ${relation==='Mother'?'selected':''}>Mother</option>
+                    <option value="Spouse" ${relation==='Spouse'?'selected':''}>Spouse</option>
+                    <option value="Son" ${relation==='Son'?'selected':''}>Son</option>
+                    <option value="Daughter" ${relation==='Daughter'?'selected':''}>Daughter</option>
+                    <option value="Brother" ${relation==='Brother'?'selected':''}>Brother</option>
+                    <option value="Sister" ${relation==='Sister'?'selected':''}>Sister</option>
+                    <option value="Other" ${relation==='Other'?'selected':''}>Other</option>
+                </select>
+                <button type="button" class="btn btn-danger btn-small" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
+            `;
+            list.appendChild(div);
+        }
+
+        function saveDirectory(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-dir-id').value;
+            
+            // Gather all family details
+            let family = [];
+            document.querySelectorAll('#d-family-list .family-member-row').forEach(row => {
+                let n = row.querySelector('.fam-name').value.trim();
+                let r = row.querySelector('.fam-relation').value;
+                if(n && r) family.push({name: n, relation: r});
+            });
+
+            const data = {
+                name: document.getElementById('d-name').value, 
+                category: document.getElementById('d-cat').value,
+                phone: document.getElementById('d-phone').value, 
+                address: document.getElementById('d-address').value || '',
+                image: document.getElementById('d-img').value || '',
+                dob: document.getElementById('d-dob').value || '',
+                email: document.getElementById('d-email').value || '',
+                aadhar: document.getElementById('d-aadhar').value || '',
+                family: family,
+                nameLowerCase: document.getElementById('d-name').value.toLowerCase()
+            };
+
+            if(id) { db.ref('directory/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-directory', 'dir-form-title', 'Add to Directory'); }); } 
+            else { db.ref('directory').push(data).then(()=>{ alert('Added'); resetForm('form-directory'); }); }
+        }
+
+        function editDirectory(id) {
+            const item = dirData.find(n => n.id === id);
+            if(item) {
+                document.getElementById('edit-dir-id').value = id; 
+                document.getElementById('d-name').value = item.name;
+                document.getElementById('d-cat').value = item.category; 
+                document.getElementById('d-phone').value = item.phone;
+                document.getElementById('d-address').value = item.address || ''; 
+                
+                document.getElementById('d-dob').value = item.dob || '';
+                document.getElementById('d-email').value = item.email || '';
+                document.getElementById('d-aadhar').value = item.aadhar || '';
+                
+                document.getElementById('d-img').value = item.image || '';
+                const prev = document.getElementById('d-preview');
+                if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+                
+                const familyList = document.getElementById('d-family-list');
+                familyList.innerHTML = '';
+                if(item.family) {
+                    item.family.forEach(f => {
+                        addFamilyMember(f.name, f.relation);
+                    });
+                }
+                
+                document.getElementById('dir-form-title').innerText = "Edit Directory Entry";
+            }
+        }
+
+        function uploadCSV() {
+            const fileInput = document.getElementById('csv-file');
+            if(!fileInput.files.length) return alert("Please select a CSV file.");
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const rows = e.target.result.split('\n');
+                let count = 0;
+                rows.forEach((row, index) => {
+                    if(index === 0 || !row.trim()) return;
+                    const cols = row.split(',');
+                    // Mapping mapping to: Name, Mobile, Category, Address, ImageURL, DOB, Email, Aadhar
+                    if(cols.length >= 3) {
+                        db.ref('directory').push({
+                            name: cols[0]?.trim() || '', 
+                            phone: cols[1]?.trim() || '', 
+                            category: cols[2]?.trim() || '',
+                            address: cols[3]?.trim() || '',
+                            image: cols[4]?.trim() || '',
+                            dob: cols[5]?.trim() || '',
+                            email: cols[6]?.trim() || '',
+                            aadhar: cols[7]?.trim() || '',
+                            nameLowerCase: (cols[0]||'').trim().toLowerCase()
+                        });
+                        count++;
+                    }
+                });
+                alert(`Successfully uploaded ${count} contacts from CSV.`); fileInput.value = '';
+            };
+            reader.readAsText(fileInput.files[0]);
+        }
+
+        db.ref('directory').on('value', snap => {
+            dirData = []; snap.forEach(child => { dirData.push({id: child.key, ...child.val()}); }); renderDirectory(dirData);
+        });
+
+        // Hides Custom Directory Details Modal
+        function hideDirDetails() {
+            const modal = document.getElementById('dir-modal');
+            if(modal) {
+                modal.style.opacity = '0';
+                setTimeout(() => { modal.style.display = 'none'; }, 200);
+            }
+        }
+
+        // Shows Custom Directory Details Modal with all information
+        function showDirDetails(id) {
+            const item = dirData.find(d => d.id === id);
+            if(!item) return;
+            
+            let modal = document.getElementById('dir-modal');
+            if(!modal) {
+                modal = document.createElement('div');
+                modal.id = 'dir-modal';
+                modal.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100%; height:100vh; background:rgba(0,0,0,0.8); z-index:4000; align-items:center; justify-content:center; padding:20px; opacity:0; transition: opacity 0.2s ease;';
+                document.body.appendChild(modal);
+            }
+            
+            let imgHTML = item.image ? `<img src="${item.image}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin: 0 auto 15px; display:block; border: 3px solid var(--primary);">` : `<div style="width:100px; height:100px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:40px; margin: 0 auto 15px;">${item.name.charAt(0)}</div>`;
+            
+            let familyHTML = '';
+            if(item.family && item.family.length > 0) {
+                familyHTML = `<h4 style="margin-top:20px; border-bottom:1px solid var(--glass-border); padding-bottom:5px; color:var(--primary);">Family Details</h4><ul style="margin-top:10px; list-style:none; padding:0;">`;
+                item.family.forEach(f => {
+                    let icon = 'fa-user';
+                    if(f.relation==='Father' || f.relation==='Brother' || f.relation==='Son') icon = 'fa-male';
+                    if(f.relation==='Mother' || f.relation==='Sister' || f.relation==='Daughter') icon = 'fa-female';
+                    familyHTML += `<li style="padding:6px 0; display:flex; align-items:center; justify-content:space-between; border-bottom: 1px dashed rgba(0,0,0,0.1);">
+                        <span style="display:flex; align-items:center; gap:10px;"><i class="fas ${icon}" style="color:var(--text-muted)"></i> <strong>${f.name}</strong></span> 
+                        <span class="badge" style="background:var(--secondary); color:white; font-size:0.7rem; padding:2px 6px; border-radius:4px;">${f.relation}</span>
+                    </li>`;
+                });
+                familyHTML += `</ul>`;
+            }
+
+            modal.innerHTML = `
+                <div class="glass animate__animated animate__zoomIn" style="background:var(--bg-main); width:100%; max-width:400px; max-height:90vh; overflow-y:auto; border-radius:12px; position:relative; padding:30px 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                    <i class="fas fa-times" onclick="hideDirDetails()" style="position:absolute; top:15px; right:15px; font-size:18px; color:var(--danger); cursor:pointer; background:rgba(239, 71, 111, 0.1); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:0.2s;"></i>
+                    
+                    ${imgHTML}
+                    <h2 style="text-align:center; color:var(--primary); margin-bottom:5px; font-size:1.4rem;">${item.name}</h2>
+                    <p style="text-align:center; font-weight:600; color:var(--secondary); margin-bottom:20px; font-size:0.95rem;">${item.category}</p>
+                    
+                    <div style="line-height:2; font-size:0.9rem; background:rgba(0,0,0,0.03); padding:15px; border-radius:8px;">
+                        ${item.phone ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-phone" style="width:20px; text-align:center; color:var(--primary);"></i> <a href="tel:${item.phone}" style="font-weight:500;">${item.phone}</a></div>` : ''}
+                        ${item.email ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-envelope" style="width:20px; text-align:center; color:var(--danger);"></i> <a href="mailto:${item.email}">${item.email}</a></div>` : ''}
+                        ${item.address ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-map-marker-alt" style="width:20px; text-align:center; color:var(--secondary);"></i> <span>${item.address}</span></div>` : ''}
+                        ${item.dob ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-birthday-cake" style="width:20px; text-align:center; color:var(--accent);"></i> <span>${item.dob}</span></div>` : ''}
+                        ${item.aadhar ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-id-card" style="width:20px; text-align:center; color:var(--text-muted);"></i> <span>${item.aadhar}</span></div>` : ''}
+                    </div>
+                    ${familyHTML}
+                </div>
+            `;
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.style.opacity = '1'; }, 10);
+        }
+
+        // REDESIGNED DIRECTORY CONTAINER - Horizontal Flex Layout
+        function renderDirectory(data) {
+            const container = document.getElementById('directory-container'); const adminList = document.getElementById('admin-dir-list');
+            container.innerHTML = ''; adminList.innerHTML = '';
+            if(data.length===0) container.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1;">Directory empty.</p>';
+            data.forEach(item => {
+                let imgHTML = item.image ? `<img src="${item.image}" style="width:75px; height:75px; border-radius:50%; object-fit:cover; border: 2px solid var(--primary);">` : `<div style="width:75px; height:75px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:30px;">${item.name.charAt(0)}</div>`;
+
+                container.innerHTML += `
+                    <div class="card glass" style="cursor:pointer; display:flex; flex-direction:row; gap:15px; align-items:center; padding:15px;" onclick="showDirDetails('${item.id}')">
+                        <div style="flex-shrink:0;">
+                            ${imgHTML}
+                        </div>
+                        <div style="flex-grow:1; overflow:hidden;">
+                            <h3 class="card-title" style="margin-bottom: 4px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h3>
+                            <p class="text-muted" style="margin-bottom: 4px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="fas fa-tag"></i> ${item.category}</p>
+                            ${item.address ? `<p class="text-muted" style="margin-bottom: 8px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="fas fa-map-marker-alt"></i> ${item.address}</p>` : ''}
+                            <a href="tel:${item.phone}" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem; display: inline-flex;" onclick="event.stopPropagation();"><i class="fas fa-phone-alt"></i> Call</a>
+                        </div>
+                    </div>`;
+                
+                if(adminList) {
+                    adminList.innerHTML += `
+                        <tr><td>${item.name}</td><td>${item.category}</td><td>${item.phone}</td>
+                            <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editDirectory('${item.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-small btn-danger" onclick="deleteItem('directory', '${item.id}')"><i class="fas fa-trash"></i></button></td>
+                        </tr>`;
+                }
+            });
+        }
+
+        function filterDirectory() {
+            const query = document.getElementById('dir-search').value.toLowerCase();
+            renderDirectory(dirData.filter(d => d.nameLowerCase.includes(query) || d.category.toLowerCase().includes(query)));
+        }
+
+        // --- PANCHAYAT ---
+        let panchayatData = [];
+        function savePanchayat(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-panchayat-id').value;
+            const data = {
+                name: document.getElementById('p-name').value, role: document.getElementById('p-role').value,
+                photo: document.getElementById('p-photo').value || 'https://ui-avatars.com/api/?name='+document.getElementById('p-name').value,
+                contact: document.getElementById('p-contact').value || ''
+            };
+            if(id) { db.ref('panchayat/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-panchayat', 'panchayat-form-title', 'Add Panchayat Member'); }); } 
+            else { db.ref('panchayat').push(data).then(()=>{ alert('Added'); resetForm('form-panchayat'); }); }
+        }
+        function editPanchayat(id) {
+            const item = panchayatData.find(n => n.id === id);
+            if(item) {
+                document.getElementById('edit-panchayat-id').value = id; document.getElementById('p-name').value = item.name;
+                document.getElementById('p-role').value = item.role;
+                document.getElementById('p-photo').value = item.photo !== `https://ui-avatars.com/api/?name=${item.name}` ? item.photo : '';
+                const prev = document.getElementById('p-preview');
+                if (item.photo && !item.photo.includes('ui-avatars')) { prev.src = item.photo; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+                document.getElementById('p-contact').value = item.contact || ''; document.getElementById('panchayat-form-title').innerText = "Edit Panchayat Member";
+            }
+        }
+        db.ref('panchayat').on('value', snap => {
+            const container = document.getElementById('panchayat-container'); const adminList = document.getElementById('admin-panchayat-list');
+            container.innerHTML = ''; adminList.innerHTML = ''; panchayatData = [];
+            snap.forEach(child => { panchayatData.push({id: child.key, ...child.val()}); });
+            if(panchayatData.length===0) container.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1;">No members listed yet.</p>';
+            panchayatData.forEach(item => {
+                container.innerHTML += `
+                    <div class="card glass text-center">
+                        <img src="${item.photo}" alt="${item.name}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px;">
+                        <h3 class="card-title">${item.name}</h3><p class="text-muted" style="font-weight: 500; font-size: 0.9rem;">${item.role}</p>
+                        ${item.contact ? `<p class="text-muted" style="font-size: 0.8rem; margin-top:8px;"><i class="fas fa-phone"></i> ${item.contact}</p>` : ''}
+                    </div>`;
+                adminList.innerHTML += `
+                    <tr><td>${item.name}</td><td>${item.role}</td>
+                        <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editPanchayat('${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-small btn-danger" onclick="deleteItem('panchayat', '${item.id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>`;
+            });
+        });
+
+        // --- PROJECTS ---
+        let projectsData = [];
+        function saveProject(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-project-id').value;
+            const data = {
+                title: document.getElementById('proj-title').value, status: document.getElementById('proj-status').value,
+                budget: document.getElementById('proj-budget').value || 'Not Disclosed', description: document.getElementById('proj-desc').value || ''
+            };
+            if(id) { db.ref('projects/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-projects', 'project-form-title', 'Add Development Project'); }); } 
+            else { db.ref('projects').push(data).then(()=>{ alert('Added'); resetForm('form-projects'); }); }
+        }
+        function editProject(id) {
+            const item = projectsData.find(n => n.id === id);
+            if(item) {
+                document.getElementById('edit-project-id').value = id; document.getElementById('proj-title').value = item.title;
+                document.getElementById('proj-status').value = item.status;
+                document.getElementById('proj-budget').value = item.budget !== 'Not Disclosed' ? item.budget : '';
+                document.getElementById('proj-desc').value = item.description || ''; document.getElementById('project-form-title').innerText = "Edit Project";
+            }
+        }
+        db.ref('projects').on('value', snap => {
+            const container = document.getElementById('projects-container'); const adminList = document.getElementById('admin-projects-list');
+            container.innerHTML = ''; adminList.innerHTML = ''; projectsData = [];
+            snap.forEach(child => { projectsData.push({id: child.key, ...child.val()}); });
+            if(projectsData.length===0) container.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1;">No projects listed yet.</p>';
+            projectsData.forEach(item => {
+                let statusColor = item.status === 'Completed' ? 'var(--secondary)' : (item.status === 'Ongoing' ? 'var(--accent)' : 'var(--primary)');
+                container.innerHTML += `
+                    <div class="card glass">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <h3 class="card-title" style="margin: 0; font-size: 1.05rem;">${item.title}</h3>
+                            <span class="badge" style="background: ${statusColor}; color: ${item.status === 'Ongoing' ? '#000' : '#fff'}; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">${item.status}</span>
+                        </div>
+                        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 8px;"><strong>Budget:</strong> ${item.budget}</p>
+                        <p class="text-muted" style="font-size: 0.8rem;">${item.description}</p>
+                    </div>`;
+                adminList.innerHTML += `
+                    <tr><td>${item.title}</td><td>${item.status}</td>
+                        <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editProject('${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-small btn-danger" onclick="deleteItem('projects', '${item.id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>`;
+            });
+        });
+
+    </script>
+</body>
+</html>
