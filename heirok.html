@@ -82,7 +82,6 @@
             background: var(--bg-card); backdrop-filter: blur(15px); 
             border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow); 
         }
-        /* Removed padding shrinkage on scroll to keep height stable for perfect 2px gap */
         header.scrolled { box-shadow: 0 8px 30px 0 rgba(0,0,0,0.3); } 
         
         .nav-container { display: flex; justify-content: space-between; align-items: center; position: relative; width: 100%; }
@@ -148,12 +147,11 @@
            LAYOUTS & SECTIONS
            ========================================================================== */
         .page-section { min-height: calc(100vh - var(--header-height) - var(--header-gap)); min-height: calc(100dvh - var(--header-height) - var(--header-gap)); padding-bottom: 40px; }
-        .content-page { padding-top: 30px; } /* Gives inner breathing room for standard pages */
+        .content-page { padding-top: 30px; }
         
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; position: relative; }
         .section-title { text-align: center; font-size: 26px; margin-bottom: 25px; color: var(--primary); font-weight: 700; }
         
-        /* Hero height adjusted to fit perfectly below the 2px gap */
         .hero { position: relative; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 15px; background: linear-gradient(to bottom, #063c1a, #021a0a); transition: background 0.5s ease; }
         .hero-content { position: relative; z-index: 1; color: white; max-width: 700px; }
         .hero-title { font-size: 3.2rem; font-weight: 700; margin-bottom: 15px; animation: fadeInUp 1s; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
@@ -189,7 +187,6 @@
         .auth-container { max-width: 360px; margin: 30px auto; padding: 30px; text-align: center; }
         .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
         
-        /* Sticky Sidebar for Admin Dashboard */
         .sidebar { padding: 15px; position: sticky; top: 20px; height: calc(100vh - var(--header-height) - var(--header-gap) - 40px); height: calc(100dvh - var(--header-height) - var(--header-gap) - 40px); overflow-y: auto; }
         .sidebar::-webkit-scrollbar { width: 4px; }
         .sidebar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
@@ -209,26 +206,56 @@
         /* ==========================================================================
            MLA PAGE (TIKTOK STYLE)
            ========================================================================== */
-        /* Takes exact remaining height below the 2px gap natively */
-        #page-mla { padding: 0 !important; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); overflow: hidden; position: relative; background: #000; display: flex; flex-direction: column; }
+        /* Takes exact remaining height below the 2px gap natively, absolute positioning handles overlays */
+        #page-mla { padding: 0 !important; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); overflow: hidden; position: relative; background: #000; }
         
-        .mla-top-nav { background: #111; display: flex; align-items: center; padding: 8px 12px; overflow-x: auto; z-index: 100; border-bottom: 1px solid #333; flex-shrink: 0; }
+        /* Floating transparent Top Nav to prevent structural gap */
+        .mla-top-nav { position: absolute; top: 0; left: 0; width: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); display: flex; align-items: flex-start; padding: 15px 12px 30px 12px; overflow-x: auto; z-index: 100; border: none; }
         .mla-top-nav::-webkit-scrollbar { display: none; }
-        .mla-top-nav { -ms-overflow-style: none; scrollbar-width: none; }
+        .mla-top-nav { -ms-overflow-style: none; scrollbar-width: none; pointer-events: none; } /* Prevent accidental blocking */
+        .mla-top-nav > * { pointer-events: auto; } /* Allow clicking candidates */
         
-        .candidate-nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 65px; }
+        .candidate-nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 65px; margin-right: 10px; }
 
-        .mla-swiper { flex: 1; width: 100%; height: 100%; }
-        .swiper-slide.mla-slide { position: relative; display: flex; align-items: center; justify-content: center; background: #111; color: white; overflow: hidden; }
-        .mla-media { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .mla-overlay-bottom { position: absolute; bottom: 0; left: 0; right: 60px; padding: 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; }
-        .mla-overlay-right { position: absolute; bottom: 15px; right: 10px; display: flex; flex-direction: column; gap: 15px; z-index: 10; align-items: center; }
-        .action-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: white; font-size: 24px; transition: transform 0.2s; }
+        /* Full Height Swiper */
+        .mla-swiper { width: 100%; height: 100%; }
+        .swiper-slide.mla-slide { position: relative; display: flex; align-items: center; justify-content: center; background: #000; color: white; overflow: hidden; }
+        
+        /* Uniform Post Container fixing all spacing issues */
+        .mla-post-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        /* Responsive Media fit perfectly regardless of 16:9 or 9:16 */
+        .mla-media { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            z-index: 1; 
+        }
+        
+        /* Bottom Overlay Text lifted to ensure Video Controls are clickable */
+        .mla-overlay-bottom { position: absolute; bottom: 0; left: 0; right: 60px; padding: 15px; padding-bottom: 60px; background: linear-gradient(transparent, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.9) 100%); z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; }
+        .mla-overlay-bottom > * { pointer-events: auto; }
+        
+        /* Right Side Actions Panel */
+        .mla-overlay-right { position: absolute; bottom: 70px; right: 10px; display: flex; flex-direction: column; gap: 15px; z-index: 10; align-items: center; }
+        
+        .action-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: white; font-size: 24px; transition: transform 0.2s; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); }
         .action-icon:hover { transform: scale(1.1); }
         .action-icon span { font-size: 11px; font-weight: 600; }
-        .mla-text-container { max-height: 55px; overflow: hidden; transition: var(--transition); margin-bottom: 4px; font-size: 0.9rem; line-height: 1.4; }
-        .mla-text-container.expanded { max-height: 50vh; overflow-y: auto; background: rgba(0,0,0,0.7); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); }
-        .read-more-btn { cursor: pointer; font-weight: bold; color: var(--accent); font-size: 0.85rem; }
+        
+        .mla-text-container { max-height: 55px; overflow: hidden; transition: var(--transition); margin-bottom: 4px; font-size: 0.9rem; line-height: 1.4; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+        .mla-text-container.expanded { max-height: 50vh; overflow-y: auto; background: rgba(0,0,0,0.8); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); pointer-events: auto; }
+        .read-more-btn { cursor: pointer; font-weight: bold; color: var(--accent); font-size: 0.85rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); pointer-events: auto; }
 
         /* Comments Modal */
         #comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; height: 60dvh; background: var(--bg-card); backdrop-filter: blur(20px); border-top-left-radius: 16px; border-top-right-radius: 16px; z-index: 2500; display: flex; flex-direction: column; transition: bottom 0.4s ease-in-out; border-top: 1px solid var(--glass-border); box-shadow: 0 -10px 30px rgba(0,0,0,0.3); }
@@ -246,17 +273,13 @@
             .list-item { flex-direction: column; text-align: center; }
             .list-item img { width: 100%; height: 120px; }
             
-            /* Fix for MLA Candidate Post height on small screens */
             #page-mla {
-                height: calc(100vh - var(--header-height) - 15px) !important;
-                height: calc(100dvh - var(--header-height) - 15px) !important;
+                height: calc(100vh - var(--header-height)) !important;
+                height: calc(100dvh - var(--header-height)) !important;
             }
-            .mla-overlay-bottom {
-                padding-bottom: 25px; /* Lift text above mobile nav elements */
-            }
-            .mla-overlay-right {
-                bottom: 25px; /* Lift action icons up */
-            }
+            /* Lift overlays more on mobile to clear massive native video controls */
+            .mla-overlay-bottom { padding-bottom: 75px; }
+            .mla-overlay-right { bottom: 85px; }
         }
     </style>
 </head>
@@ -265,7 +288,6 @@
     <!-- HEADER & HAMBURGER MENU -->
     <header id="navbar">
         <div class="container nav-container">
-            <!-- Animated CSS Logo replacing the GIF -->
             <div class="logo" id="header-logo" onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])">
                 <div class="animated-css-logo">
                     <div class="logo-icon-wrap">
@@ -275,7 +297,6 @@
                 </div>
             </div>
             
-            <!-- Dynamic Page Title injected here -->
             <div id="dynamic-header-title" class="dynamic-header-title">Home</div>
             
             <div class="header-actions">
@@ -302,9 +323,6 @@
             <div class="menu-box nav-menu-item" onclick="navigate('page-about', this)">
                 <i class="fas fa-info-circle"></i><span>About Us</span>
             </div>
-            <div class="menu-box nav-menu-item" onclick="navigate('page-news', this)">
-                <i class="fas fa-newspaper"></i><span>News</span>
-            </div>
             <div class="menu-box nav-menu-item" onclick="navigate('page-notices', this)">
                 <i class="fas fa-bullhorn"></i><span>Notices</span>
             </div>
@@ -323,7 +341,7 @@
         </div>
     </div>
 
-    <!-- MAIN SPA CONTAINER (Has strict margin-top matching Header Height + 2px Gap) -->
+    <!-- MAIN SPA CONTAINER -->
     <main id="app-container">
 
         <!-- ================= HOME PAGE ================= -->
@@ -334,7 +352,7 @@
                     <p class="hero-subtitle animate__animated animate__fadeInUp">The Smart & Digital Village of Thoubal District, Manipur</p>
                     <div class="animate__animated animate__zoomIn">
                         <button class="btn btn-primary" onclick="navigate('page-about', document.querySelectorAll('.nav-menu-item')[2])">Explore Village</button>
-                        <button class="btn glass text-white" onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[5])">Directory</button>
+                        <button class="btn glass text-white" onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[4])">Directory</button>
                     </div>
                 </div>
             </div>
@@ -372,7 +390,7 @@
                 <div class="notice-ticker glass">
                     <div class="ticker-title">
                         LATEST ALERTS:
-                        <i class="fas fa-external-link-alt" style="cursor:pointer; color:var(--accent);" onclick="navigate('page-notices', document.querySelectorAll('.nav-menu-item')[4])" title="View All Alerts"></i>
+                        <i class="fas fa-external-link-alt" style="cursor:pointer; color:var(--accent);" onclick="navigate('page-notices', document.querySelectorAll('.nav-menu-item')[3])" title="View All Alerts"></i>
                     </div>
                     <div class="ticker-wrap">
                         <div class="ticker-move" id="home-ticker-content">
@@ -386,17 +404,17 @@
             <div class="container" style="margin-top: 40px;" data-aos="fade-up">
                 <h2 class="section-title">Quick Services</h2>
                 <div class="grid-3">
-                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[5])">
+                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[4])">
                         <i class="fas fa-address-book" style="font-size:36px; color:var(--primary); margin-bottom:12px;"></i>
                         <h3>Business Directory</h3>
                         <p class="text-muted">Find local shops, plumbers, electricians.</p>
                     </div>
-                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-panchayat', document.querySelectorAll('.nav-menu-item')[6])">
+                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-panchayat', document.querySelectorAll('.nav-menu-item')[5])">
                         <i class="fas fa-gavel" style="font-size:36px; color:var(--primary); margin-bottom:12px;"></i>
                         <h3>Panchayat</h3>
                         <p class="text-muted">Meet the Nagar Panchayat members.</p>
                     </div>
-                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-projects', document.querySelectorAll('.nav-menu-item')[7])">
+                    <div class="card glass text-center" style="cursor:pointer" onclick="navigate('page-projects', document.querySelectorAll('.nav-menu-item')[6])">
                         <i class="fas fa-road" style="font-size:36px; color:var(--primary); margin-bottom:12px;"></i>
                         <h3>Development Projects</h3>
                         <p class="text-muted">Track village development progress.</p>
@@ -415,14 +433,14 @@
         <!-- ================= MLA CANDIDATE TIKTOK STYLE PAGE ================= -->
         <section id="page-mla" class="page-section d-none">
             
-            <!-- Dynamic Candidate Top Navbar Menu -->
+            <!-- Dynamic Candidate Top Navbar Menu (Floating over video) -->
             <div class="mla-top-nav">
                 <!-- Back Button -->
                 <div onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])" class="candidate-nav-item" style="margin-right: 15px;">
-                    <div style="width: 45px; height: 45px; display:flex; align-items:center; justify-content:center; background:#333; border-radius:50%; color: white; font-size: 18px;">
+                    <div style="width: 45px; height: 45px; display:flex; align-items:center; justify-content:center; background:#333; border-radius:50%; color: white; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.5);">
                         <i class="fas fa-arrow-left"></i>
                     </div>
-                    <span style="font-size: 0.7rem; color: white; margin-top: 5px;">Back</span>
+                    <span style="font-size: 0.7rem; color: white; margin-top: 5px; text-shadow: 1px 1px 3px #000;">Back</span>
                 </div>
                 <!-- Candidate List will be injected here -->
                 <div id="mla-candidate-list" style="display: flex; gap: 12px;"></div>
@@ -525,11 +543,6 @@
             </div>
         </section>
 
-        <section id="page-news" class="page-section content-page d-none container">
-            <h2 class="section-title">Village News</h2>
-            <div class="grid-3" id="news-container"><div class="text-center" style="grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading news...</div></div>
-        </section>
-
         <section id="page-notices" class="page-section content-page d-none container">
             <h2 class="section-title">Notice Board</h2>
             <div class="glass" style="padding: 20px;"><ul id="notices-list" style="list-style: none;"><div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading notices...</div></ul></div>
@@ -627,7 +640,6 @@
                             <li onclick="switchAdminTab('tab-stats')"><i class="fas fa-chart-bar"></i> Population & Agri</li>
                             <li onclick="switchAdminTab('tab-schools')"><i class="fas fa-school"></i> Manage Schools</li>
                             <li onclick="switchAdminTab('tab-health')"><i class="fas fa-hospital"></i> Manage Health</li>
-                            <li onclick="switchAdminTab('tab-news')"><i class="fas fa-newspaper"></i> Manage News</li>
                             <li onclick="switchAdminTab('tab-notices')"><i class="fas fa-bullhorn"></i> Manage Notices</li>
                             <li onclick="switchAdminTab('tab-directory')"><i class="fas fa-address-book"></i> Manage Directory</li>
                             <li onclick="switchAdminTab('tab-panchayat')"><i class="fas fa-users"></i> Manage Panchayat</li>
@@ -928,33 +940,6 @@
                         <table class="admin-table"><thead><tr><th>Name</th><th>Loc</th><th>Actions</th></tr></thead><tbody id="admin-health-list"></tbody></table>
                     </div>
 
-                    <!-- NEWS -->
-                    <div id="tab-news" class="admin-tab d-none">
-                        <h3 id="news-form-title">Add News</h3>
-                        <form id="form-news" onsubmit="saveNews(event)" style="margin-top: 15px;">
-                            <input type="hidden" id="edit-news-id">
-                            <div class="form-group"><input type="text" id="n-title" class="form-control" placeholder="Title" required></div>
-                            <div class="form-group">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <label>Cover Image</label>
-                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('n-img-container', 'n-img', 'n-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
-                                </div>
-                                <div id="n-img-container" data-mode="file">
-                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'n-preview', 'n-img', 'n-progress', 'image')">
-                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'n-img', 'n-preview', 'image')">
-                                    <div class="progress d-none" id="n-progress"><div class="progress-bar"></div></div>
-                                </div>
-                                <input type="hidden" id="n-img">
-                                <img id="n-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
-                            </div>
-                            <div class="form-group"><textarea id="n-content" class="form-control" rows="3" placeholder="Content..." required></textarea></div>
-                            <button type="submit" class="btn btn-primary btn-small">Save</button>
-                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-news', 'news-form-title', 'Add News')">Cancel</button>
-                        </form>
-                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
-                        <table class="admin-table"><thead><tr><th>Title</th><th>Date</th><th>Actions</th></tr></thead><tbody id="admin-news-list"></tbody></table>
-                    </div>
-
                     <!-- NOTICES -->
                     <div id="tab-notices" class="admin-tab d-none">
                         <div style="display:flex; justify-content: space-between; align-items:center;">
@@ -1033,7 +1018,6 @@
                         
                         <div style="margin: 15px 0; padding: 12px; border: 1px dashed var(--primary); border-radius: 8px;">
                             <h4>Upload via CSV</h4>
-                            <!-- Updated CSV format representation -->
                             <p style="font-size: 0.8rem; margin-bottom: 8px;">Format: Name, Mobile, Category, Address, ImageURL, DOB, Email, Aadhar</p>
                             <input type="file" id="csv-file" accept=".csv" class="form-control" style="margin-bottom: 8px;">
                             <button class="btn btn-secondary btn-small" style="background: var(--secondary); color: white; border: none;" onclick="uploadCSV()">Upload CSV</button>
@@ -1105,8 +1089,8 @@
                 <h4>Quick Links</h4>
                 <ul style="line-height: 1.8; margin-top: 10px;">
                     <li><a onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])" style="cursor:pointer">Home</a></li>
-                    <li><a onclick="navigate('page-notices', document.querySelectorAll('.nav-menu-item')[4])" style="cursor:pointer">Notices</a></li>
-                    <li><a onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[5])" style="cursor:pointer">Directory</a></li>
+                    <li><a onclick="navigate('page-notices', document.querySelectorAll('.nav-menu-item')[3])" style="cursor:pointer">Notices</a></li>
+                    <li><a onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[4])" style="cursor:pointer">Directory</a></li>
                 </ul>
             </div>
             <div>
@@ -1196,14 +1180,11 @@
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('d-none'));
             document.getElementById(pageId).classList.remove('d-none');
             
-            // Header should be visible on all pages as requested
             document.getElementById('navbar').classList.remove('d-none');
 
-            // Update Dynamic Header Title
             const titles = {
                 'page-home': 'Home',
                 'page-about': 'About Us',
-                'page-news': 'Village News',
                 'page-notices': 'Notice Board',
                 'page-directory': 'Directory',
                 'page-panchayat': 'Panchayat',
@@ -1230,7 +1211,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if(document.getElementById('side-menu').classList.contains('active')) toggleMenu();
             
-            // Push base page routing to History state
             if(pageId !== 'page-item-details') {
                 window.history.replaceState(null, "", "?page=" + pageId);
             }
@@ -1332,7 +1312,6 @@
         let isRegisterMode = false;
         let currentUserRole = 'guest';
 
-        // Variables for custom Google registration flow
         let pendingGoogleUser = null;
         let pendingGoogleData = null;
         window.isSettingGooglePassword = false;
@@ -1347,7 +1326,6 @@
             document.getElementById('forgot-pwd-container').style.display = isRegisterMode ? 'none' : 'block';
         }
 
-        // New Forgot Password Function
         async function forgotPassword() {
             const email = document.getElementById('auth-email').value;
             const errorDiv = document.getElementById('auth-error');
@@ -1385,7 +1363,7 @@
                     const name = document.getElementById('auth-name').value;
                     const cred = await auth.createUserWithEmailAndPassword(email, password);
                     await db.ref('users/' + cred.user.uid).set({
-                        name: name, email: email, role: 'admin', // Default register is admin in original logic
+                        name: name, email: email, role: 'admin', 
                         photo: 'https://ui-avatars.com/api/?name='+name+'&background=random',
                         createdAt: firebase.database.ServerValue.TIMESTAMP,
                         banned: false
@@ -1405,30 +1383,25 @@
             }
         }
 
-        // Updated Sign In with Google Logic
         async function signInWithGoogle() {
             try {
                 const result = await auth.signInWithPopup(provider);
                 const snapshot = await db.ref('users/' + result.user.uid).once('value');
                 
-                // Check if user is newly registered by verifying database entry
                 if (!snapshot.exists()) {
-                    // Activate Setup Flow
                     window.isSettingGooglePassword = true;
                     pendingGoogleUser = result.user;
                     pendingGoogleData = {
                         name: result.user.displayName || 'User', email: result.user.email,
                         photo: result.user.photoURL || 'https://ui-avatars.com/api/?name='+(result.user.displayName||'User'),
-                        role: 'admin', // matching original logic default
+                        role: 'admin',
                         createdAt: firebase.database.ServerValue.TIMESTAMP,
                         banned: false
                     };
                     
-                    // Switch UI
                     document.getElementById('main-auth-ui').style.display = 'none';
                     document.getElementById('google-password-setup').style.display = 'block';
                 } else {
-                    // Pre-existing User: Login directly
                     window.isSettingGooglePassword = false;
                     navigate('page-admin', document.getElementById('menu-auth-btn'));
                 }
@@ -1448,10 +1421,9 @@
                 return;
             }
             try {
-                await pendingGoogleUser.updatePassword(pwd); // Securely set the custom password
-                await db.ref('users/' + pendingGoogleUser.uid).set(pendingGoogleData); // Save to DB
+                await pendingGoogleUser.updatePassword(pwd); 
+                await db.ref('users/' + pendingGoogleUser.uid).set(pendingGoogleData); 
                 
-                // Clear UI & navigate
                 window.isSettingGooglePassword = false;
                 document.getElementById('google-password-setup').style.display = 'none';
                 document.getElementById('main-auth-ui').style.display = 'block';
@@ -1482,7 +1454,6 @@
                 db.ref('users/' + user.uid).on('value', (snapshot) => {
                     const data = snapshot.val();
                     if(data) {
-                        // Check if the user is banned
                         if (data.banned) {
                             alert("Your account has been banned. You can no longer access this system.");
                             auth.signOut();
@@ -1508,12 +1479,10 @@
                             document.getElementById('admin-menus').classList.add('d-none'); 
                         }
 
-                        // Allow auto-navigation ONLY if not currently stuck setting google password
                         if (document.getElementById('page-auth').classList.contains('active') && !document.getElementById('page-auth').classList.contains('d-none')) { 
                             if (!window.isSettingGooglePassword) navigate('page-admin', authBtn); 
                         }
                     } else {
-                        // User Authenticated but no DB mapping (Interrupted Google Registration Process)
                         window.isSettingGooglePassword = true;
                         pendingGoogleUser = user;
                         pendingGoogleData = {
@@ -1713,7 +1682,6 @@
             if(snap.exists()) {
                 const data = snap.val();
                 
-                // Update Hero Background UI dynamically
                 if(data.heroImage) {
                     if(data.heroImage !== currentHeroImage) {
                         currentHeroImage = data.heroImage;
@@ -1724,7 +1692,6 @@
                     if (prev) { prev.src = data.heroImage; prev.style.display = 'block'; }
                 }
                 
-                // Update Footer UI & Form fields
                 if(data.footer) {
                     const f = data.footer;
                     if(document.getElementById('footer-village-name')) document.getElementById('footer-village-name').innerHTML = `<i class="fas fa-leaf"></i> ${f.villageName || 'Heirok Village'}`;
@@ -1739,7 +1706,6 @@
                     
                     if(document.getElementById('footer-copyright')) document.getElementById('footer-copyright').innerHTML = f.copyright || '&copy; 2026 Heirok Smart Village. All Rights Reserved.';
 
-                    // Populate Admin Form inputs
                     document.getElementById('set-vname').value = f.villageName || '';
                     document.getElementById('set-tagline').value = f.tagline || '';
                     document.getElementById('set-address').value = f.address || '';
@@ -1793,12 +1759,12 @@
                 mlaNavList.innerHTML = '';
                 mlaCandidatesData.forEach(c => {
                     const isActive = (c.id === activeMLACandidateId);
-                    const borderStyle = isActive ? 'border: 2px solid var(--secondary); transform: scale(1.05);' : 'border: 2px solid transparent; opacity: 0.8;';
+                    const borderStyle = isActive ? 'border: 2px solid var(--secondary); transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.8);' : 'border: 2px solid transparent; opacity: 0.8; box-shadow: 0 2px 5px rgba(0,0,0,0.5);';
                     mlaNavList.innerHTML += `
-                        <div class="candidate-nav-item">
-                            <img src="${c.image}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; ${borderStyle} transition: 0.3s;" onclick="selectMLACandidate('${c.id}')">
-                            <span style="font-size: 0.7rem; color: white; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65px;" onclick="selectMLACandidate('${c.id}')">${c.name}</span>
-                            <button style="font-size: 0.6rem; background: var(--primary); padding: 2px 8px; border-radius: 8px; margin-top: 3px; color: white; border: none; cursor: pointer;" onclick="showCandidateAbout('${c.id}')">About</button>
+                        <div class="candidate-nav-item" onclick="selectMLACandidate('${c.id}')">
+                            <img src="${c.image}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; ${borderStyle} transition: 0.3s;">
+                            <span style="font-size: 0.7rem; color: white; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65px; text-shadow: 1px 1px 3px #000;">${c.name}</span>
+                            <button style="font-size: 0.6rem; background: var(--primary); padding: 2px 8px; border-radius: 8px; margin-top: 3px; color: white; border: none; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.5);" onclick="event.stopPropagation(); showCandidateAbout('${c.id}')">About</button>
                         </div>
                     `;
                 });
@@ -1971,31 +1937,34 @@
             } else {
                 filteredPosts.forEach(post => {
                     let mediaHTML = '';
-                    if(post.video) mediaHTML += `<video src="${post.video}" class="mla-media" controls></video>`;
+                    if(post.video) mediaHTML += `<video src="${post.video}" class="mla-media" controls playsinline controlsList="nodownload"></video>`;
                     else if(post.image) mediaHTML += `<img src="${post.image}" class="mla-media">`;
                     
                     let audioHTML = '';
-                    if(post.audio) audioHTML = `<audio src="${post.audio}" controls style="width: 100%; margin-top: 8px;"></audio>`;
+                    if(post.audio) audioHTML = `<audio src="${post.audio}" controls style="width: 100%; margin-top: 8px; pointer-events: auto;"></audio>`;
                     
                     let likeCount = post.likes ? Object.keys(post.likes).length : 0;
                     let commentCount = post.comments ? Object.keys(post.comments).length : 0;
                     let isLiked = auth.currentUser && post.likes && post.likes[auth.currentUser.uid] ? 'color: var(--danger);' : '';
                     let textId = `mla-text-${post.id}`;
 
+                    // Post Container completely isolates each post seamlessly
                     container.innerHTML += `
                         <div class="swiper-slide mla-slide">
-                            ${mediaHTML}
-                            <div class="mla-overlay-bottom">
-                                <h3 style="margin-bottom: 5px; font-size: 1.05rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${post.title}</h3>
-                                <div id="${textId}" class="mla-text-container">${post.content}</div>
-                                ${post.content.length > 80 ? `<div class="read-more-btn" onclick="toggleReadMore('${textId}')">Read More</div>` : ''}
-                                ${audioHTML}
-                                <p style="font-size: 0.75rem; margin-top: 8px; opacity: 0.7;">${post.date}</p>
-                            </div>
-                            <div class="mla-overlay-right">
-                                <div class="action-icon" onclick="toggleLike('${post.id}')"><i class="fas fa-heart" style="${isLiked}"></i><span>${likeCount}</span></div>
-                                <div class="action-icon" onclick="openComments('${post.id}')"><i class="fas fa-comment"></i><span>${commentCount}</span></div>
-                                <div class="action-icon" onclick="sharePost('${post.title.replace(/'/g, "\\'")}', '${post.id}')"><i class="fas fa-share"></i><span>Share</span></div>
+                            <div class="mla-post-container">
+                                ${mediaHTML}
+                                <div class="mla-overlay-bottom">
+                                    <h3 style="margin-bottom: 5px; font-size: 1.05rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${post.title}</h3>
+                                    <div id="${textId}" class="mla-text-container">${post.content}</div>
+                                    ${post.content.length > 80 ? `<div class="read-more-btn" onclick="toggleReadMore('${textId}')">Read More</div>` : ''}
+                                    ${audioHTML}
+                                    <p style="font-size: 0.75rem; margin-top: 8px; opacity: 0.7; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${post.date}</p>
+                                </div>
+                                <div class="mla-overlay-right">
+                                    <div class="action-icon" onclick="toggleLike('${post.id}')"><i class="fas fa-heart" style="${isLiked}"></i><span>${likeCount}</span></div>
+                                    <div class="action-icon" onclick="openComments('${post.id}')"><i class="fas fa-comment"></i><span>${commentCount}</span></div>
+                                    <div class="action-icon" onclick="sharePost('${post.title.replace(/'/g, "\\'")}', '${post.id}')"><i class="fas fa-share"></i><span>Share</span></div>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -2200,53 +2169,6 @@
                     <tr><td>${item.name}</td><td>${item.location}</td>
                         <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editHealth('${item.id}')"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-small btn-danger" onclick="deleteItem('health', '${item.id}')"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                `;
-            });
-        });
-
-        // --- NEWS ---
-        let newsData = [];
-        function saveNews(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit-news-id').value;
-            const data = {
-                title: document.getElementById('n-title').value, image: document.getElementById('n-img').value,
-                content: document.getElementById('n-content').value, date: new Date().toLocaleDateString(), timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            if(id) { db.ref('news/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-news', 'news-form-title', 'Add Village News'); }); } 
-            else { db.ref('news').push(data).then(()=>{ alert('Published'); resetForm('form-news'); }); }
-        }
-        function editNews(id) {
-            const item = newsData.find(n => n.id === id);
-            if(item) {
-                document.getElementById('edit-news-id').value = id; document.getElementById('n-title').value = item.title;
-                document.getElementById('n-img').value = item.image; const prev = document.getElementById('n-preview');
-                if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
-                document.getElementById('n-content').value = item.content; document.getElementById('news-form-title').innerText = "Edit News";
-            }
-        }
-        db.ref('news').orderByChild('timestamp').on('value', snap => {
-            const container = document.getElementById('news-container'); const adminList = document.getElementById('admin-news-list');
-            container.innerHTML = ''; adminList.innerHTML = ''; newsData = [];
-            snap.forEach(child => { newsData.unshift({ id: child.key, ...child.val() }); });
-
-            if(newsData.length===0) container.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1;">No news available.</p>';
-            
-            newsData.forEach(news => {
-                const safeData = encodeURIComponent(JSON.stringify(news));
-                container.innerHTML += `
-                    <div class="card glass animate__animated animate__fadeInUp" style="cursor:pointer;" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-news', 'news', '${news.id}')">
-                        <img src="${news.image}" alt="Img" onerror="this.style.display='none'">
-                        <div class="card-meta"><i class="far fa-calendar"></i> ${news.date}</div>
-                        <h3 class="card-title">${news.title}</h3>
-                        <p class="text-muted" style="font-size: 0.85rem;">${news.content.substring(0, 100)}...</p>
-                    </div>
-                `;
-                adminList.innerHTML += `
-                    <tr><td>${news.title}</td><td>${news.date}</td>
-                        <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editNews('${news.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-small btn-danger" onclick="deleteItem('news', '${news.id}')"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `;
             });
