@@ -66,12 +66,35 @@
         /* Blur Effect for Main Container when Menu is Open */
         #app-container { 
             transition: filter 0.4s ease; 
-            /* This single line guarantees all pages start EXACTLY below the header with a 2px gap */
             margin-top: calc(var(--header-height) + var(--header-gap));
             min-height: calc(100vh - var(--header-height) - var(--header-gap));
             min-height: calc(100dvh - var(--header-height) - var(--header-gap));
         }
         .blur-bg { filter: blur(8px); pointer-events: none; user-select: none; }
+
+        /* ==========================================================================
+           MODERN NOTIFICATIONS (TOASTS) & ANIMATIONS (SMALL & COMPACT)
+           ========================================================================== */
+        #toast-container { position: fixed; top: 15px; right: 15px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; align-items: flex-end; }
+        .toast-notif { background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; opacity: 0; transform: translateX(100%); pointer-events: auto; max-width: 280px; }
+        .toast-msg { font-weight: 500; font-size: 0.8rem; color: var(--text-main); line-height: 1.3; }
+        @keyframes slideInRight { to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOutRight { to { transform: translateX(100%); opacity: 0; } }
+
+        /* Success Tick Animation (Scaled down) */
+        .success-checkmark { width: 20px; height: 20px; position: relative; }
+        .check-icon { width: 20px; height: 20px; position: relative; border-radius: 50%; box-sizing: content-box; border: 2px solid var(--secondary); background: rgba(6, 214, 160, 0.1); }
+        .icon-line { height: 2px; background-color: var(--secondary); display: block; border-radius: 2px; position: absolute; z-index: 10; }
+        .line-tip { top: 10px; left: 4px; width: 6px; transform: rotate(45deg); animation: icon-line-tip 0.4s ease forwards; }
+        .line-long { top: 9px; right: 3px; width: 11px; transform: rotate(-45deg); animation: icon-line-long 0.4s ease forwards; }
+        @keyframes icon-line-tip { 0% { width: 0; left: 1px; top: 5px; } 100% { width: 6px; left: 4px; top: 10px; } }
+        @keyframes icon-line-long { 0% { width: 0; right: 10px; top: 14px; } 100% { width: 11px; right: 3px; top: 9px; } }
+
+        /* Error Cross Animation (Scaled down) */
+        .error-icon { width: 20px; height: 20px; border: 2px solid var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(239, 71, 111, 0.1); animation: popIn 0.3s ease-out forwards; }
+        .error-icon i { color: var(--danger); font-size: 10px; animation: shake 0.4s ease-in-out; }
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
 
         /* ==========================================================================
            NAVIGATION, HEADER & HAMBURGER MENU
@@ -103,7 +126,7 @@
         .hamburger-btn { font-size: 22px; color: var(--primary); cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; background: var(--bg-card); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--glass-border); }
         .hamburger-btn:hover { background: var(--primary); color: white; }
 
-        /* Side Menu (Off-canvas) */
+        /* Main Off-canvas Menu */
         .side-menu {
             position: fixed; top: 0; right: -280px; width: 260px; height: 100vh; height: 100dvh;
             background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -125,6 +148,19 @@
 
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(0,0,0,0.4); z-index: 1500; opacity: 0; visibility: hidden; transition: var(--transition); }
         .menu-overlay.active { opacity: 1; visibility: visible; }
+
+        /* Admin Off-canvas Sidebar Menu */
+        .admin-sidebar {
+            position: fixed; top: 0; left: -280px; width: 260px; height: 100vh; height: 100dvh;
+            background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border); box-shadow: 5px 0 20px rgba(0,0,0,0.1);
+            z-index: 2000; transition: left 0.4s ease-in-out; display: flex; flex-direction: column; padding: 20px 15px; overflow-y: auto;
+        }
+        .admin-sidebar.active { left: 0; }
+        .admin-sidebar ul li { margin-bottom: 8px; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 500; background: var(--bg-main); }
+        .admin-sidebar ul li:hover, .admin-sidebar ul li.active { background: var(--primary); color: white; transform: translateX(4px); }
+        .admin-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(0,0,0,0.4); z-index: 1500; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .admin-overlay.active { opacity: 1; visibility: visible; }
 
         /* ==========================================================================
            BUTTONS, INPUTS & PROGRESS
@@ -152,10 +188,14 @@
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; position: relative; }
         .section-title { text-align: center; font-size: 26px; margin-bottom: 25px; color: var(--primary); font-weight: 700; }
         
-        .hero { position: relative; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 15px; background: linear-gradient(to bottom, #063c1a, #021a0a); transition: background 0.5s ease; }
+        /* Hero Image Multiple Fade (Clear without shadows/opacity directly on image) */
+        .hero { position: relative; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 15px; background: linear-gradient(to bottom, #063c1a, #021a0a); overflow: hidden; }
+        #hero-bg-slider { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
+        .hero-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out; }
         .hero-content { position: relative; z-index: 1; color: white; max-width: 700px; }
-        .hero-title { font-size: 3.2rem; font-weight: 700; margin-bottom: 15px; animation: fadeInUp 1s; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
-        .hero-subtitle { font-size: 1.2rem; margin-bottom: 25px; animation: fadeInUp 1.2s; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); }
+        /* Very strong text shadow applied to text to make it readable over clear unshadowed images */
+        .hero-title { font-size: 3.2rem; font-weight: 700; margin-bottom: 15px; animation: fadeInUp 1s; text-shadow: 2px 2px 5px rgba(0,0,0,1), 0px 0px 20px rgba(0,0,0,0.8); }
+        .hero-subtitle { font-size: 1.2rem; margin-bottom: 25px; animation: fadeInUp 1.2s; text-shadow: 1px 1px 4px rgba(0,0,0,1), 0px 0px 15px rgba(0,0,0,0.8); }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: -30px; position: relative; z-index: 10; padding: 0 15px; }
         .stat-card { text-align: center; padding: 20px; cursor: pointer; transition: var(--transition); border-bottom: 3px solid green; }
@@ -185,68 +225,38 @@
 
         /* Dashboard & Auth */
         .auth-container { max-width: 360px; margin: 30px auto; padding: 30px; text-align: center; }
-        .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
-        
-        .sidebar { padding: 15px; position: sticky; top: 20px; height: calc(100vh - var(--header-height) - var(--header-gap) - 40px); height: calc(100dvh - var(--header-height) - var(--header-gap) - 40px); overflow-y: auto; }
-        .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
-        
-        .sidebar ul li { margin-bottom: 8px; padding: 8px; border-radius: 6px; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-        .sidebar ul li:hover, .sidebar ul li.active { background: var(--primary); color: white; }
+        .dashboard-layout { display: block; } /* Changed to Block for the new off-canvas Sidebar */
         
         .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
         .admin-table th, .admin-table td { padding: 10px; border-bottom: 1px solid var(--glass-border); text-align: left; }
         .admin-table th { background: rgba(0,0,0,0.05); font-weight: 600; }
-        .action-btns { display: flex; gap: 4px; }
+        .action-btns { display: flex; gap: 4px; flex-wrap: wrap; }
 
         footer { background: var(--dark); color: white; padding: 40px 15px 15px; text-align: center; font-size: 0.9rem; }
         .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto 30px; text-align: left; }
         .social-links a { font-size: 20px; margin-right: 12px; color: white; transition: var(--transition); }
 
         /* ==========================================================================
-           MLA PAGE (TIKTOK STYLE)
+           UPDATE NAME PAGE (TIKTOK STYLE)
            ========================================================================== */
-        /* Takes exact remaining height below the 2px gap natively, absolute positioning handles overlays */
         #page-mla { padding: 0 !important; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); overflow: hidden; position: relative; background: #000; }
         
-        /* Floating transparent Top Nav to prevent structural gap */
         .mla-top-nav { position: absolute; top: 0; left: 0; width: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); display: flex; align-items: flex-start; padding: 15px 12px 30px 12px; overflow-x: auto; z-index: 100; border: none; }
         .mla-top-nav::-webkit-scrollbar { display: none; }
-        .mla-top-nav { -ms-overflow-style: none; scrollbar-width: none; pointer-events: none; } /* Prevent accidental blocking */
-        .mla-top-nav > * { pointer-events: auto; } /* Allow clicking candidates */
+        .mla-top-nav { -ms-overflow-style: none; scrollbar-width: none; pointer-events: none; } 
+        .mla-top-nav > * { pointer-events: auto; } 
         
         .candidate-nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 65px; margin-right: 10px; }
 
-        /* Full Height Swiper */
         .mla-swiper { width: 100%; height: 100%; }
         .swiper-slide.mla-slide { position: relative; display: flex; align-items: center; justify-content: center; background: #000; color: white; overflow: hidden; }
         
-        /* Uniform Post Container fixing all spacing issues */
-        .mla-post-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #000;
-        }
-
-        /* Responsive Media fit perfectly regardless of 16:9 or 9:16 */
-        .mla-media { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-            z-index: 1; 
-        }
+        .mla-post-container { position: relative; width: 100%; height: 100%; max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: center; background: #000; }
+        .mla-media { width: 100%; height: 100%; object-fit: contain; z-index: 1; }
         
-        /* Bottom Overlay Text lifted to ensure Video Controls are clickable */
         .mla-overlay-bottom { position: absolute; bottom: 0; left: 0; right: 60px; padding: 15px; padding-bottom: 60px; background: linear-gradient(transparent, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.9) 100%); z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; }
         .mla-overlay-bottom > * { pointer-events: auto; }
         
-        /* Right Side Actions Panel */
         .mla-overlay-right { position: absolute; bottom: 70px; right: 10px; display: flex; flex-direction: column; gap: 15px; z-index: 10; align-items: center; }
         
         .action-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: white; font-size: 24px; transition: transform 0.2s; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); }
@@ -257,33 +267,25 @@
         .mla-text-container.expanded { max-height: 50vh; overflow-y: auto; background: rgba(0,0,0,0.8); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); pointer-events: auto; }
         .read-more-btn { cursor: pointer; font-weight: bold; color: var(--accent); font-size: 0.85rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); pointer-events: auto; }
 
-        /* Comments Modal */
         #comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; height: 60dvh; background: var(--bg-card); backdrop-filter: blur(20px); border-top-left-radius: 16px; border-top-right-radius: 16px; z-index: 2500; display: flex; flex-direction: column; transition: bottom 0.4s ease-in-out; border-top: 1px solid var(--glass-border); box-shadow: 0 -10px 30px rgba(0,0,0,0.3); }
         #comments-modal.active { bottom: 0; }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            .dashboard-layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; height: auto; } 
-        }
         @media (max-width: 600px) {
             .dynamic-header-title { font-size: 1rem; }
             .hero-title { font-size: 2.2rem; }
             .side-menu { width: 240px; right: -240px; }
             .list-item { flex-direction: column; text-align: center; }
             .list-item img { width: 100%; height: 120px; }
-            
-            #page-mla {
-                height: calc(100vh - var(--header-height)) !important;
-                height: calc(100dvh - var(--header-height)) !important;
-            }
-            /* Lift overlays more on mobile to clear massive native video controls */
+            #page-mla { height: calc(100vh - var(--header-height)) !important; height: calc(100dvh - var(--header-height)) !important; }
             .mla-overlay-bottom { padding-bottom: 75px; }
             .mla-overlay-right { bottom: 85px; }
         }
     </style>
 </head>
 <body data-theme="light">
+
+    <!-- Global Custom Notifications Container -->
+    <div id="toast-container"></div>
 
     <!-- HEADER & HAMBURGER MENU -->
     <header id="navbar">
@@ -318,7 +320,7 @@
                 <i class="fas fa-home"></i><span>Home</span>
             </div>
             <div class="menu-box nav-menu-item" onclick="navigate('page-mla', this)">
-                <i class="fas fa-user-tie"></i><span>MLA Candidate</span>
+                <i class="fas fa-sync-alt"></i><span>Update News</span>
             </div>
             <div class="menu-box nav-menu-item" onclick="navigate('page-about', this)">
                 <i class="fas fa-info-circle"></i><span>About Us</span>
@@ -347,17 +349,19 @@
         <!-- ================= HOME PAGE ================= -->
         <section id="page-home" class="page-section active" style="padding-top: 0;">
             <div class="hero">
+                <div id="hero-bg-slider">
+                    <!-- Images auto-flip in background here, pure and clear -->
+                </div>
                 <div class="hero-content">
                     <h1 class="hero-title animate__animated animate__fadeInDown">Welcome to Heirok</h1>
                     <p class="hero-subtitle animate__animated animate__fadeInUp">The Smart & Digital Village of Thoubal District, Manipur</p>
-                    <div class="animate__animated animate__zoomIn">
+                    <div class="animate__animated animate__zoomIn" style="position: relative; z-index: 2;">
                         <button class="btn btn-primary" onclick="navigate('page-about', document.querySelectorAll('.nav-menu-item')[2])">Explore Village</button>
                         <button class="btn glass text-white" onclick="navigate('page-directory', document.querySelectorAll('.nav-menu-item')[4])">Directory</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Dynamic Stats Container -->
             <div class="stats-grid container" data-aos="fade-up">
                 <div class="stat-card glass" onclick="navigate('page-population', null)">
                     <i class="fas fa-users"></i>
@@ -385,7 +389,6 @@
                 </div>
             </div>
 
-            <!-- Notice Ticker -->
             <div class="container" style="margin-top: 40px;">
                 <div class="notice-ticker glass">
                     <div class="ticker-title">
@@ -400,7 +403,6 @@
                 </div>
             </div>
 
-            <!-- Quick Access Grid -->
             <div class="container" style="margin-top: 40px;" data-aos="fade-up">
                 <h2 class="section-title">Quick Services</h2>
                 <div class="grid-3">
@@ -430,23 +432,13 @@
             </div>
         </section>
 
-        <!-- ================= MLA CANDIDATE TIKTOK STYLE PAGE ================= -->
+        <!-- ================= UPDATE NAME PAGE (TIKTOK STYLE) ================= -->
         <section id="page-mla" class="page-section d-none">
             
-            <!-- Dynamic Candidate Top Navbar Menu (Floating over video) -->
             <div class="mla-top-nav">
-                <!-- Back Button -->
-                <div onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])" class="candidate-nav-item" style="margin-right: 15px;">
-                    <div style="width: 45px; height: 45px; display:flex; align-items:center; justify-content:center; background:#333; border-radius:50%; color: white; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.5);">
-                        <i class="fas fa-arrow-left"></i>
-                    </div>
-                    <span style="font-size: 0.7rem; color: white; margin-top: 5px; text-shadow: 1px 1px 3px #000;">Back</span>
-                </div>
-                <!-- Candidate List will be injected here -->
                 <div id="mla-candidate-list" style="display: flex; gap: 12px;"></div>
             </div>
 
-            <!-- Swiper Container for vertical full-screen posts -->
             <div class="swiper mla-swiper">
                 <div class="swiper-wrapper" id="mla-posts-container">
                     <div class="swiper-slide mla-slide">
@@ -455,19 +447,15 @@
                 </div>
             </div>
 
-            <!-- About Candidate Personal Info Modal -->
             <div id="mla-about-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.9); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-                <!-- Dynamically injected via JS -->
             </div>
 
-            <!-- Sliding Comments Modal -->
             <div id="comments-modal">
                 <div style="padding: 12px 15px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin: 0; font-size: 1.1rem;">Comments</h3>
                     <i class="fas fa-times" onclick="closeComments()" style="cursor:pointer; font-size: 20px; color: var(--danger);"></i>
                 </div>
                 <div id="comments-list" style="flex: 1; overflow-y: auto; padding: 15px; display:flex; flex-direction: column; gap: 10px;">
-                    <!-- comments load here -->
                 </div>
                 <div style="padding: 12px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; background: var(--bg-main);">
                     <input type="hidden" id="active-comment-post-id">
@@ -508,7 +496,6 @@
             </div>
         </section>
 
-        <!-- Dynamic Details Page for School/Health/Notices -->
         <section id="page-item-details" class="page-section content-page d-none container">
             <div class="glass" style="padding: 30px; overflow: hidden;">
                 <img id="det-img" src="" alt="Image" style="width: 100%; height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
@@ -567,11 +554,9 @@
         <!-- ================= AUTH PAGE ================= -->
         <section id="page-auth" class="page-section content-page d-none container">
             <div class="auth-container glass" data-aos="zoom-in">
-                <!-- Main Login/Register UI -->
                 <div id="main-auth-ui">
                     <h2 style="margin-bottom: 15px; color: var(--primary);" id="auth-title">Member Login</h2>
                     
-                    <!-- Display Error Information Here -->
                     <div id="auth-error" style="color: var(--danger); margin-bottom: 12px; font-weight: 500; font-size: 0.9rem; background: rgba(239, 71, 111, 0.1); padding: 8px; border-radius: 6px; display: none;"></div>
                     
                     <form id="auth-form" onsubmit="handleAuth(event)">
@@ -579,7 +564,6 @@
                         <div class="form-group"><input type="email" id="auth-email" class="form-control" placeholder="Email Address" required></div>
                         <div class="form-group"><input type="password" id="auth-password" class="form-control" placeholder="Password" required></div>
                         
-                        <!-- Forgot Password Feature added here -->
                         <div style="text-align: right; margin-top: -8px; margin-bottom: 12px;" id="forgot-pwd-container">
                             <a href="#" onclick="forgotPassword()" style="font-size: 0.8rem; color: var(--primary);">Forgot Password?</a>
                         </div>
@@ -592,7 +576,6 @@
                     </div>
                     
                     <button class="btn glass" style="width: 100%; justify-content: center; margin-bottom: 12px; display: flex; gap: 10px; align-items: center;" onclick="signInWithGoogle()">
-                        <!-- Colorful Google Icon instead of font-awesome -->
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
                             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                             <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -605,7 +588,6 @@
                     <p style="font-size: 0.85rem; cursor: pointer; color: var(--primary);" onclick="toggleAuthMode()" id="auth-switch">Don't have an account? Register</p>
                 </div>
 
-                <!-- Google New Account Password UI -->
                 <div id="google-password-setup" style="display: none;">
                     <h3 style="color: var(--primary); margin-bottom: 15px;">Set a Password</h3>
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.5;">You're creating a new account via Google. Please set a password to complete registration.</p>
@@ -621,8 +603,15 @@
         <!-- ================= ADMIN DASHBOARD ================= -->
         <section id="page-admin" class="page-section content-page d-none container" style="margin-bottom: 50px;">
             <div class="dashboard-layout">
-                <!-- Sidebar -->
-                <div class="sidebar glass">
+                
+                <!-- Admin Off-canvas Sidebar Overlay -->
+                <div class="admin-overlay" id="admin-overlay" onclick="toggleAdminSidebar()"></div>
+                
+                <!-- Admin Sidebar Hamburger Menu -->
+                <div class="admin-sidebar glass" id="admin-sidebar">
+                    <div style="display:flex; justify-content: flex-end; margin-bottom: 10px;">
+                        <i class="fas fa-times" onclick="toggleAdminSidebar()" style="font-size: 20px; color: var(--danger); cursor: pointer;"></i>
+                    </div>
                     <div style="text-align: center; margin-bottom: 15px;">
                         <img src="https://ui-avatars.com/api/?name=User&background=random" id="user-avatar" style="border-radius: 50%; width: 70px; margin-bottom: 8px; object-fit: cover; height: 70px;">
                         <h4 id="user-name">User Name</h4>
@@ -632,11 +621,21 @@
                         <li onclick="navigate('page-home', document.querySelectorAll('.nav-menu-item')[0])" style="background: var(--primary); color: white; margin-bottom: 12px;"><i class="fas fa-arrow-left"></i> Back to Home</li>
                         
                         <li class="active" onclick="switchAdminTab('tab-profile')"><i class="fas fa-user"></i> My Profile</li>
-                        <div id="admin-menus" class="d-none">
+                        
+                        <!-- Member Menus (Submissions) -->
+                        <div id="member-menus" class="d-none" style="display:flex; flex-direction:column; gap:8px;">
+                            <li onclick="switchAdminTab('tab-my-requests')"><i class="fas fa-list"></i> My Requests</li>
+                            <li onclick="switchAdminTab('tab-submit-post')"><i class="fas fa-pen"></i> Submit Update</li>
+                            <li onclick="switchAdminTab('tab-submit-dir')"><i class="fas fa-address-book"></i> Submit Directory</li>
+                        </div>
+
+                        <!-- Admin Menus -->
+                        <div id="admin-menus" class="d-none" style="display:flex; flex-direction:column; gap:8px;">
+                            <li onclick="switchAdminTab('tab-review-requests')" style="color:var(--accent);"><i class="fas fa-check-circle"></i> Review Requests</li>
                             <li onclick="switchAdminTab('tab-users')"><i class="fas fa-users-cog"></i> Manage Users</li>
                             <li onclick="switchAdminTab('tab-settings')"><i class="fas fa-cogs"></i> Site Settings</li>
-                            <li onclick="switchAdminTab('tab-mla-candidates')"><i class="fas fa-user-tie"></i> Manage Candidates</li>
-                            <li onclick="switchAdminTab('tab-mla-admin')"><i class="fas fa-video"></i> Manage MLA Posts</li>
+                            <li onclick="switchAdminTab('tab-mla-candidates')"><i class="fas fa-user-tie"></i> Manage Post User</li>
+                            <li onclick="switchAdminTab('tab-mla-admin')"><i class="fas fa-video"></i> Manage Posts</li>
                             <li onclick="switchAdminTab('tab-stats')"><i class="fas fa-chart-bar"></i> Population & Agri</li>
                             <li onclick="switchAdminTab('tab-schools')"><i class="fas fa-school"></i> Manage Schools</li>
                             <li onclick="switchAdminTab('tab-health')"><i class="fas fa-hospital"></i> Manage Health</li>
@@ -645,13 +644,19 @@
                             <li onclick="switchAdminTab('tab-panchayat')"><i class="fas fa-users"></i> Manage Panchayat</li>
                             <li onclick="switchAdminTab('tab-projects')"><i class="fas fa-hard-hat"></i> Manage Projects</li>
                         </div>
-                        <li onclick="logout()" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> Logout</li>
+                        <li onclick="logout()" style="color: var(--danger); margin-top: 15px;"><i class="fas fa-sign-out-alt"></i> Logout</li>
                     </ul>
                 </div>
 
                 <!-- Content Area -->
                 <div class="admin-content glass" style="padding: 20px; min-height: 400px; overflow-x: auto;">
                     
+                    <!-- Top Dashboard Bar -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid var(--glass-border);">
+                        <h2 id="admin-page-title" style="color:var(--primary); font-size: 1.4rem;">Dashboard</h2>
+                        <button class="btn btn-primary btn-small" onclick="toggleAdminSidebar()"><i class="fas fa-bars"></i> Menu</button>
+                    </div>
+
                     <div id="tab-profile" class="admin-tab">
                         <h3>Edit My Profile</h3>
                         <form id="form-profile" onsubmit="updateProfile(event)" style="margin-top: 15px; max-width: 450px;">
@@ -683,7 +688,136 @@
                         </form>
                     </div>
 
-                    <!-- USERS MANAGEMENT (NEW) -->
+                    <!-- ================= MEMBER: MY REQUESTS ================= -->
+                    <div id="tab-my-requests" class="admin-tab d-none">
+                        <h3>My Requests</h3>
+                        <p class="text-muted" style="font-size: 0.85rem;">View and manage the posts and directory entries you've submitted.</p>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table">
+                            <thead>
+                                <tr><th>Title / Name</th><th>Type</th><th>Status</th><th>Remarks</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="user-requests-list">
+                                <tr><td colspan="5" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ================= MEMBER: SUBMIT POST ================= -->
+                    <div id="tab-submit-post" class="admin-tab d-none">
+                        <h3 id="u-post-form-title">Submit Update Post</h3>
+                        <form id="form-user-post" onsubmit="submitUserPost(event)" style="margin-top: 15px; max-width: 600px;">
+                            <input type="hidden" id="u-edit-req-id">
+                            <div class="form-group">
+                                <select id="u-mla-cand-id" class="form-control" required><option value="">Select Update Name</option></select>
+                            </div>
+                            <div class="form-group"><input type="text" id="u-mla-title" class="form-control" placeholder="Post Title" required></div>
+                            
+                            <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
+                                <label style="display:block; margin-bottom:8px; font-weight:600;">Images</label>
+                                <div id="u-mla-images-container"></div>
+                                <button type="button" class="btn glass btn-small" onclick="addMlaImageField('u-mla-images-container')"><i class="fas fa-plus"></i> Add Image</button>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Video (Max 5MB)</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('u-mla-vid-container', 'u-mla-vid', 'u-mla-vid-preview', 'video')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                </div>
+                                <div id="u-mla-vid-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="video/*" onchange="handleMediaUpload(event, 'u-mla-vid-preview', 'u-mla-vid', 'u-mla-vid-progress', 'video')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="URL..." oninput="handleLinkInput(this.value, 'u-mla-vid', 'u-mla-vid-preview', 'video')">
+                                    <div class="progress d-none" id="u-mla-vid-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="u-mla-vid">
+                                <video id="u-mla-vid-preview" controls style="height: 90px; display: none; margin-top: 8px; border-radius: 6px;"></video>
+                            </div>
+
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Audio (Max 5MB)</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('u-mla-aud-container', 'u-mla-aud', 'u-mla-aud-preview', 'audio')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                </div>
+                                <div id="u-mla-aud-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="audio/*" onchange="handleMediaUpload(event, 'u-mla-aud-preview', 'u-mla-aud', 'u-mla-aud-progress', 'audio')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="URL..." oninput="handleLinkInput(this.value, 'u-mla-aud', 'u-mla-aud-preview', 'audio')">
+                                    <div class="progress d-none" id="u-mla-aud-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="u-mla-aud">
+                                <audio id="u-mla-aud-preview" controls style="display: none; margin-top: 8px; width: 100%;"></audio>
+                            </div>
+
+                            <div class="form-group"><textarea id="u-mla-content" class="form-control" rows="3" placeholder="Post Text..."></textarea></div>
+                            <button type="submit" class="btn btn-primary btn-small">Submit for Review</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-user-post', 'u-post-form-title', 'Submit Update Post'); document.getElementById('u-mla-images-container').innerHTML='';">Cancel</button>
+                        </form>
+                    </div>
+
+                    <!-- ================= MEMBER: SUBMIT DIRECTORY ================= -->
+                    <div id="tab-submit-dir" class="admin-tab d-none">
+                        <h3 id="u-dir-form-title">Submit Directory Entry</h3>
+                        <form id="form-user-dir" onsubmit="submitUserDir(event)" style="margin-top: 15px; max-width: 600px;">
+                            <input type="hidden" id="u-edit-req-dir-id">
+                            <div class="form-group"><input type="text" id="u-d-name" class="form-control" placeholder="Name" required></div>
+                            
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>Image (Optional)</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('u-d-img-container', 'u-d-img', 'u-d-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                </div>
+                                <div id="u-d-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'u-d-preview', 'u-d-img', 'u-d-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'u-d-img', 'u-d-preview', 'image')">
+                                    <div class="progress d-none" id="u-d-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="u-d-img">
+                                <img id="u-d-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            </div>
+
+                            <div class="form-group"><input type="text" id="u-d-cat" class="form-control" placeholder="Category" required></div>
+                            <div class="form-group"><input type="text" id="u-d-phone" class="form-control" placeholder="Phone" required></div>
+                            <div class="form-group"><input type="text" id="u-d-address" class="form-control" placeholder="Address"></div>
+                            <div class="form-group"><input type="date" id="u-d-dob" class="form-control" title="Date of Birth (Optional)"></div>
+                            <div class="form-group"><input type="email" id="u-d-email" class="form-control" placeholder="Email (Optional)"></div>
+                            <div class="form-group"><input type="text" id="u-d-aadhar" class="form-control" placeholder="Aadhar Number (Optional)"></div>
+                            
+                            <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
+                                <label style="display:block; margin-bottom:8px; font-weight:600;">Family Details (Optional)</label>
+                                <div id="u-d-family-list"></div>
+                                <button type="button" class="btn glass btn-small" onclick="addFamilyMemberUI('u-d-family-list')"><i class="fas fa-plus"></i> Add Family Member</button>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-small">Submit for Review</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-user-dir', 'u-dir-form-title', 'Submit Directory Entry'); document.getElementById('u-d-family-list').innerHTML='';">Cancel</button>
+                        </form>
+                    </div>
+
+                    <!-- ================= ADMIN: REVIEW REQUESTS ================= -->
+                    <div id="tab-review-requests" class="admin-tab d-none">
+                        <h3>Review Member Requests</h3>
+                        <p class="text-muted" style="font-size: 0.85rem;">Approve or reject submissions made by members.</p>
+                        <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                        <table class="admin-table">
+                            <thead>
+                                <tr><th>User</th><th>Title / Name</th><th>Type</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="admin-requests-list">
+                                <tr><td colspan="4" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div id="admin-review-modal" style="display:none; margin-top:20px; padding:15px; border:2px solid var(--primary); border-radius:8px; background:var(--bg-main);">
+                            <h4 id="rev-modal-title" style="color:var(--primary); margin-bottom:10px;">Request Preview</h4>
+                            <div id="rev-modal-content" style="font-size:0.9rem; margin-bottom:15px; line-height:1.5;"></div>
+                            <input type="hidden" id="rev-modal-id">
+                            <button class="btn btn-secondary btn-small" style="background:var(--secondary); color:white; border:none;" onclick="approveRequest()">Approve & Publish</button>
+                            <button class="btn btn-danger btn-small" onclick="rejectRequest()">Reject</button>
+                            <button class="btn glass btn-small" onclick="document.getElementById('admin-review-modal').style.display='none'">Close</button>
+                        </div>
+                    </div>
+
+
+                    <!-- USERS MANAGEMENT -->
                     <div id="tab-users" class="admin-tab d-none">
                         <h3 id="users-title">Manage Users</h3>
                         <p class="text-muted" style="font-size: 0.85rem; margin-top: 5px;">Change user roles or ban/unban users from accessing the system.</p>
@@ -704,23 +838,16 @@
                         </table>
                     </div>
 
-                    <!-- SITE SETTINGS (Hero Background & Footer Details) -->
+                    <!-- SITE SETTINGS -->
                     <div id="tab-settings" class="admin-tab d-none">
                         <h3>Site Settings</h3>
                         <form id="form-settings" onsubmit="saveSiteSettings(event)" style="margin-top: 15px; max-width: 600px;">
-                            <h4 style="margin-bottom: 10px; color: var(--primary);">Hero Section</h4>
-                            <div class="form-group">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <label>Hero Background Image</label>
-                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('hero-img-container', 'hero-bg', 'hero-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
-                                </div>
-                                <div id="hero-img-container" data-mode="file">
-                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'hero-preview', 'hero-bg', 'hero-progress', 'image')">
-                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'hero-bg', 'hero-preview', 'image')">
-                                    <div class="progress d-none" id="hero-progress"><div class="progress-bar"></div></div>
-                                </div>
-                                <input type="hidden" id="hero-bg">
-                                <img id="hero-preview" src="" style="height: 120px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            
+                            <h4 style="margin-bottom: 10px; color: var(--primary);">Hero Section Images</h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Add multiple images to auto-flip in the Hero section.</p>
+                            <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
+                                <div id="admin-hero-images-container"></div>
+                                <button type="button" class="btn glass btn-small" onclick="addHeroImageField()"><i class="fas fa-plus"></i> Add Hero Image</button>
                             </div>
                             
                             <hr style="margin: 20px 0; border-color: var(--glass-border);">
@@ -767,17 +894,17 @@
                         </form>
                     </div>
 
-                    <!-- MLA CANDIDATES ADMIN -->
+                    <!-- UPDATE NAMES ADMIN -->
                     <div id="tab-mla-candidates" class="admin-tab d-none">
                         <div style="display:flex; justify-content: space-between; align-items:center;">
-                            <h3 id="mlac-form-title">MLA Candidates</h3>
+                            <h3 id="mlac-form-title">Update Names</h3>
                             <button class="btn btn-primary btn-small" onclick="document.getElementById('form-mlac-container').classList.toggle('d-none')"><i class="fas fa-plus"></i> Add</button>
                         </div>
                         
                         <div id="form-mlac-container" class="d-none" style="margin-top:15px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
                             <form id="form-mlac" onsubmit="saveMLACandidate(event)">
                                 <input type="hidden" id="edit-mlac-id">
-                                <div class="form-group"><input type="text" id="mlac-name" class="form-control" placeholder="Candidate Full Name" required></div>
+                                <div class="form-group"><input type="text" id="mlac-name" class="form-control" placeholder="Full Name" required></div>
                                 <div class="form-group">
                                     <div style="display:flex; justify-content:space-between;">
                                         <label>Profile Image</label>
@@ -791,19 +918,19 @@
                                     <input type="hidden" id="mlac-img">
                                     <img id="mlac-preview" style="height: 90px; display: none; margin-top: 10px; border-radius: 6px; object-fit:cover;">
                                 </div>
-                                <div class="form-group"><textarea id="mlac-about" class="form-control" rows="2" placeholder="About Candidate (Optional)"></textarea></div>
-                                <button type="submit" class="btn btn-primary btn-small">Save Candidate</button>
-                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-mlac', 'mlac-form-title', 'MLA Candidates'); document.getElementById('form-mlac-container').classList.add('d-none');">Cancel</button>
+                                <div class="form-group"><textarea id="mlac-about" class="form-control" rows="2" placeholder="About (Optional)"></textarea></div>
+                                <button type="submit" class="btn btn-primary btn-small">Save</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-mlac', 'mlac-form-title', 'Update Names'); document.getElementById('form-mlac-container').classList.add('d-none');">Cancel</button>
                             </form>
                         </div>
                         <hr style="margin: 15px 0; border-color: var(--glass-border);">
                         <table class="admin-table"><thead><tr><th>Name</th><th>Actions</th></tr></thead><tbody id="admin-mlac-list"></tbody></table>
                     </div>
 
-                    <!-- MLA CANDIDATE POSTS ADMIN -->
+                    <!-- POSTS ADMIN -->
                     <div id="tab-mla-admin" class="admin-tab d-none">
                         <div style="display:flex; justify-content: space-between; align-items:center;">
-                            <h3 id="mla-form-title">MLA Posts</h3>
+                            <h3 id="mla-form-title">Posts</h3>
                             <button class="btn btn-primary btn-small" onclick="document.getElementById('form-mla-container').classList.toggle('d-none')"><i class="fas fa-plus"></i> Add Post</button>
                         </div>
                         
@@ -811,22 +938,14 @@
                             <form id="form-mla" onsubmit="saveMLAPost(event)">
                                 <input type="hidden" id="edit-mla-id">
                                 <div class="form-group">
-                                    <select id="mla-cand-id" class="form-control" required><option value="">Select Candidate</option></select>
+                                    <select id="mla-cand-id" class="form-control" required><option value="">Select Update Name</option></select>
                                 </div>
                                 <div class="form-group"><input type="text" id="mla-title" class="form-control" placeholder="Post Title" required></div>
                                 
-                                <div class="form-group">
-                                    <div style="display:flex; justify-content:space-between;">
-                                        <label>Image</label>
-                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('mla-img-container', 'mla-img', 'mla-img-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
-                                    </div>
-                                    <div id="mla-img-container" data-mode="file">
-                                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'mla-img-preview', 'mla-img', 'mla-img-progress', 'image')">
-                                        <input type="url" class="form-control link-input d-none" placeholder="URL..." oninput="handleLinkInput(this.value, 'mla-img', 'mla-img-preview', 'image')">
-                                        <div class="progress d-none" id="mla-img-progress"><div class="progress-bar"></div></div>
-                                    </div>
-                                    <input type="hidden" id="mla-img">
-                                    <img id="mla-img-preview" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                                <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
+                                    <label style="display:block; margin-bottom:8px; font-weight:600;">Images</label>
+                                    <div id="admin-mla-images-container"></div>
+                                    <button type="button" class="btn glass btn-small" onclick="addMlaImageField('admin-mla-images-container')"><i class="fas fa-plus"></i> Add Image</button>
                                 </div>
                                 
                                 <div class="form-group">
@@ -859,7 +978,7 @@
 
                                 <div class="form-group"><textarea id="mla-content" class="form-control" rows="3" placeholder="Post Text..."></textarea></div>
                                 <button type="submit" class="btn btn-primary btn-small">Publish</button>
-                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-mla', 'mla-form-title', 'MLA Posts'); document.getElementById('form-mla-container').classList.add('d-none');">Cancel</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-mla', 'mla-form-title', 'Posts'); document.getElementById('form-mla-container').classList.add('d-none'); document.getElementById('admin-mla-images-container').innerHTML='';">Cancel</button>
                             </form>
                         </div>
                         <hr style="margin: 15px 0; border-color: var(--glass-border);">
@@ -975,7 +1094,7 @@
                         <table class="admin-table"><thead><tr><th>Title</th><th>Type</th><th>Actions</th></tr></thead><tbody id="admin-notices-list"></tbody></table>
                     </div>
                     
-                    <!-- DIRECTORY -->
+                    <!-- DIRECTORY ADMIN -->
                     <div id="tab-directory" class="admin-tab d-none">
                         <h3 id="dir-form-title">Add to Directory</h3>
                         <form id="form-directory" onsubmit="saveDirectory(event)" style="margin-top: 10px;">
@@ -999,21 +1118,18 @@
                             <div class="form-group"><input type="text" id="d-cat" class="form-control" placeholder="Category" required></div>
                             <div class="form-group"><input type="text" id="d-phone" class="form-control" placeholder="Phone" required></div>
                             <div class="form-group"><input type="text" id="d-address" class="form-control" placeholder="Address"></div>
-                            
-                            <!-- NEW OPTIONAL FIELDS -->
                             <div class="form-group"><input type="date" id="d-dob" class="form-control" title="Date of Birth (Optional)"></div>
                             <div class="form-group"><input type="email" id="d-email" class="form-control" placeholder="Email (Optional)"></div>
                             <div class="form-group"><input type="text" id="d-aadhar" class="form-control" placeholder="Aadhar Number (Optional)"></div>
                             
-                            <!-- NEW FAMILY DETAILS -->
                             <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
                                 <label style="display:block; margin-bottom:8px; font-weight:600;">Family Details (Optional)</label>
                                 <div id="d-family-list"></div>
-                                <button type="button" class="btn glass btn-small" onclick="addFamilyMember()"><i class="fas fa-plus"></i> Add Family Member</button>
+                                <button type="button" class="btn glass btn-small" onclick="addFamilyMemberUI('d-family-list')"><i class="fas fa-plus"></i> Add Family Member</button>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-small">Save</button>
-                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-directory', 'dir-form-title', 'Add to Directory')">Cancel</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-directory', 'dir-form-title', 'Add to Directory'); document.getElementById('d-family-list').innerHTML='';">Cancel</button>
                         </form>
                         
                         <div style="margin: 15px 0; padding: 12px; border: 1px dashed var(--primary); border-radius: 8px;">
@@ -1121,6 +1237,94 @@
 
     <!-- ================= APPLICATION LOGIC ================= -->
     <script>
+        /* 0. AUDIO CONTEXT & CUSTOM NOTIFICATIONS LOGIC */
+        const audioContextHolder = { ctx: null, enabled: false };
+
+        document.addEventListener('click', () => {
+            if (!audioContextHolder.ctx) {
+                try {
+                    audioContextHolder.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioContextHolder.enabled = true;
+                } catch(e) {}
+            } else if (audioContextHolder.ctx.state === 'suspended') {
+                audioContextHolder.ctx.resume();
+            }
+        }, { capture: true });
+
+        function playSound(type) {
+            if (!audioContextHolder.ctx || !audioContextHolder.enabled) return;
+            try {
+                const osc = audioContextHolder.ctx.createOscillator();
+                const gain = audioContextHolder.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(audioContextHolder.ctx.destination);
+                
+                const now = audioContextHolder.ctx.currentTime;
+                if (type === 'success') {
+                    // Two short high beeps
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.1, now + 0.05);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                    
+                    const osc2 = audioContextHolder.ctx.createOscillator();
+                    const gain2 = audioContextHolder.ctx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioContextHolder.ctx.destination);
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(800, now + 0.15);
+                    osc2.frequency.exponentialRampToValueAtTime(1000, now + 0.25);
+                    gain2.gain.setValueAtTime(0, now + 0.15);
+                    gain2.gain.linearRampToValueAtTime(0.1, now + 0.2);
+                    gain2.gain.linearRampToValueAtTime(0, now + 0.3);
+                    osc2.start(now + 0.15);
+                    osc2.stop(now + 0.3);
+
+                } else if (type === 'error' || type === 'failed') {
+                    // Low buzzer sound
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.1, now + 0.05);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch(e) {}
+        }
+
+        function showNotification(msg, type='info') {
+            playSound(type);
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-notif ${type}`;
+            
+            let iconHTML = '';
+            if (type === 'success') {
+                iconHTML = `<div class="success-checkmark"><div class="check-icon"><span class="icon-line line-tip"></span><span class="icon-line line-long"></span></div></div>`;
+            } else if (type === 'error' || type === 'failed') {
+                iconHTML = `<div class="error-icon"><i class="fas fa-times"></i></div>`;
+            } else {
+                iconHTML = `<i class="fas fa-info-circle" style="font-size:16px; color:var(--primary)"></i>`;
+            }
+            
+            toast.innerHTML = `
+                <div class="toast-icon-wrap">${iconHTML}</div>
+                <div class="toast-msg">${msg}</div>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOutRight 0.4s forwards';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
         /* 1. FIREBASE CONFIGURATION */
         const firebaseConfig = {
             apiKey: "AIzaSyB2imEIvh_bWbYD_yPB7p3af7bV9OWdA5A",
@@ -1165,6 +1369,11 @@
             }
         }
 
+        function toggleAdminSidebar() {
+            document.getElementById('admin-sidebar').classList.toggle('active');
+            document.getElementById('admin-overlay').classList.toggle('active');
+        }
+
         window.lastListPage = 'page-home';
 
         function navigate(pageId, menuItemElement = null) {
@@ -1190,12 +1399,13 @@
                 'page-panchayat': 'Panchayat',
                 'page-projects': 'Projects',
                 'page-auth': 'Member Login',
-                'page-admin': 'Admin Dashboard',
+                'page-admin': 'Dashboard',
                 'page-population': 'Population',
                 'page-agri': 'Agriculture',
                 'page-schools': 'Schools',
                 'page-health': 'Health Centres',
-                'page-item-details': 'Details'
+                'page-item-details': 'Details',
+                'page-mla': 'Update Name'
             };
             
             const dynamicTitle = document.getElementById('dynamic-header-title');
@@ -1256,7 +1466,7 @@
             const hidden = document.getElementById(hiddenId);
             
             if((type === 'video' || type === 'audio') && file.size > 5 * 1024 * 1024) {
-                alert("File is too large! Please upload a file smaller than 5MB.");
+                showNotification("File is too large! Please upload a file smaller than 5MB.", "error");
                 event.target.value = ''; return;
             }
 
@@ -1289,6 +1499,49 @@
                 }
             };
             reader.readAsDataURL(file);
+        }
+
+        /* DYNAMIC MULTIPLE IMAGE LOGIC (For Posts & Hero) */
+        let dynImageCount = 0;
+        function addMlaImageField(containerId, initialVal = '') {
+            dynImageCount++;
+            const id = `dyn-img-${dynImageCount}`;
+            const html = `
+                <div class="form-group" id="group-${id}" style="border-left: 2px solid var(--primary); padding-left: 10px;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <label>Image Field</label>
+                        <span style="font-size:0.8rem; cursor:pointer; color:var(--danger);" onclick="document.getElementById('group-${id}').remove()">Remove</span>
+                    </div>
+                    <div data-mode="file">
+                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'preview-${id}', 'hidden-${id}', 'progress-${id}', 'image')" ${initialVal?'class="d-none"':''}>
+                        <div class="progress d-none" id="progress-${id}"><div class="progress-bar"></div></div>
+                    </div>
+                    <input type="hidden" id="hidden-${id}" class="multi-image-hidden" value="${initialVal}">
+                    <img id="preview-${id}" src="${initialVal}" style="height: 90px; display: ${initialVal?'block':'none'}; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                </div>
+            `;
+            document.getElementById(containerId).insertAdjacentHTML('beforeend', html);
+        }
+
+        let dynHeroImgCount = 0;
+        function addHeroImageField(initialVal = '') {
+            dynHeroImgCount++;
+            const id = `dyn-hero-${dynHeroImgCount}`;
+            const html = `
+                <div class="form-group" id="group-${id}" style="border-left: 2px solid var(--secondary); padding-left: 10px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <label>Hero Image</label>
+                        <span style="font-size:0.8rem; cursor:pointer; color:var(--danger);" onclick="document.getElementById('group-${id}').remove()">Remove</span>
+                    </div>
+                    <div data-mode="file">
+                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'preview-${id}', 'hidden-${id}', 'progress-${id}', 'image')" ${initialVal?'class="d-none"':''}>
+                        <div class="progress d-none" id="progress-${id}"><div class="progress-bar"></div></div>
+                    </div>
+                    <input type="hidden" id="hidden-${id}" class="hero-image-hidden" value="${initialVal}">
+                    <img id="preview-${id}" src="${initialVal}" style="height: 60px; display: ${initialVal?'block':'none'}; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                </div>
+            `;
+            document.getElementById('admin-hero-images-container').insertAdjacentHTML('beforeend', html);
         }
 
         /* 4. COUNTER ANIMATION */
@@ -1363,15 +1616,17 @@
                     const name = document.getElementById('auth-name').value;
                     const cred = await auth.createUserWithEmailAndPassword(email, password);
                     await db.ref('users/' + cred.user.uid).set({
-                        name: name, email: email, role: 'admin', 
+                        name: name, email: email, role: 'member', 
                         photo: 'https://ui-avatars.com/api/?name='+name+'&background=random',
                         createdAt: firebase.database.ServerValue.TIMESTAMP,
                         banned: false
                     });
                 } else { await auth.signInWithEmailAndPassword(email, password); }
                 document.getElementById('auth-form').reset();
+                showNotification("Logged in successfully!", "success");
                 navigate('page-admin', document.getElementById('menu-auth-btn'));
             } catch (err) { 
+                showNotification("Authentication Failed!", "error");
                 errorDiv.style.display = 'block';
                 errorDiv.style.background = 'rgba(239, 71, 111, 0.1)';
                 errorDiv.style.color = 'var(--danger)';
@@ -1394,7 +1649,7 @@
                     pendingGoogleData = {
                         name: result.user.displayName || 'User', email: result.user.email,
                         photo: result.user.photoURL || 'https://ui-avatars.com/api/?name='+(result.user.displayName||'User'),
-                        role: 'admin',
+                        role: 'member',
                         createdAt: firebase.database.ServerValue.TIMESTAMP,
                         banned: false
                     };
@@ -1403,9 +1658,11 @@
                     document.getElementById('google-password-setup').style.display = 'block';
                 } else {
                     window.isSettingGooglePassword = false;
+                    showNotification("Logged in successfully!", "success");
                     navigate('page-admin', document.getElementById('menu-auth-btn'));
                 }
             } catch (error) { 
+                showNotification("Google Sign-In Failed!", "error");
                 const errorDiv = document.getElementById('auth-error');
                 errorDiv.style.display = 'block';
                 errorDiv.style.background = 'rgba(239, 71, 111, 0.1)';
@@ -1417,7 +1674,7 @@
         async function completeGoogleSignIn() {
             const pwd = document.getElementById('google-new-password').value;
             if(!pwd || pwd.length < 6) {
-                alert("Please enter a password with at least 6 characters.");
+                showNotification("Please enter a password with at least 6 characters.", "error");
                 return;
             }
             try {
@@ -1429,9 +1686,10 @@
                 document.getElementById('main-auth-ui').style.display = 'block';
                 document.getElementById('google-new-password').value = '';
                 
+                showNotification("Registration completed successfully!", "success");
                 navigate('page-admin', document.getElementById('menu-auth-btn'));
             } catch (err) {
-                alert("Error setting password: " + err.message);
+                showNotification("Error setting password: " + err.message, "error");
             }
         }
 
@@ -1446,7 +1704,7 @@
             document.getElementById('google-new-password').value = '';
         }
 
-        function logout() { auth.signOut(); navigate('page-home', document.querySelectorAll('.nav-menu-item')[0]); }
+        function logout() { auth.signOut(); navigate('page-home', document.querySelectorAll('.nav-menu-item')[0]); showNotification("Logged out safely.", "success"); }
 
         auth.onAuthStateChanged((user) => {
             const authBtn = document.getElementById('menu-auth-btn');
@@ -1455,7 +1713,7 @@
                     const data = snapshot.val();
                     if(data) {
                         if (data.banned) {
-                            alert("Your account has been banned. You can no longer access this system.");
+                            showNotification("Your account has been banned. You can no longer access this system.", "error");
                             auth.signOut();
                             return; 
                         }
@@ -1475,8 +1733,10 @@
 
                         if (currentUserRole === 'admin' || currentUserRole === 'superadmin') { 
                             document.getElementById('admin-menus').classList.remove('d-none'); 
+                            document.getElementById('member-menus').classList.add('d-none'); 
                         } else { 
                             document.getElementById('admin-menus').classList.add('d-none'); 
+                            document.getElementById('member-menus').classList.remove('d-none'); 
                         }
 
                         if (document.getElementById('page-auth').classList.contains('active') && !document.getElementById('page-auth').classList.contains('d-none')) { 
@@ -1488,7 +1748,7 @@
                         pendingGoogleData = {
                             name: user.displayName || 'User', email: user.email,
                             photo: user.photoURL || 'https://ui-avatars.com/api/?name='+(user.displayName||'User'),
-                            role: 'admin', createdAt: firebase.database.ServerValue.TIMESTAMP,
+                            role: 'member', createdAt: firebase.database.ServerValue.TIMESTAMP,
                             banned: false
                         };
                         navigate('page-auth', authBtn);
@@ -1514,8 +1774,15 @@
         function switchAdminTab(tabId) {
             document.querySelectorAll('.admin-tab').forEach(el => el.classList.add('d-none'));
             document.getElementById(tabId).classList.remove('d-none');
-            document.querySelectorAll('.sidebar ul li').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.admin-sidebar ul li').forEach(el => el.classList.remove('active'));
+            if(event && event.currentTarget.tagName === 'LI') {
+                event.currentTarget.classList.add('active');
+                document.getElementById('admin-page-title').innerText = event.currentTarget.innerText;
+            }
+            if(window.innerWidth <= 900) {
+                document.getElementById('admin-sidebar').classList.remove('active');
+                document.getElementById('admin-overlay').classList.remove('active');
+            }
         }
 
         /* 6. DATABASE CRUD LOGIC */
@@ -1548,7 +1815,7 @@
                 db.ref('users/' + user.uid).update({
                     name: document.getElementById('prof-name').value,
                     photo: document.getElementById('prof-photo').value || 'https://ui-avatars.com/api/?name='+document.getElementById('prof-name').value
-                }).then(() => alert('Profile Updated!'));
+                }).then(() => showNotification('Profile Updated successfully!', 'success'));
             }
         }
 
@@ -1556,58 +1823,35 @@
             e.preventDefault();
             const newPwd = document.getElementById('prof-new-pwd').value;
             const confPwd = document.getElementById('prof-conf-pwd').value;
-            
-            if(newPwd !== confPwd) {
-                alert("Passwords do not match!");
-                return;
-            }
-            
+            if(newPwd !== confPwd) { showNotification("Passwords do not match!", "error"); return; }
             try {
                 const user = auth.currentUser;
-                if(user) {
-                    await user.updatePassword(newPwd);
-                    alert("Password updated successfully!");
-                    document.getElementById('form-change-pwd').reset();
-                }
+                if(user) { await user.updatePassword(newPwd); showNotification("Password updated successfully!", "success"); document.getElementById('form-change-pwd').reset(); }
             } catch(err) {
-                if(err.code === 'auth/requires-recent-login') {
-                    alert("For security reasons, please log out and log in again before changing your password.");
-                } else {
-                    alert("Error: " + err.message);
-                }
+                if(err.code === 'auth/requires-recent-login') { showNotification("For security reasons, please log out and log in again before changing your password.", "error"); } 
+                else { showNotification("Error: " + err.message, "error"); }
             }
         }
 
-        // --- USERS MANAGEMENT (Role change & Ban/Unban) ---
+        // --- USERS MANAGEMENT ---
         let adminUsersData = [];
         db.ref('users').on('value', snap => {
             const adminList = document.getElementById('admin-users-list');
             if (!adminList) return;
-            adminList.innerHTML = ''; 
-            adminUsersData = [];
-            
+            adminList.innerHTML = ''; adminUsersData = [];
             snap.forEach(child => { adminUsersData.push({ uid: child.key, ...child.val() }); });
-
-            if(adminUsersData.length === 0) {
-                adminList.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No users found.</td></tr>';
-            }
+            if(adminUsersData.length === 0) { adminList.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No users found.</td></tr>'; }
 
             adminUsersData.forEach(user => {
                 const isBanned = user.banned ? true : false;
                 const isSelf = auth.currentUser && user.uid === auth.currentUser.uid;
-                
                 const statusBadge = isBanned 
                     ? `<span class="badge" style="background:var(--danger); color:white; padding:2px 6px; border-radius:4px; font-size: 0.75rem;">Banned</span>` 
                     : `<span class="badge" style="background:var(--secondary); color:white; padding:2px 6px; border-radius:4px; font-size: 0.75rem;">Active</span>`;
 
                 adminList.innerHTML += `
                     <tr>
-                        <td>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <img src="${user.photo || 'https://ui-avatars.com/api/?name='+user.name}" style="width:25px; height:25px; border-radius:50%; object-fit:cover;">
-                                <span>${user.name || 'N/A'}</span>
-                            </div>
-                        </td>
+                        <td><div style="display:flex; align-items:center; gap:8px;"><img src="${user.photo || 'https://ui-avatars.com/api/?name='+user.name}" style="width:25px; height:25px; border-radius:50%; object-fit:cover;"><span>${user.name || 'N/A'}</span></div></td>
                         <td>${user.email || 'N/A'}</td>
                         <td>
                             <select class="form-control" style="width: 100px; padding: 4px; font-size: 0.8rem;" onchange="changeUserRole('${user.uid}', this.value)" ${isSelf ? 'disabled title="Cannot change your own role"' : ''}>
@@ -1630,68 +1874,304 @@
 
         function changeUserRole(uid, newRole) {
             if (confirm(`Are you sure you want to assign the '${newRole}' role to this user?`)) {
-                db.ref(`users/${uid}`).update({ role: newRole })
-                    .then(() => alert("User role updated successfully."))
-                    .catch(err => alert("Error updating role: " + err.message));
+                db.ref(`users/${uid}`).update({ role: newRole }).then(() => showNotification("User role updated successfully.", "success")).catch(err => showNotification("Error updating role: " + err.message, "error"));
             }
         }
-
         function toggleUserBan(uid, currentlyBanned) {
             const action = currentlyBanned ? "unban" : "ban";
             if (confirm(`Are you sure you want to ${action} this user?`)) {
-                db.ref(`users/${uid}`).update({ banned: !currentlyBanned })
-                    .then(() => alert(`User has been ${action}ned successfully.`))
-                    .catch(err => alert("Error: " + err.message));
+                db.ref(`users/${uid}`).update({ banned: !currentlyBanned }).then(() => showNotification(`User has been ${action}ned successfully.`, "success")).catch(err => showNotification("Error: " + err.message, "error"));
             }
         }
 
-        // --- HERO BACKGROUND HANDLING ---
-        let currentHeroImage = 'https://images.unsplash.com/photo-1626025176767-742721fdf644?q=80&w=2000&auto=format&fit=crop';
+        // --- REQUESTS LOGIC (MEMBER SUBMISSION & ADMIN REVIEW) ---
+        let allRequestsData = [];
         
-        function setHeroBackground(imageUrl) {
-            const heroEl = document.querySelector('.hero');
-            heroEl.style.background = 'linear-gradient(to bottom, #063c1a, #021a0a)';
-            const img = new Image();
-            img.onload = function() { heroEl.style.background = `url('${imageUrl}') center/cover no-repeat`; };
-            img.src = imageUrl;
+        db.ref('requests').on('value', snap => {
+            allRequestsData = [];
+            snap.forEach(child => { allRequestsData.push({ id: child.key, ...child.val() }); });
+            renderMyRequests();
+            renderAdminRequests();
+        });
+
+        function renderMyRequests() {
+            const list = document.getElementById('user-requests-list');
+            if(!list || !auth.currentUser) return;
+            list.innerHTML = '';
+            const myReqs = allRequestsData.filter(r => r.uid === auth.currentUser.uid).reverse();
+            if(myReqs.length === 0) { list.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No requests found.</td></tr>'; return; }
+            
+            myReqs.forEach(req => {
+                let statusColor = req.status === 'approved' ? 'var(--secondary)' : (req.status === 'rejected' ? 'var(--danger)' : 'var(--accent)');
+                let title = req.type === 'post' ? req.data.title : req.data.name;
+                list.innerHTML += `
+                    <tr>
+                        <td>${title}</td>
+                        <td>${req.type.toUpperCase()}</td>
+                        <td><span class="badge" style="background:${statusColor}; color:${req.status==='pending'?'#000':'#fff'}; padding:2px 6px; border-radius:4px;">${req.status.toUpperCase()}</span></td>
+                        <td>${req.remarks || '-'}</td>
+                        <td>
+                            ${req.status === 'rejected' ? `<button class="btn btn-small btn-primary" onclick="editMyRequest('${req.id}')">Edit & Resubmit</button>` : '-'}
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
-        setHeroBackground(currentHeroImage);
+        function renderAdminRequests() {
+            const list = document.getElementById('admin-requests-list');
+            if(!list) return;
+            list.innerHTML = '';
+            const pendingReqs = allRequestsData.filter(r => r.status === 'pending');
+            if(pendingReqs.length === 0) { list.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No pending requests.</td></tr>'; return; }
+            
+            pendingReqs.forEach(req => {
+                let title = req.type === 'post' ? req.data.title : req.data.name;
+                let userName = 'Unknown';
+                db.ref(`users/${req.uid}`).once('value').then(s => { 
+                    userName = s.exists() ? s.val().name : 'Unknown User'; 
+                    document.getElementById(`req-user-${req.id}`).innerText = userName;
+                });
 
-        // --- SITE SETTINGS (Hero Bg & Footer) ---
+                list.innerHTML += `
+                    <tr>
+                        <td id="req-user-${req.id}">Loading...</td>
+                        <td>${title}</td>
+                        <td>${req.type.toUpperCase()}</td>
+                        <td>
+                            <button class="btn btn-small btn-primary" onclick="openReviewModal('${req.id}')">Review</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function submitUserPost(e) {
+            e.preventDefault();
+            const id = document.getElementById('u-edit-req-id').value;
+            const images = [];
+            document.querySelectorAll('#u-mla-images-container .multi-image-hidden').forEach(inp => { if(inp.value) images.push(inp.value); });
+
+            const data = {
+                candId: document.getElementById('u-mla-cand-id').value, title: document.getElementById('u-mla-title').value,
+                content: document.getElementById('u-mla-content').value || '', images: images,
+                video: document.getElementById('u-mla-vid').value || '', audio: document.getElementById('u-mla-aud').value || '',
+                date: new Date().toLocaleString(), timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            const payload = { uid: auth.currentUser.uid, type: 'post', status: 'pending', remarks: '', timestamp: firebase.database.ServerValue.TIMESTAMP, data: data };
+
+            if(id) { db.ref('requests/'+id).update(payload).then(() => { showNotification('Resubmitted successfully!', 'success'); resetForm('form-user-post'); document.getElementById('u-mla-images-container').innerHTML=''; switchAdminTab('tab-my-requests'); }); } 
+            else { db.ref('requests').push(payload).then(() => { showNotification('Submitted for review!', 'success'); resetForm('form-user-post'); document.getElementById('u-mla-images-container').innerHTML=''; switchAdminTab('tab-my-requests'); }); }
+        }
+
+        function submitUserDir(e) {
+            e.preventDefault();
+            const id = document.getElementById('u-edit-req-dir-id').value;
+            let family = [];
+            document.querySelectorAll('#u-d-family-list .family-member-row').forEach(row => {
+                let n = row.querySelector('.fam-name').value.trim();
+                let r = row.querySelector('.fam-relation').value;
+                if(n && r) family.push({name: n, relation: r});
+            });
+
+            const data = {
+                name: document.getElementById('u-d-name').value, category: document.getElementById('u-d-cat').value,
+                phone: document.getElementById('u-d-phone').value, address: document.getElementById('u-d-address').value || '',
+                image: document.getElementById('u-d-img').value || '', dob: document.getElementById('u-d-dob').value || '',
+                email: document.getElementById('u-d-email').value || '', aadhar: document.getElementById('u-d-aadhar').value || '',
+                family: family, nameLowerCase: document.getElementById('u-d-name').value.toLowerCase()
+            };
+
+            const payload = { uid: auth.currentUser.uid, type: 'directory', status: 'pending', remarks: '', timestamp: firebase.database.ServerValue.TIMESTAMP, data: data };
+
+            if(id) { db.ref('requests/'+id).update(payload).then(() => { showNotification('Resubmitted successfully!', 'success'); resetForm('form-user-dir'); document.getElementById('u-d-family-list').innerHTML=''; switchAdminTab('tab-my-requests'); }); } 
+            else { db.ref('requests').push(payload).then(() => { showNotification('Submitted for review!', 'success'); resetForm('form-user-dir'); document.getElementById('u-d-family-list').innerHTML=''; switchAdminTab('tab-my-requests'); }); }
+        }
+
+        function editMyRequest(reqId) {
+            const req = allRequestsData.find(r => r.id === reqId);
+            if(!req) return;
+
+            if(req.type === 'post') {
+                switchAdminTab('tab-submit-post');
+                document.getElementById('u-edit-req-id').value = reqId;
+                document.getElementById('u-mla-cand-id').value = req.data.candId;
+                document.getElementById('u-mla-title').value = req.data.title;
+                document.getElementById('u-mla-content').value = req.data.content || '';
+                
+                document.getElementById('u-mla-images-container').innerHTML = '';
+                if(req.data.images && req.data.images.length > 0) {
+                    req.data.images.forEach(img => addMlaImageField('u-mla-images-container', img));
+                }
+
+                document.getElementById('u-mla-vid').value = req.data.video || ''; 
+                const vidPrev = document.getElementById('u-mla-vid-preview');
+                if(req.data.video) { vidPrev.src = req.data.video; vidPrev.style.display = 'block'; } else { vidPrev.style.display = 'none'; }
+
+                document.getElementById('u-mla-aud').value = req.data.audio || ''; 
+                const audPrev = document.getElementById('u-mla-aud-preview');
+                if(req.data.audio) { audPrev.src = req.data.audio; audPrev.style.display = 'block'; } else { audPrev.style.display = 'none'; }
+                
+                document.getElementById('u-post-form-title').innerText = "Edit Rejected Post";
+            } 
+            else if(req.type === 'directory') {
+                switchAdminTab('tab-submit-dir');
+                document.getElementById('u-edit-req-dir-id').value = reqId;
+                document.getElementById('u-d-name').value = req.data.name;
+                document.getElementById('u-d-cat').value = req.data.category;
+                document.getElementById('u-d-phone').value = req.data.phone;
+                document.getElementById('u-d-address').value = req.data.address || '';
+                document.getElementById('u-d-dob').value = req.data.dob || '';
+                document.getElementById('u-d-email').value = req.data.email || '';
+                document.getElementById('u-d-aadhar').value = req.data.aadhar || '';
+                
+                document.getElementById('u-d-img').value = req.data.image || '';
+                const prev = document.getElementById('u-d-preview');
+                if(req.data.image) { prev.src = req.data.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+                
+                document.getElementById('u-d-family-list').innerHTML = '';
+                if(req.data.family) { req.data.family.forEach(f => addFamilyMemberUI('u-d-family-list', f.name, f.relation)); }
+                
+                document.getElementById('u-dir-form-title').innerText = "Edit Rejected Directory Entry";
+            }
+        }
+
+        function openReviewModal(reqId) {
+            const req = allRequestsData.find(r => r.id === reqId);
+            if(!req) return;
+            document.getElementById('rev-modal-id').value = reqId;
+            const content = document.getElementById('rev-modal-content');
+            
+            if(req.type === 'post') {
+                content.innerHTML = `
+                    <strong>Title:</strong> ${req.data.title}<br>
+                    <strong>Update Name ID:</strong> ${req.data.candId}<br>
+                    <strong>Content:</strong> ${req.data.content}<br>
+                    <strong>Images:</strong> ${req.data.images ? req.data.images.length : 0} attached<br>
+                    <strong>Video/Audio:</strong> ${req.data.video ? 'Yes' : 'No'} / ${req.data.audio ? 'Yes' : 'No'}
+                `;
+            } else {
+                content.innerHTML = `
+                    <strong>Name:</strong> ${req.data.name}<br>
+                    <strong>Category:</strong> ${req.data.category}<br>
+                    <strong>Phone:</strong> ${req.data.phone}<br>
+                    <strong>Address:</strong> ${req.data.address}<br>
+                    <strong>Family Members:</strong> ${req.data.family ? req.data.family.length : 0}
+                `;
+            }
+            document.getElementById('admin-review-modal').style.display = 'block';
+        }
+
+        function approveRequest() {
+            const reqId = document.getElementById('rev-modal-id').value;
+            const req = allRequestsData.find(r => r.id === reqId);
+            if(!req) return;
+            
+            const targetPath = req.type === 'post' ? 'mla_posts' : 'directory';
+            db.ref(targetPath).push(req.data).then(() => {
+                db.ref('requests/'+reqId).update({status: 'approved'}).then(() => {
+                    showNotification("Approved and Published!", "success");
+                    document.getElementById('admin-review-modal').style.display = 'none';
+                });
+            });
+        }
+
+        function rejectRequest() {
+            const reqId = document.getElementById('rev-modal-id').value;
+            const remarks = prompt("Enter reason for rejection:");
+            if(remarks !== null) {
+                db.ref('requests/'+reqId).update({status: 'rejected', remarks: remarks}).then(() => {
+                    showNotification("Request Rejected!", "info");
+                    document.getElementById('admin-review-modal').style.display = 'none';
+                });
+            }
+        }
+
+        // --- HERO BACKGROUND HANDLING (Multiple Images Flip & Clear Visibility) ---
+        let currentHeroImages = [];
+        let heroSlideInterval = null;
+
+        function setHeroBackgrounds(imagesArray) {
+            const slider = document.getElementById('hero-bg-slider');
+            slider.innerHTML = '';
+            
+            if(!imagesArray || imagesArray.length === 0) {
+                imagesArray = ['https://images.unsplash.com/photo-1626025176767-742721fdf644?q=80&w=2000&auto=format&fit=crop'];
+            }
+            
+            currentHeroImages = imagesArray;
+            
+            imagesArray.forEach((src, index) => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'hero-slide';
+                if(index === 0) {
+                    img.style.opacity = '1';
+                }
+                slider.appendChild(img);
+            });
+
+            if(heroSlideInterval) clearInterval(heroSlideInterval);
+            
+            if(imagesArray.length > 1) {
+                let currentIndex = 0;
+                heroSlideInterval = setInterval(() => {
+                    const slides = document.querySelectorAll('.hero-slide');
+                    if(slides.length > 0) {
+                        slides[currentIndex].style.opacity = '0'; // Fade out
+                        currentIndex = (currentIndex + 1) % slides.length;
+                        slides[currentIndex].style.opacity = '1'; // Fade in
+                    }
+                }, 4000); // 4 seconds interval
+            }
+        }
+
+        // --- SITE SETTINGS ---
         function saveSiteSettings(e) {
             e.preventDefault();
+            const heroImages = [];
+            document.querySelectorAll('#admin-hero-images-container .hero-image-hidden').forEach(inp => { if(inp.value) heroImages.push(inp.value); });
+            
             const data = {
-                heroImage: document.getElementById('hero-bg').value,
+                heroImages: heroImages.length > 0 ? heroImages : ['https://images.unsplash.com/photo-1626025176767-742721fdf644?q=80&w=2000&auto=format&fit=crop'],
                 footer: {
-                    villageName: document.getElementById('set-vname').value,
-                    tagline: document.getElementById('set-tagline').value,
-                    address: document.getElementById('set-address').value,
-                    email: document.getElementById('set-email').value,
-                    phone: document.getElementById('set-phone').value,
-                    fb: document.getElementById('set-fb').value,
-                    tw: document.getElementById('set-tw').value,
-                    ig: document.getElementById('set-ig').value,
+                    villageName: document.getElementById('set-vname').value, tagline: document.getElementById('set-tagline').value,
+                    address: document.getElementById('set-address').value, email: document.getElementById('set-email').value,
+                    phone: document.getElementById('set-phone').value, fb: document.getElementById('set-fb').value,
+                    tw: document.getElementById('set-tw').value, ig: document.getElementById('set-ig').value,
                     copyright: document.getElementById('set-copy').value
                 }
             };
-            db.ref('settings').set(data).then(() => alert('Site Settings Saved Successfully!'));
+            db.ref('settings').set(data).then(() => showNotification('Site Settings Saved Successfully!', 'success'));
         }
 
         db.ref('settings').on('value', snap => {
             if(snap.exists()) {
                 const data = snap.val();
                 
-                if(data.heroImage) {
-                    if(data.heroImage !== currentHeroImage) {
-                        currentHeroImage = data.heroImage;
-                        setHeroBackground(currentHeroImage);
+                // Load Hero Images
+                if(data.heroImages && Array.isArray(data.heroImages)) {
+                    setHeroBackgrounds(data.heroImages);
+                    const adminHeroContainer = document.getElementById('admin-hero-images-container');
+                    if (adminHeroContainer) {
+                        adminHeroContainer.innerHTML = '';
+                        dynHeroImgCount = 0;
+                        data.heroImages.forEach(img => addHeroImageField(img));
                     }
-                    document.getElementById('hero-bg').value = data.heroImage;
-                    const prev = document.getElementById('hero-preview');
-                    if (prev) { prev.src = data.heroImage; prev.style.display = 'block'; }
+                } else if (data.heroImage) { // Fallback for old single image data
+                    setHeroBackgrounds([data.heroImage]);
+                    const adminHeroContainer = document.getElementById('admin-hero-images-container');
+                    if (adminHeroContainer) {
+                        adminHeroContainer.innerHTML = '';
+                        dynHeroImgCount = 0;
+                        addHeroImageField(data.heroImage);
+                    }
+                } else {
+                    setHeroBackgrounds([]); // default
                 }
                 
+                // Load Footer details
                 if(data.footer) {
                     const f = data.footer;
                     if(document.getElementById('footer-village-name')) document.getElementById('footer-village-name').innerHTML = `<i class="fas fa-leaf"></i> ${f.villageName || 'Heirok Village'}`;
@@ -1703,24 +2183,21 @@
                     if(document.getElementById('footer-fb')) document.getElementById('footer-fb').href = f.fb || '#';
                     if(document.getElementById('footer-tw')) document.getElementById('footer-tw').href = f.tw || '#';
                     if(document.getElementById('footer-ig')) document.getElementById('footer-ig').href = f.ig || '#';
-                    
                     if(document.getElementById('footer-copyright')) document.getElementById('footer-copyright').innerHTML = f.copyright || '&copy; 2026 Heirok Smart Village. All Rights Reserved.';
 
-                    document.getElementById('set-vname').value = f.villageName || '';
-                    document.getElementById('set-tagline').value = f.tagline || '';
-                    document.getElementById('set-address').value = f.address || '';
-                    document.getElementById('set-email').value = f.email || '';
-                    document.getElementById('set-phone').value = f.phone || '';
-                    document.getElementById('set-fb').value = f.fb || '';
-                    document.getElementById('set-tw').value = f.tw || '';
-                    document.getElementById('set-ig').value = f.ig || '';
+                    document.getElementById('set-vname').value = f.villageName || ''; document.getElementById('set-tagline').value = f.tagline || '';
+                    document.getElementById('set-address').value = f.address || ''; document.getElementById('set-email').value = f.email || '';
+                    document.getElementById('set-phone').value = f.phone || ''; document.getElementById('set-fb').value = f.fb || '';
+                    document.getElementById('set-tw').value = f.tw || ''; document.getElementById('set-ig').value = f.ig || '';
                     document.getElementById('set-copy').value = f.copyright || '';
                 }
+            } else {
+                setHeroBackgrounds([]);
             }
         });
 
 
-        // --- MLA CANDIDATES ---
+        // --- UPDATE NAMES (MLA CANDIDATES) ---
         let mlaCandidatesData = [];
         let activeMLACandidateId = null;
 
@@ -1733,8 +2210,8 @@
                 about: document.getElementById('mlac-about').value || '',
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('mla_candidates/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-mlac', 'mlac-form-title', 'MLA Candidates'); document.getElementById('form-mlac-container').classList.add('d-none'); }); } 
-            else { db.ref('mla_candidates').push(data).then(()=>{ alert('Added'); resetForm('form-mlac'); document.getElementById('form-mlac-container').classList.add('d-none'); }); }
+            if(id) { db.ref('mla_candidates/'+id).update(data).then(()=>{ showNotification('Updated', 'success'); resetForm('form-mlac', 'mlac-form-title', 'Update Names'); document.getElementById('form-mlac-container').classList.add('d-none'); }); } 
+            else { db.ref('mla_candidates').push(data).then(()=>{ showNotification('Added', 'success'); resetForm('form-mlac'); document.getElementById('form-mlac-container').classList.add('d-none'); }); }
         }
 
         function editMLACandidate(id) {
@@ -1749,7 +2226,7 @@
                 const imgPrev = document.getElementById('mlac-preview');
                 if(item.image && !item.image.includes('ui-avatars')) { imgPrev.src = item.image; imgPrev.style.display = 'block'; } else { imgPrev.style.display = 'none'; }
                 
-                document.getElementById('mlac-form-title').innerText = "Edit Candidate";
+                document.getElementById('mlac-form-title').innerText = "Edit Update Name";
             }
         }
 
@@ -1787,7 +2264,7 @@
                     <img src="${c.image}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin-bottom: 15px; background: white;">
                     <h2 style="color: var(--primary); margin-bottom: 10px; font-size: 1.4rem;">${c.name}</h2>
                     <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.6; text-align: left; max-height: 50vh; overflow-y: auto; padding: 10px;">
-                        ${c.about ? c.about.replace(/\n/g, '<br>') : 'No personal info provided.'}
+                        ${c.about ? c.about.replace(/\n/g, '<br>') : 'No info provided.'}
                     </div>
                 </div>
             `;
@@ -1797,8 +2274,9 @@
         db.ref('mla_candidates').on('value', snap => {
             const adminList = document.getElementById('admin-mlac-list');
             const selectList = document.getElementById('mla-cand-id');
+            const uSelectList = document.getElementById('u-mla-cand-id');
             adminList.innerHTML = '';
-            let selectOptions = '<option value="">Select Candidate First</option>';
+            let selectOptions = '<option value="">Select Update Name</option>';
             mlaCandidatesData = [];
             
             snap.forEach(child => {
@@ -1816,6 +2294,7 @@
                 selectOptions += `<option value="${c.id}">${c.name}</option>`;
             });
             if(selectList) selectList.innerHTML = selectOptions;
+            if(uSelectList) uSelectList.innerHTML = selectOptions;
             
             if(!activeMLACandidateId && mlaCandidatesData.length > 0) {
                 selectMLACandidate(mlaCandidatesData[0].id);
@@ -1825,21 +2304,24 @@
         });
 
 
-        // --- MLA CANDIDATE POSTS & TIKTOK UI ---
+        // --- POSTS & TIKTOK UI ---
         let allMLAPosts = [];
         let mlaSwiperInstance = null;
 
         function saveMLAPost(e) {
             e.preventDefault();
             const id = document.getElementById('edit-mla-id').value;
+            const images = [];
+            document.querySelectorAll('#admin-mla-images-container .multi-image-hidden').forEach(inp => { if(inp.value) images.push(inp.value); });
+
             const data = {
                 candId: document.getElementById('mla-cand-id').value, title: document.getElementById('mla-title').value,
-                content: document.getElementById('mla-content').value || '', image: document.getElementById('mla-img').value || '',
+                content: document.getElementById('mla-content').value || '', images: images,
                 video: document.getElementById('mla-vid').value || '', audio: document.getElementById('mla-aud').value || '',
                 date: new Date().toLocaleString(), timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('mla_posts/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-mla', 'mla-form-title', 'MLA Candidate Posts'); document.getElementById('form-mla-container').classList.add('d-none'); }); } 
-            else { db.ref('mla_posts').push(data).then(()=>{ alert('Published'); resetForm('form-mla'); document.getElementById('form-mla-container').classList.add('d-none'); }); }
+            if(id) { db.ref('mla_posts/'+id).update(data).then(()=>{ showNotification('Updated successfully!', 'success'); resetForm('form-mla', 'mla-form-title', 'Posts'); document.getElementById('form-mla-container').classList.add('d-none'); document.getElementById('admin-mla-images-container').innerHTML=''; }); } 
+            else { db.ref('mla_posts').push(data).then(()=>{ showNotification('Published successfully!', 'success'); resetForm('form-mla'); document.getElementById('form-mla-container').classList.add('d-none'); document.getElementById('admin-mla-images-container').innerHTML=''; }); }
         }
 
         function editMLAPost(id) {
@@ -1849,16 +2331,20 @@
                 document.getElementById('edit-mla-id').value = id; document.getElementById('mla-cand-id').value = item.candId;
                 document.getElementById('mla-title').value = item.title; document.getElementById('mla-content').value = item.content || '';
                 
-                document.getElementById('mla-img').value = item.image || ''; const imgPrev = document.getElementById('mla-img-preview');
-                if(item.image) { imgPrev.src = item.image; imgPrev.style.display = 'block'; } else { imgPrev.style.display = 'none'; }
-                
+                document.getElementById('admin-mla-images-container').innerHTML = '';
+                if(item.images && item.images.length > 0) {
+                    item.images.forEach(img => addMlaImageField('admin-mla-images-container', img));
+                } else if (item.image) {
+                    addMlaImageField('admin-mla-images-container', item.image);
+                }
+
                 document.getElementById('mla-vid').value = item.video || ''; const vidPrev = document.getElementById('mla-vid-preview');
                 if(item.video) { vidPrev.src = item.video; vidPrev.style.display = 'block'; } else { vidPrev.style.display = 'none'; }
 
                 document.getElementById('mla-aud').value = item.audio || ''; const audPrev = document.getElementById('mla-aud-preview');
                 if(item.audio) { audPrev.src = item.audio; audPrev.style.display = 'block'; } else { audPrev.style.display = 'none'; }
                 
-                document.getElementById('mla-form-title').innerText = "Edit MLA Post";
+                document.getElementById('mla-form-title').innerText = "Edit Post";
             }
         }
 
@@ -1870,7 +2356,7 @@
         }
 
         function toggleLike(postId) {
-            if(!auth.currentUser) return alert("Please login via the menu to like posts!");
+            if(!auth.currentUser) return showNotification("Please login via the menu to like posts!", "error");
             const uid = auth.currentUser.uid;
             const ref = db.ref(`mla_posts/${postId}/likes/${uid}`);
             ref.once('value').then(snap => { if(snap.exists()) ref.remove(); else ref.set(true); });
@@ -1897,7 +2383,7 @@
         }
 
         function submitComment() {
-            if(!auth.currentUser) return alert("Please login to comment!");
+            if(!auth.currentUser) return showNotification("Please login to comment!", "error");
             const postId = document.getElementById('active-comment-post-id').value;
             const text = document.getElementById('comment-input').value;
             if(!text.trim()) return;
@@ -1918,9 +2404,7 @@
         function sharePost(title, postId) {
             const shareUrl = window.location.origin + window.location.pathname + '?page=mla&post=' + postId;
             if (navigator.share) { navigator.share({ title: `Check out this update: ${title}`, url: shareUrl }).catch(console.error); } 
-            else { 
-                navigator.clipboard.writeText(shareUrl).then(() => alert("Separate link for this post copied to clipboard!")); 
-            }
+            else { navigator.clipboard.writeText(shareUrl).then(() => showNotification("Separate link for this post copied to clipboard!", "success")); }
         }
 
         function renderMLAFeed() {
@@ -1928,17 +2412,34 @@
             container.innerHTML = '';
             
             let filteredPosts = allMLAPosts;
-            if (activeMLACandidateId) {
-                filteredPosts = allMLAPosts.filter(p => p.candId === activeMLACandidateId);
-            }
+            if (activeMLACandidateId) { filteredPosts = allMLAPosts.filter(p => p.candId === activeMLACandidateId); }
 
             if(filteredPosts.length === 0) {
-                container.innerHTML = '<div class="swiper-slide mla-slide"><p class="text-muted text-center" style="opacity:0.5;">No posts available for this candidate.</p></div>';
+                container.innerHTML = '<div class="swiper-slide mla-slide"><p class="text-muted text-center" style="opacity:0.5;">No posts available.</p></div>';
             } else {
                 filteredPosts.forEach(post => {
                     let mediaHTML = '';
-                    if(post.video) mediaHTML += `<video src="${post.video}" class="mla-media" controls playsinline controlsList="nodownload"></video>`;
-                    else if(post.image) mediaHTML += `<img src="${post.image}" class="mla-media">`;
+                    if(post.video) {
+                        mediaHTML += `
+                        <div class="video-loader" id="vloader-${post.id}" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:10; background:rgba(0,0,0,0.7); padding:15px; border-radius:12px; flex-direction:column; align-items:center;">
+                            <div class="animated-css-logo" style="height:40px; width:auto; justify-content:center;">
+                                <div class="logo-icon-wrap"><i class="fas fa-leaf logo-icon"></i></div>
+                                <span class="logo-text-anim" style="font-size:16px;">HEIROK</span>
+                            </div>
+                            <span style="color:white; font-size:0.75rem; margin-top:5px;">Loading Video...</span>
+                        </div>
+                        <video id="vid-${post.id}" src="${post.video}" class="mla-media" controls playsinline controlsList="nodownload" 
+                            onwaiting="document.getElementById('vloader-${post.id}').style.display='flex'"
+                            onplaying="document.getElementById('vloader-${post.id}').style.display='none'"
+                            oncanplay="document.getElementById('vloader-${post.id}').style.display='none'">
+                        </video>`;
+                    }
+                    else if(post.images && post.images.length > 0) {
+                        mediaHTML += `<div class="post-img-carousel" style="width:100%; height:100%; position:relative;">
+                            ${post.images.map((img, i) => `<img src="${img}" class="mla-media carousel-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; opacity:${i===0?1:0}; transition:opacity 0.8s;">`).join('')}
+                        </div>`;
+                    }
+                    else if(post.image) { mediaHTML += `<img src="${post.image}" class="mla-media">`; }
                     
                     let audioHTML = '';
                     if(post.audio) audioHTML = `<audio src="${post.audio}" controls style="width: 100%; margin-top: 8px; pointer-events: auto;"></audio>`;
@@ -1948,7 +2449,6 @@
                     let isLiked = auth.currentUser && post.likes && post.likes[auth.currentUser.uid] ? 'color: var(--danger);' : '';
                     let textId = `mla-text-${post.id}`;
 
-                    // Post Container completely isolates each post seamlessly
                     container.innerHTML += `
                         <div class="swiper-slide mla-slide">
                             <div class="mla-post-container">
@@ -1971,8 +2471,32 @@
                 });
             }
 
+            if(window.carouselIntervals) window.carouselIntervals.forEach(clearInterval);
+            window.carouselIntervals = [];
+            document.querySelectorAll('.post-img-carousel').forEach(carousel => {
+                const imgs = carousel.querySelectorAll('.carousel-img');
+                if(imgs.length > 1) {
+                    let idx = 0;
+                    const intv = setInterval(() => {
+                        imgs[idx].style.opacity = '0';
+                        idx = (idx + 1) % imgs.length;
+                        imgs[idx].style.opacity = '1';
+                    }, 3000);
+                    window.carouselIntervals.push(intv);
+                }
+            });
+
             if (mlaSwiperInstance) mlaSwiperInstance.destroy();
-            mlaSwiperInstance = new Swiper('.mla-swiper', { direction: 'vertical' });
+            mlaSwiperInstance = new Swiper('.mla-swiper', { 
+                direction: 'vertical',
+                on: {
+                    slideChange: function () {
+                        document.querySelectorAll('.mla-swiper video, .mla-swiper audio').forEach(media => {
+                            media.pause();
+                        });
+                    }
+                }
+            });
 
             if (window.pendingMlaScroll) {
                 const targetId = window.pendingMlaScroll;
@@ -2017,7 +2541,7 @@
         }
         function updateStats(e) {
             e.preventDefault(); const cat = document.getElementById('stat-category').value;
-            db.ref('stats/' + cat).set({ count: Number(document.getElementById('stat-count').value), details: document.getElementById('stat-details').value }).then(() => alert('Data Updated!'));
+            db.ref('stats/' + cat).set({ count: Number(document.getElementById('stat-count').value), details: document.getElementById('stat-details').value }).then(() => showNotification('Data Updated!', 'success'));
         }
 
         db.ref('stats').on('value', snap => {
@@ -2062,7 +2586,7 @@
             const shareUrl = window.location.origin + window.location.pathname + `?page=details&type=${type}&id=${id}`;
             document.getElementById('det-share-btn').onclick = function() {
                 if (navigator.share) { navigator.share({ title: dataObj.title || dataObj.name, url: shareUrl }).catch(console.error); } 
-                else { navigator.clipboard.writeText(shareUrl).then(() => alert("Separate link copied to clipboard!")); }
+                else { navigator.clipboard.writeText(shareUrl).then(() => showNotification("Separate link copied to clipboard!", "success")); }
             };
 
             navigate('page-item-details');
@@ -2081,8 +2605,8 @@
                 name: document.getElementById('sch-name').value, location: document.getElementById('sch-loc').value,
                 image: document.getElementById('sch-img').value, description: document.getElementById('sch-desc').value, timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('schools/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-school', 'school-form-title', 'Add School'); }); } 
-            else { db.ref('schools').push(data).then(()=>{ alert('Added'); resetForm('form-school'); }); }
+            if(id) { db.ref('schools/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-school', 'school-form-title', 'Add School'); }); } 
+            else { db.ref('schools').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-school'); }); }
         }
         function editSchool(id) {
             const item = schoolsData.find(n => n.id === id);
@@ -2132,8 +2656,8 @@
                 name: document.getElementById('hlth-name').value, location: document.getElementById('hlth-loc').value,
                 image: document.getElementById('hlth-img').value, description: document.getElementById('hlth-desc').value, timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('health/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-health', 'health-form-title', 'Add Health Centre'); }); } 
-            else { db.ref('health').push(data).then(()=>{ alert('Added'); resetForm('form-health'); }); }
+            if(id) { db.ref('health/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-health', 'health-form-title', 'Add Health Centre'); }); } 
+            else { db.ref('health').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-health'); }); }
         }
         function editHealth(id) {
             const item = healthData.find(n => n.id === id);
@@ -2184,8 +2708,8 @@
                 image: document.getElementById('not-img').value || '', content: document.getElementById('not-content').value || '',
                 date: new Date().toLocaleDateString(), timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('notices/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-notices', 'notice-form-title', 'Notices'); document.getElementById('form-notices-container').classList.add('d-none'); }); } 
-            else { db.ref('notices').push(data).then(()=>{ alert('Posted'); resetForm('form-notices'); document.getElementById('form-notices-container').classList.add('d-none'); }); }
+            if(id) { db.ref('notices/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-notices', 'notice-form-title', 'Notices'); document.getElementById('form-notices-container').classList.add('d-none'); }); } 
+            else { db.ref('notices').push(data).then(()=>{ showNotification('Posted successfully', 'success'); resetForm('form-notices'); document.getElementById('form-notices-container').classList.add('d-none'); }); }
         }
         function editNotice(id) {
             const item = noticesData.find(n => n.id === id);
@@ -2236,8 +2760,8 @@
         // --- DIRECTORY ---
         let dirData = [];
 
-        function addFamilyMember(name = '', relation = '') {
-            const list = document.getElementById('d-family-list');
+        function addFamilyMemberUI(containerId, name = '', relation = '') {
+            const list = document.getElementById(containerId);
             const div = document.createElement('div');
             div.className = 'family-member-row';
             div.style.cssText = 'display:flex; gap:10px; margin-bottom:8px;';
@@ -2271,20 +2795,15 @@
             });
 
             const data = {
-                name: document.getElementById('d-name').value, 
-                category: document.getElementById('d-cat').value,
-                phone: document.getElementById('d-phone').value, 
-                address: document.getElementById('d-address').value || '',
-                image: document.getElementById('d-img').value || '',
-                dob: document.getElementById('d-dob').value || '',
-                email: document.getElementById('d-email').value || '',
-                aadhar: document.getElementById('d-aadhar').value || '',
-                family: family,
-                nameLowerCase: document.getElementById('d-name').value.toLowerCase()
+                name: document.getElementById('d-name').value, category: document.getElementById('d-cat').value,
+                phone: document.getElementById('d-phone').value, address: document.getElementById('d-address').value || '',
+                image: document.getElementById('d-img').value || '', dob: document.getElementById('d-dob').value || '',
+                email: document.getElementById('d-email').value || '', aadhar: document.getElementById('d-aadhar').value || '',
+                family: family, nameLowerCase: document.getElementById('d-name').value.toLowerCase()
             };
 
-            if(id) { db.ref('directory/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-directory', 'dir-form-title', 'Add to Directory'); }); } 
-            else { db.ref('directory').push(data).then(()=>{ alert('Added'); resetForm('form-directory'); }); }
+            if(id) { db.ref('directory/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-directory', 'dir-form-title', 'Add to Directory'); }); } 
+            else { db.ref('directory').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-directory'); }); }
         }
 
         function editDirectory(id) {
@@ -2295,7 +2814,6 @@
                 document.getElementById('d-cat').value = item.category; 
                 document.getElementById('d-phone').value = item.phone;
                 document.getElementById('d-address').value = item.address || ''; 
-                
                 document.getElementById('d-dob').value = item.dob || '';
                 document.getElementById('d-email').value = item.email || '';
                 document.getElementById('d-aadhar').value = item.aadhar || '';
@@ -2306,11 +2824,7 @@
                 
                 const familyList = document.getElementById('d-family-list');
                 familyList.innerHTML = '';
-                if(item.family) {
-                    item.family.forEach(f => {
-                        addFamilyMember(f.name, f.relation);
-                    });
-                }
+                if(item.family) { item.family.forEach(f => { addFamilyMemberUI('d-family-list', f.name, f.relation); }); }
                 
                 document.getElementById('dir-form-title').innerText = "Edit Directory Entry";
             }
@@ -2318,7 +2832,7 @@
 
         function uploadCSV() {
             const fileInput = document.getElementById('csv-file');
-            if(!fileInput.files.length) return alert("Please select a CSV file.");
+            if(!fileInput.files.length) return showNotification("Please select a CSV file.", "error");
             const reader = new FileReader();
             reader.onload = function(e) {
                 const rows = e.target.result.split('\n');
@@ -2328,20 +2842,14 @@
                     const cols = row.split(',');
                     if(cols.length >= 3) {
                         db.ref('directory').push({
-                            name: cols[0]?.trim() || '', 
-                            phone: cols[1]?.trim() || '', 
-                            category: cols[2]?.trim() || '',
-                            address: cols[3]?.trim() || '',
-                            image: cols[4]?.trim() || '',
-                            dob: cols[5]?.trim() || '',
-                            email: cols[6]?.trim() || '',
-                            aadhar: cols[7]?.trim() || '',
-                            nameLowerCase: (cols[0]||'').trim().toLowerCase()
+                            name: cols[0]?.trim() || '', phone: cols[1]?.trim() || '', category: cols[2]?.trim() || '',
+                            address: cols[3]?.trim() || '', image: cols[4]?.trim() || '', dob: cols[5]?.trim() || '',
+                            email: cols[6]?.trim() || '', aadhar: cols[7]?.trim() || '', nameLowerCase: (cols[0]||'').trim().toLowerCase()
                         });
                         count++;
                     }
                 });
-                alert(`Successfully uploaded ${count} contacts from CSV.`); fileInput.value = '';
+                showNotification(`Successfully uploaded ${count} contacts from CSV.`, "success"); fileInput.value = '';
             };
             reader.readAsText(fileInput.files[0]);
         }
@@ -2362,7 +2870,7 @@
         function shareDirectory(id, name) {
             const shareUrl = window.location.origin + window.location.pathname + `?page=dir&id=${id}`;
             if (navigator.share) { navigator.share({ title: `Contact ${name}`, url: shareUrl }).catch(console.error); } 
-            else { navigator.clipboard.writeText(shareUrl).then(() => alert("Separate link copied to clipboard!")); }
+            else { navigator.clipboard.writeText(shareUrl).then(() => showNotification("Separate link copied to clipboard!", "success")); }
         }
 
         function showDirDetails(id) {
@@ -2464,8 +2972,8 @@
                 photo: document.getElementById('p-photo').value || 'https://ui-avatars.com/api/?name='+document.getElementById('p-name').value,
                 contact: document.getElementById('p-contact').value || ''
             };
-            if(id) { db.ref('panchayat/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-panchayat', 'panchayat-form-title', 'Add Panchayat Member'); }); } 
-            else { db.ref('panchayat').push(data).then(()=>{ alert('Added'); resetForm('form-panchayat'); }); }
+            if(id) { db.ref('panchayat/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-panchayat', 'panchayat-form-title', 'Add Panchayat Member'); }); } 
+            else { db.ref('panchayat').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-panchayat'); }); }
         }
         function editPanchayat(id) {
             const item = panchayatData.find(n => n.id === id);
@@ -2507,8 +3015,8 @@
                 title: document.getElementById('proj-title').value, status: document.getElementById('proj-status').value,
                 budget: document.getElementById('proj-budget').value || 'Not Disclosed', description: document.getElementById('proj-desc').value || ''
             };
-            if(id) { db.ref('projects/'+id).update(data).then(()=>{ alert('Updated'); resetForm('form-projects', 'project-form-title', 'Add Development Project'); }); } 
-            else { db.ref('projects').push(data).then(()=>{ alert('Added'); resetForm('form-projects'); }); }
+            if(id) { db.ref('projects/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-projects', 'project-form-title', 'Add Development Project'); }); } 
+            else { db.ref('projects').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-projects'); }); }
         }
         function editProject(id) {
             const item = projectsData.find(n => n.id === id);
@@ -2558,7 +3066,7 @@
                             data.id = snap.key;
                             openDetailsPage(data, 'page-home', t, i);
                         } else {
-                            alert("The shared item could not be found or has been removed.");
+                            showNotification("The shared item could not be found or has been removed.", "error");
                             navigate('page-home');
                         }
                     });
