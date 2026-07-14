@@ -225,7 +225,7 @@
 
         /* Dashboard & Auth */
         .auth-container { max-width: 360px; margin: 30px auto; padding: 30px; text-align: center; }
-        .dashboard-layout { display: block; } /* Changed to Block for the new off-canvas Sidebar */
+        .dashboard-layout { display: block; } 
         
         .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
         .admin-table th, .admin-table td { padding: 10px; border-bottom: 1px solid var(--glass-border); text-align: left; }
@@ -1376,7 +1376,8 @@
 
         window.lastListPage = 'page-home';
 
-        function navigate(pageId, menuItemElement = null) {
+        // MAIN NAVIGATION ROUTER WITH HISTORY API SUPPORT
+        function navigate(pageId, menuItemElement = null, isPopState = false) {
             
             if (pageId === 'page-auth' && auth.currentUser) {
                 pageId = 'page-admin';
@@ -1387,7 +1388,10 @@
             }
 
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('d-none'));
-            document.getElementById(pageId).classList.remove('d-none');
+            
+            // Fallback for invalid pages
+            const targetPage = document.getElementById(pageId) ? pageId : 'page-home';
+            document.getElementById(targetPage).classList.remove('d-none');
             
             document.getElementById('navbar').classList.remove('d-none');
 
@@ -1410,23 +1414,115 @@
             
             const dynamicTitle = document.getElementById('dynamic-header-title');
             if (dynamicTitle) {
-                dynamicTitle.innerText = titles[pageId] || 'Heirok Portal';
+                dynamicTitle.innerText = titles[targetPage] || 'Heirok Portal';
             }
 
             if(menuItemElement) {
                 document.querySelectorAll('.menu-box').forEach(box => box.classList.remove('active'));
                 menuItemElement.classList.add('active');
+            } else {
+                document.querySelectorAll('.menu-box').forEach(box => box.classList.remove('active'));
+                const mapping = {
+                    'page-home': 0, 'page-mla': 1, 'page-about': 2, 'page-notices': 3,
+                    'page-directory': 4, 'page-panchayat': 5, 'page-projects': 6,
+                    'page-auth': 7, 'page-admin': 7
+                };
+                if (mapping[targetPage] !== undefined) {
+                    const navItems = document.querySelectorAll('.nav-menu-item');
+                    if(navItems[mapping[targetPage]]) navItems[mapping[targetPage]].classList.add('active');
+                }
             }
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if(document.getElementById('side-menu').classList.contains('active')) toggleMenu();
             
-            if(pageId !== 'page-item-details') {
-                window.history.replaceState(null, "", "?page=" + pageId);
+            // Appends History API automatically correctly so Back Buttons navigate smoothly
+            if (!isPopState && targetPage !== 'page-item-details') {
+                window.history.pushState({ page: targetPage }, "", "?page=" + targetPage);
             }
             
-            if (pageId === 'page-home') runCounters();
+            if (targetPage === 'page-home') runCounters();
         }
+
+        // ================= HISTORY API EVENT LISTENERS ================= //
+        
+        window.addEventListener('popstate', function(event) {
+            // Close any open pop-up modals first
+            const dirModal = document.getElementById('dir-modal');
+            if (dirModal && dirModal.style.display === 'flex') {
+                dirModal.style.opacity = '0';
+                setTimeout(() => { dirModal.style.display = 'none'; }, 200);
+            }
+            const commentsModal = document.getElementById('comments-modal');
+            if (commentsModal && commentsModal.classList.contains('active')) {
+                closeComments();
+            }
+            const mlaAboutModal = document.getElementById('mla-about-modal');
+            if (mlaAboutModal && mlaAboutModal.style.display === 'flex') {
+                mlaAboutModal.style.display = 'none';
+            }
+
+            // Return to appropriate page based on back button routing
+            if (event.state && event.state.page) {
+                if (event.state.page === 'dir-modal') {
+                    navigate('page-directory', null, true);
+                } else if (event.state.page === 'page-item-details') {
+                    navigate(event.state.source || 'page-home', null, true);
+                } else {
+                    navigate(event.state.page, null, true);
+                }
+            } else {
+                navigate('page-home', null, true);
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const p = urlParams.get('page');
+            
+            // Ensures back button always has a destination
+            window.history.replaceState({ page: 'page-home' }, "", "?page=page-home");
+
+            if (p === 'details') {
+                const t = urlParams.get('type');
+                const i = urlParams.get('id');
+                if (t && i) {
+                    db.ref(t + '/' + i).once('value').then(snap => {
+                        if (snap.exists()) {
+                            const data = snap.val();
+                            data.id = snap.key;
+                            openDetailsPage(data, 'page-home', t, i);
+                        } else {
+                            showNotification("The shared item could not be found or has been removed.", "error");
+                            navigate('page-home', null, false);
+                        }
+                    });
+                } else { navigate('page-home', null, false); }
+            } else if (p === 'mla') {
+                const post = urlParams.get('post');
+                if (post) {
+                    navigate('page-mla', null, false);
+                    window.pendingMlaScroll = post;
+                } else { navigate('page-mla', null, false); }
+            } else if (p === 'dir') {
+                const i = urlParams.get('id');
+                if (i) {
+                    db.ref('directory/' + i).once('value').then(snap => {
+                        if (snap.exists()) {
+                            if (!dirData.find(d => d.id === i)) {
+                                dirData.push({id: snap.key, ...snap.val()});
+                            }
+                            navigate('page-directory', null, false);
+                            showDirDetails(i, true);
+                        } else { navigate('page-directory', null, false); }
+                    });
+                } else { navigate('page-directory', null, false); }
+            } else if (p && document.getElementById(p) && p !== 'page-home') {
+                navigate(p, null, false);
+            } else {
+                navigate('page-home', null, true); 
+            }
+        });
 
         /* 3. UPLOAD / LINK MEDIA TOGGLE LOGIC */
         function toggleMediaInput(containerId, hiddenId, previewId, type) {
@@ -2589,11 +2685,11 @@
                 else { navigator.clipboard.writeText(shareUrl).then(() => showNotification("Separate link copied to clipboard!", "success")); }
             };
 
-            navigate('page-item-details');
+            navigate('page-item-details', null, true); // true forces skip of pushState so we can inject correct item source
             const dynTitle = document.getElementById('dynamic-header-title');
             if (dynTitle) dynTitle.innerText = dataObj.name || dataObj.title || 'Details';
 
-            window.history.replaceState(null, "", shareUrl);
+            window.history.pushState({ page: 'page-item-details', source: sourcePageId }, "", shareUrl); // proper history push
         }
 
         // --- SCHOOLS ---
@@ -2858,12 +2954,15 @@
             dirData = []; snap.forEach(child => { dirData.push({id: child.key, ...child.val()}); }); renderDirectory(dirData);
         });
 
-        function hideDirDetails() {
+        // Hide directory using HTML5 pushState integration to close appropriately on back button
+        function hideDirDetails(isPopState = false) {
             const modal = document.getElementById('dir-modal');
             if(modal) {
                 modal.style.opacity = '0';
                 setTimeout(() => { modal.style.display = 'none'; }, 200);
-                window.history.replaceState(null, "", "?page=page-directory");
+                if (!isPopState) {
+                    window.history.back(); // allows mobile back button behavior to function cleanly
+                }
             }
         }
         
@@ -2873,7 +2972,7 @@
             else { navigator.clipboard.writeText(shareUrl).then(() => showNotification("Separate link copied to clipboard!", "success")); }
         }
 
-        function showDirDetails(id) {
+        function showDirDetails(id, pushHistory = true) {
             const item = dirData.find(d => d.id === id);
             if(!item) return;
             
@@ -2905,7 +3004,7 @@
             modal.innerHTML = `
                 <div class="glass animate__animated animate__zoomIn" style="background:var(--bg-main); width:100%; max-width:400px; max-height:90vh; overflow-y:auto; border-radius:12px; position:relative; padding:30px 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
                     <i class="fas fa-share-alt" onclick="shareDirectory('${item.id}', '${item.name.replace(/'/g, "\\'")}')" style="position:absolute; top:15px; right:55px; font-size:16px; color:var(--primary); cursor:pointer; background:rgba(17, 138, 178, 0.1); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:0.2s;"></i>
-                    <i class="fas fa-times" onclick="hideDirDetails()" style="position:absolute; top:15px; right:15px; font-size:18px; color:var(--danger); cursor:pointer; background:rgba(239, 71, 111, 0.1); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:0.2s;"></i>
+                    <i class="fas fa-times" onclick="hideDirDetails(false)" style="position:absolute; top:15px; right:15px; font-size:18px; color:var(--danger); cursor:pointer; background:rgba(239, 71, 111, 0.1); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:0.2s;"></i>
                     
                     ${imgHTML}
                     <h2 style="text-align:center; color:var(--primary); margin-bottom:5px; font-size:1.4rem;">${item.name}</h2>
@@ -2924,7 +3023,9 @@
             modal.style.display = 'flex';
             setTimeout(() => { modal.style.opacity = '1'; }, 10);
             
-            window.history.replaceState(null, "", "?page=dir&id=" + id);
+            if (pushHistory) {
+                window.history.pushState({ page: 'dir-modal' }, "", "?page=dir&id=" + id);
+            }
         }
 
         function renderDirectory(data) {
@@ -2935,7 +3036,7 @@
                 let imgHTML = item.image ? `<img src="${item.image}" style="width:75px; height:75px; border-radius:50%; object-fit:cover; border: 2px solid var(--primary);">` : `<div style="width:75px; height:75px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:30px;">${item.name.charAt(0)}</div>`;
 
                 container.innerHTML += `
-                    <div class="card glass" style="cursor:pointer; display:flex; flex-direction:row; gap:15px; align-items:center; padding:15px;" onclick="showDirDetails('${item.id}')">
+                    <div class="card glass" style="cursor:pointer; display:flex; flex-direction:row; gap:15px; align-items:center; padding:15px;" onclick="showDirDetails('${item.id}', true)">
                         <div style="flex-shrink:0;">
                             ${imgHTML}
                         </div>
@@ -3049,50 +3150,6 @@
                         <button class="btn btn-small btn-danger" onclick="deleteItem('projects', '${item.id}')"><i class="fas fa-trash"></i></button></td>
                     </tr>`;
             });
-        });
-
-        // ================= URL ROUTING / DEEP LINK RESOLUTION =================
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const p = urlParams.get('page');
-            
-            if (p === 'details') {
-                const t = urlParams.get('type');
-                const i = urlParams.get('id');
-                if (t && i) {
-                    db.ref(t + '/' + i).once('value').then(snap => {
-                        if (snap.exists()) {
-                            const data = snap.val();
-                            data.id = snap.key;
-                            openDetailsPage(data, 'page-home', t, i);
-                        } else {
-                            showNotification("The shared item could not be found or has been removed.", "error");
-                            navigate('page-home');
-                        }
-                    });
-                }
-            } else if (p === 'mla') {
-                const post = urlParams.get('post');
-                if (post) {
-                    navigate('page-mla');
-                    window.pendingMlaScroll = post;
-                }
-            } else if (p === 'dir') {
-                const i = urlParams.get('id');
-                if (i) {
-                    db.ref('directory/' + i).once('value').then(snap => {
-                        if (snap.exists()) {
-                            if (!dirData.find(d => d.id === i)) {
-                                dirData.push({id: snap.key, ...snap.val()});
-                            }
-                            navigate('page-directory');
-                            showDirDetails(i);
-                        }
-                    });
-                }
-            } else if (p && document.getElementById(p)) {
-                navigate(p);
-            }
         });
 
     </script>
