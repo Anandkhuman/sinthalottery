@@ -188,12 +188,11 @@
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; position: relative; }
         .section-title { text-align: center; font-size: 26px; margin-bottom: 25px; color: var(--primary); font-weight: 700; }
         
-        /* Hero Image Multiple Fade (Clear without shadows/opacity directly on image) */
+        /* Hero Image Multiple Fade */
         .hero { position: relative; height: calc(100vh - var(--header-height) - var(--header-gap)); height: calc(100dvh - var(--header-height) - var(--header-gap)); display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 15px; background: linear-gradient(to bottom, #063c1a, #021a0a); overflow: hidden; }
         #hero-bg-slider { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
         .hero-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out; }
         .hero-content { position: relative; z-index: 1; color: white; max-width: 700px; }
-        /* Very strong text shadow applied to text to make it readable over clear unshadowed images */
         .hero-title { font-size: 3.2rem; font-weight: 700; margin-bottom: 15px; animation: fadeInUp 1s; text-shadow: 2px 2px 5px rgba(0,0,0,1), 0px 0px 20px rgba(0,0,0,0.8); }
         .hero-subtitle { font-size: 1.2rem; margin-bottom: 25px; animation: fadeInUp 1.2s; text-shadow: 1px 1px 4px rgba(0,0,0,1), 0px 0px 15px rgba(0,0,0,0.8); }
         
@@ -561,7 +560,8 @@
                     
                     <form id="auth-form" onsubmit="handleAuth(event)">
                         <div class="form-group" id="name-group" style="display: none;"><input type="text" id="auth-name" class="form-control" placeholder="Full Name"></div>
-                        <div class="form-group"><input type="email" id="auth-email" class="form-control" placeholder="Email Address" required></div>
+                        <div class="form-group" id="phone-group" style="display: none;"><input type="text" id="auth-phone" class="form-control" placeholder="Mobile Number"></div>
+                        <div class="form-group"><input type="text" id="auth-login-id" class="form-control" placeholder="Email Address or Mobile Number" required></div>
                         <div class="form-group"><input type="password" id="auth-password" class="form-control" placeholder="Password" required></div>
                         
                         <div style="text-align: right; margin-top: -8px; margin-bottom: 12px;" id="forgot-pwd-container">
@@ -661,6 +661,7 @@
                         <h3>Edit My Profile</h3>
                         <form id="form-profile" onsubmit="updateProfile(event)" style="margin-top: 15px; max-width: 450px;">
                             <div class="form-group"><label>Full Name</label><input type="text" id="prof-name" class="form-control" required></div>
+                            <div class="form-group"><label>Mobile Number</label><input type="text" id="prof-phone" class="form-control" placeholder="Mobile Number"></div>
                             <div class="form-group">
                                 <div style="display:flex; justify-content:space-between;">
                                     <label>Profile Photo</label>
@@ -790,6 +791,13 @@
                             <button type="submit" class="btn btn-primary btn-small">Submit for Review</button>
                             <button type="button" class="btn glass btn-small" onclick="resetForm('form-user-dir', 'u-dir-form-title', 'Submit Directory Entry'); document.getElementById('u-d-family-list').innerHTML='';">Cancel</button>
                         </form>
+
+                        <div style="margin: 15px 0; padding: 12px; border: 1px dashed var(--primary); border-radius: 8px;">
+                            <h4>Upload via CSV</h4>
+                            <p style="font-size: 0.8rem; margin-bottom: 8px;">Format: Name, Mobile, Category, Address, ImageURL, DOB, Email, Aadhar</p>
+                            <input type="file" id="u-csv-file" accept=".csv" class="form-control" style="margin-bottom: 8px;">
+                            <button class="btn btn-secondary btn-small" style="background: var(--secondary); color: white; border: none;" onclick="uploadUserCSV()">Upload & Submit Requests</button>
+                        </div>
                     </div>
 
                     <!-- ================= ADMIN: REVIEW REQUESTS ================= -->
@@ -1433,40 +1441,49 @@
                 }
             }
             
-            window.scrollTo({ top: 0, behavior: 'smooth' });
             if(document.getElementById('side-menu').classList.contains('active')) toggleMenu();
             
-            // Appends History API automatically correctly so Back Buttons navigate smoothly
+            // Appends History API accurately preventing repetitive states & handles specific scrolls
             if (!isPopState && targetPage !== 'page-item-details') {
-                window.history.pushState({ page: targetPage }, "", "?page=" + targetPage);
+                const currentUrl = new URL(window.location);
+                if (currentUrl.searchParams.get('page') !== targetPage) {
+                    window.history.pushState({ page: targetPage }, "", "?page=" + targetPage);
+                }
+            }
+            
+            if (!isPopState) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
             
             if (targetPage === 'page-home') runCounters();
         }
 
-        // ================= HISTORY API EVENT LISTENERS ================= //
+        // ================= HISTORY API EVENT LISTENERS (Handles Correct Back Behavior) ================= //
         
         window.addEventListener('popstate', function(event) {
-            // Close any open pop-up modals first
+            let modalClosed = false;
+            // Close any open pop-up modals first smoothly
             const dirModal = document.getElementById('dir-modal');
             if (dirModal && dirModal.style.display === 'flex') {
                 dirModal.style.opacity = '0';
                 setTimeout(() => { dirModal.style.display = 'none'; }, 200);
+                modalClosed = true;
             }
             const commentsModal = document.getElementById('comments-modal');
             if (commentsModal && commentsModal.classList.contains('active')) {
                 closeComments();
+                modalClosed = true;
             }
             const mlaAboutModal = document.getElementById('mla-about-modal');
             if (mlaAboutModal && mlaAboutModal.style.display === 'flex') {
                 mlaAboutModal.style.display = 'none';
+                modalClosed = true;
             }
 
-            // Return to appropriate page based on back button routing
+            // Return strictly to the previous logged internal page
             if (event.state && event.state.page) {
-                if (event.state.page === 'dir-modal') {
-                    navigate('page-directory', null, true);
-                } else if (event.state.page === 'page-item-details') {
+                if (event.state.page === 'dir-modal' || event.state.page === 'page-item-details') {
+                    // Navigate gracefully avoiding getting stuck in dead end details
                     navigate(event.state.source || 'page-home', null, true);
                 } else {
                     navigate(event.state.page, null, true);
@@ -1480,8 +1497,8 @@
             const urlParams = new URLSearchParams(window.location.search);
             const p = urlParams.get('page');
             
-            // Ensures back button always has a destination
-            window.history.replaceState({ page: 'page-home' }, "", "?page=page-home");
+            // Ensures back button always has a destination initialization
+            window.history.replaceState({ page: p || 'page-home' }, "", "?page=" + (p || 'page-home'));
 
             if (p === 'details') {
                 const t = urlParams.get('type');
@@ -1669,6 +1686,12 @@
             isRegisterMode = !isRegisterMode;
             document.getElementById('auth-title').innerText = isRegisterMode ? 'Register Account' : 'Member Login';
             document.getElementById('name-group').style.display = isRegisterMode ? 'block' : 'none';
+            document.getElementById('phone-group').style.display = isRegisterMode ? 'block' : 'none';
+            
+            const loginIdInput = document.getElementById('auth-login-id');
+            loginIdInput.placeholder = isRegisterMode ? 'Email Address' : 'Email Address or Mobile Number';
+            loginIdInput.type = isRegisterMode ? 'email' : 'text';
+            
             document.getElementById('auth-submit').innerText = isRegisterMode ? 'Register' : 'Login';
             document.getElementById('auth-switch').innerText = isRegisterMode ? 'Already have an account? Login' : "Don't have an account? Register";
             document.getElementById('auth-error').style.display = 'none';
@@ -1676,18 +1699,30 @@
         }
 
         async function forgotPassword() {
-            const email = document.getElementById('auth-email').value;
+            let identifier = document.getElementById('auth-login-id').value.trim();
             const errorDiv = document.getElementById('auth-error');
             
-            if(!email) {
+            if(!identifier) {
                 errorDiv.style.display = 'block';
                 errorDiv.style.background = 'rgba(239, 71, 111, 0.1)';
                 errorDiv.style.color = 'var(--danger)';
-                errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Please enter your email address in the field above first.";
+                errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Please enter your email address or mobile number in the field above first.";
                 return;
             }
             try {
-                await auth.sendPasswordResetEmail(email);
+                let emailForReset = identifier;
+                // If it is entirely 10 or more digits, lookup real email associated with mobile
+                if (/^\d{10,}$/.test(identifier)) {
+                    const usersSnap = await db.ref('users').orderByChild('phone').equalTo(identifier).once('value');
+                    if (usersSnap.exists()) {
+                        const userData = Object.values(usersSnap.val())[0];
+                        if(userData.email) emailForReset = userData.email;
+                    } else {
+                        throw new Error("No account found with this mobile number.");
+                    }
+                }
+                
+                await auth.sendPasswordResetEmail(emailForReset);
                 errorDiv.style.display = 'block';
                 errorDiv.style.background = 'rgba(6, 214, 160, 0.1)';
                 errorDiv.style.color = 'var(--secondary)';
@@ -1702,7 +1737,7 @@
 
         async function handleAuth(e) {
             e.preventDefault();
-            const email = document.getElementById('auth-email').value;
+            const identifier = document.getElementById('auth-login-id').value.trim();
             const password = document.getElementById('auth-password').value;
             const errorDiv = document.getElementById('auth-error');
             errorDiv.style.display = 'none';
@@ -1710,14 +1745,35 @@
             try {
                 if (isRegisterMode) {
                     const name = document.getElementById('auth-name').value;
-                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    const phone = document.getElementById('auth-phone').value.trim();
+                    if(!phone) throw new Error("Mobile Number is required for registration.");
+                    
+                    // Validate if phone is already registered
+                    const phoneCheck = await db.ref('users').orderByChild('phone').equalTo(phone).once('value');
+                    if(phoneCheck.exists()) throw new Error("This mobile number is already registered.");
+                    
+                    const cred = await auth.createUserWithEmailAndPassword(identifier, password);
                     await db.ref('users/' + cred.user.uid).set({
-                        name: name, email: email, role: 'member', 
+                        name: name, email: identifier, phone: phone, role: 'member', 
                         photo: 'https://ui-avatars.com/api/?name='+name+'&background=random',
                         createdAt: firebase.database.ServerValue.TIMESTAMP,
                         banned: false
                     });
-                } else { await auth.signInWithEmailAndPassword(email, password); }
+                } else { 
+                    let emailToLogin = identifier;
+                    // If login input is completely digits (mobile number style)
+                    if (/^\d{10,}$/.test(identifier)) {
+                        const usersSnap = await db.ref('users').orderByChild('phone').equalTo(identifier).once('value');
+                        if (usersSnap.exists()) {
+                            const userData = Object.values(usersSnap.val())[0];
+                            if(userData.email) emailToLogin = userData.email;
+                        } else {
+                            throw new Error("No account found with this mobile number.");
+                        }
+                    }
+                    await auth.signInWithEmailAndPassword(emailToLogin, password); 
+                }
+                
                 document.getElementById('auth-form').reset();
                 showNotification("Logged in successfully!", "success");
                 navigate('page-admin', document.getElementById('menu-auth-btn'));
@@ -1727,7 +1783,7 @@
                 errorDiv.style.background = 'rgba(239, 71, 111, 0.1)';
                 errorDiv.style.color = 'var(--danger)';
                 if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-                    errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Account not found. Please register or check your email.";
+                    errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Account not found. Please register or check your credentials.";
                 } else if(err.code === 'auth/wrong-password') {
                     errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> Incorrect password. Please try again.";
                 } else { errorDiv.innerHTML = "<i class='fas fa-exclamation-circle'></i> " + err.message; }
@@ -1743,7 +1799,7 @@
                     window.isSettingGooglePassword = true;
                     pendingGoogleUser = result.user;
                     pendingGoogleData = {
-                        name: result.user.displayName || 'User', email: result.user.email,
+                        name: result.user.displayName || 'User', email: result.user.email, phone: '',
                         photo: result.user.photoURL || 'https://ui-avatars.com/api/?name='+(result.user.displayName||'User'),
                         role: 'member',
                         createdAt: firebase.database.ServerValue.TIMESTAMP,
@@ -1820,6 +1876,8 @@
                         document.getElementById('user-avatar').src = data.photo || 'https://ui-avatars.com/api/?name='+data.name;
                         
                         document.getElementById('prof-name').value = data.name;
+                        document.getElementById('prof-phone').value = data.phone || '';
+                        
                         const pPhoto = document.getElementById('prof-photo');
                         if (pPhoto) pPhoto.value = data.photo || '';
                         const pPreview = document.getElementById('prof-preview');
@@ -1842,7 +1900,7 @@
                         window.isSettingGooglePassword = true;
                         pendingGoogleUser = user;
                         pendingGoogleData = {
-                            name: user.displayName || 'User', email: user.email,
+                            name: user.displayName || 'User', email: user.email, phone: '',
                             photo: user.photoURL || 'https://ui-avatars.com/api/?name='+(user.displayName||'User'),
                             role: 'member', createdAt: firebase.database.ServerValue.TIMESTAMP,
                             banned: false
@@ -1910,6 +1968,7 @@
             if(user) {
                 db.ref('users/' + user.uid).update({
                     name: document.getElementById('prof-name').value,
+                    phone: document.getElementById('prof-phone').value,
                     photo: document.getElementById('prof-photo').value || 'https://ui-avatars.com/api/?name='+document.getElementById('prof-name').value
                 }).then(() => showNotification('Profile Updated successfully!', 'success'));
             }
@@ -2083,6 +2142,35 @@
 
             if(id) { db.ref('requests/'+id).update(payload).then(() => { showNotification('Resubmitted successfully!', 'success'); resetForm('form-user-dir'); document.getElementById('u-d-family-list').innerHTML=''; switchAdminTab('tab-my-requests'); }); } 
             else { db.ref('requests').push(payload).then(() => { showNotification('Submitted for review!', 'success'); resetForm('form-user-dir'); document.getElementById('u-d-family-list').innerHTML=''; switchAdminTab('tab-my-requests'); }); }
+        }
+
+        function uploadUserCSV() {
+            const fileInput = document.getElementById('u-csv-file');
+            if(!fileInput.files.length) return showNotification("Please select a CSV file.", "error");
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const rows = e.target.result.split('\n');
+                let count = 0;
+                rows.forEach((row, index) => {
+                    if(index === 0 || !row.trim()) return;
+                    const cols = row.split(',');
+                    if(cols.length >= 3) {
+                        const data = {
+                            name: cols[0]?.trim() || '', phone: cols[1]?.trim() || '', category: cols[2]?.trim() || '',
+                            address: cols[3]?.trim() || '', image: cols[4]?.trim() || '', dob: cols[5]?.trim() || '',
+                            email: cols[6]?.trim() || '', aadhar: cols[7]?.trim() || '', nameLowerCase: (cols[0]||'').trim().toLowerCase(),
+                            family: []
+                        };
+                        const payload = { uid: auth.currentUser.uid, type: 'directory', status: 'pending', remarks: '', timestamp: firebase.database.ServerValue.TIMESTAMP, data: data };
+                        db.ref('requests').push(payload);
+                        count++;
+                    }
+                });
+                showNotification(`Successfully submitted ${count} contact requests from CSV.`, "success"); 
+                fileInput.value = '';
+                switchAdminTab('tab-my-requests');
+            };
+            reader.readAsText(fileInput.files[0]);
         }
 
         function editMyRequest(reqId) {
@@ -2685,11 +2773,11 @@
                 else { navigator.clipboard.writeText(shareUrl).then(() => showNotification("Separate link copied to clipboard!", "success")); }
             };
 
-            navigate('page-item-details', null, true); // true forces skip of pushState so we can inject correct item source
+            navigate('page-item-details', null, true); // true forces skip of pushState so we can inject correct item source seamlessly
             const dynTitle = document.getElementById('dynamic-header-title');
             if (dynTitle) dynTitle.innerText = dataObj.name || dataObj.title || 'Details';
 
-            window.history.pushState({ page: 'page-item-details', source: sourcePageId }, "", shareUrl); // proper history push
+            window.history.pushState({ page: 'page-item-details', source: sourcePageId }, "", shareUrl); // proper history push maintaining precise back track
         }
 
         // --- SCHOOLS ---
