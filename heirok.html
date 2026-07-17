@@ -168,6 +168,8 @@
         .btn { padding: 8px 18px; border-radius: 6px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(17, 138, 178, 0.4); }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-accent { background: var(--accent); color: var(--dark); }
         .btn-danger { background: var(--danger); color: white; }
         .btn-small { padding: 5px 10px; font-size: 0.8rem; }
         
@@ -495,6 +497,7 @@
             </div>
         </section>
 
+        <!-- ================= ITEM DETAILS PAGE ================= -->
         <section id="page-item-details" class="page-section content-page d-none container">
             <div class="glass" style="padding: 30px; overflow: hidden;">
                 <img id="det-img" src="" alt="Image" style="width: 100%; height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
@@ -502,16 +505,52 @@
                     <h2 id="det-title" style="color: var(--primary); margin-bottom: 8px;">Title</h2>
                     <button id="det-share-btn" class="btn btn-primary btn-small" style="flex-shrink: 0;"><i class="fas fa-share-alt"></i> Share</button>
                 </div>
-                <p class="text-muted" style="margin-bottom: 15px;" id="det-loc"><i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> Location</p>
+                <p class="text-muted" style="margin-bottom: 15px; line-height: 1.6;" id="det-loc"><i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> Location</p>
                 <hr style="border-color: var(--glass-border); margin-bottom: 15px;">
                 <div id="det-desc" style="line-height: 1.7;">Description...</div>
+                <div id="det-extra-actions" style="display: none;"></div>
+            </div>
+        </section>
+
+        <!-- ================= SCHOOL NOTIFICATIONS & RESULTS VIEW (FRONTEND) ================= -->
+        <section id="page-school-notices" class="page-section content-page d-none container">
+            <h2 class="section-title" id="sn-title">School Notifications</h2>
+            <button class="btn btn-primary btn-small" style="margin-bottom: 15px;" onclick="navigate('page-item-details', null, true)"><i class="fas fa-arrow-left"></i> Back to School</button>
+            <div class="glass" style="padding: 20px;">
+                <ul id="school-notices-list" style="list-style: none;"></ul>
+            </div>
+        </section>
+
+        <section id="page-school-results" class="page-section content-page d-none container">
+            <h2 class="section-title" id="sr-title">Exam Results</h2>
+            <button class="btn btn-primary btn-small" style="margin-bottom: 15px;" onclick="navigate('page-item-details', null, true)"><i class="fas fa-arrow-left"></i> Back to School</button>
+            <div class="glass" style="padding: 20px;" id="school-results-list">
+                <!-- List of exams -->
+            </div>
+        </section>
+
+        <section id="page-school-result-view" class="page-section content-page d-none container">
+            <h2 class="section-title" id="srv-title">Result Details</h2>
+            <button class="btn btn-primary btn-small" style="margin-bottom: 15px;" onclick="navigate('page-school-results', null, true)"><i class="fas fa-arrow-left"></i> Back to Exams</button>
+            
+            <div id="srv-img-view" class="glass text-center d-none" style="padding: 20px;">
+                <img id="srv-img" src="" style="max-width: 100%; border-radius: 8px;">
+            </div>
+            
+            <div id="srv-csv-view" class="glass d-none" style="padding: 20px;">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <input type="text" id="srv-search" class="form-control" placeholder="Search by Roll Number or Name..." oninput="filterSchoolResult()">
+                </div>
+                <div id="srv-student-result">
+                    <!-- Rendered student card -->
+                </div>
             </div>
         </section>
 
         <!-- ================= OTHER PAGES ================= -->
         <section id="page-about" class="page-section content-page d-none container">
             <h2 class="section-title">About Heirok Village</h2>
-            <div class="glass" style="padding: 30px;">
+            <div class="glass" style="padding: 30px;" id="about-content-container">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
                     <div><img src="https://images.unsplash.com/photo-1596704179357-195c808f0294?q=80&w=800&auto=format&fit=crop" alt="Heirok Landscape" style="width: 100%; border-radius: 10px; box-shadow: var(--shadow);"></div>
                     <div>
@@ -859,6 +898,35 @@
                             </div>
                             
                             <hr style="margin: 20px 0; border-color: var(--glass-border);">
+
+                            <h4 style="margin-bottom: 10px; color: var(--primary);">Explore Village (About) Details</h4>
+                            <div class="form-group">
+                                <label>About Title</label>
+                                <input type="text" id="set-about-title" class="form-control" placeholder="e.g. History & Geography">
+                            </div>
+                            <div class="form-group">
+                                <label>About Content</label>
+                                <textarea id="set-about-content" class="form-control" rows="4" placeholder="Description of the village..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Quick Facts (Comma separated, e.g. District: Thoubal, State: Manipur)</label>
+                                <input type="text" id="set-about-facts" class="form-control" placeholder="District: Thoubal, State: Manipur, Language: Meiteilon">
+                            </div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <label>About Image</label>
+                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('about-img-container', 'set-about-img', 'about-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                </div>
+                                <div id="about-img-container" data-mode="file">
+                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'about-preview', 'set-about-img', 'about-progress', 'image')">
+                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'set-about-img', 'about-preview', 'image')">
+                                    <div class="progress d-none" id="about-progress"><div class="progress-bar"></div></div>
+                                </div>
+                                <input type="hidden" id="set-about-img">
+                                <img id="about-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            </div>
+
+                            <hr style="margin: 20px 0; border-color: var(--glass-border);">
                             
                             <h4 style="margin-bottom: 10px; color: var(--primary);">Footer Details</h4>
                             <div class="form-group">
@@ -1011,30 +1079,110 @@
                         </form>
                     </div>
 
-                    <!-- SCHOOLS -->
+                    <!-- SCHOOLS & RESULTS ADMIN -->
                     <div id="tab-schools" class="admin-tab d-none">
-                        <h3 id="school-form-title">Add School</h3>
-                        <form id="form-school" onsubmit="saveSchool(event)" style="margin-top: 15px;">
-                            <input type="hidden" id="edit-school-id">
-                            <div class="form-group"><input type="text" id="sch-name" class="form-control" placeholder="Name" required></div>
-                            <div class="form-group"><input type="text" id="sch-loc" class="form-control" placeholder="Location" required></div>
-                            <div class="form-group">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <label>Image</label>
-                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('sch-img-container', 'sch-img', 'sch-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
-                                </div>
-                                <div id="sch-img-container" data-mode="file">
-                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'sch-preview', 'sch-img', 'sch-progress', 'image')">
-                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'sch-img', 'sch-preview', 'image')">
-                                    <div class="progress d-none" id="sch-progress"><div class="progress-bar"></div></div>
-                                </div>
-                                <input type="hidden" id="sch-img">
-                                <img id="sch-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                        <div style="display:flex; justify-content: space-between; align-items:center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                            <h3>Manage Schools & Results</h3>
+                            <div style="display:flex; gap: 8px; flex-wrap:wrap;">
+                                <button class="btn btn-primary btn-small" onclick="showSchoolAdminForm('school')"><i class="fas fa-school"></i> School</button>
+                                <button class="btn btn-secondary btn-small" onclick="showSchoolAdminForm('notice')"><i class="fas fa-bullhorn"></i> Notice</button>
+                                <button class="btn btn-accent btn-small" onclick="showSchoolAdminForm('result')"><i class="fas fa-file-alt"></i> Result</button>
                             </div>
-                            <div class="form-group"><textarea id="sch-desc" class="form-control" rows="3" placeholder="Description..." required></textarea></div>
-                            <button type="submit" class="btn btn-primary btn-small">Save</button>
-                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-school', 'school-form-title', 'Add School')">Cancel</button>
-                        </form>
+                        </div>
+
+                        <!-- 1. School Form -->
+                        <div id="form-school-wrap" class="school-admin-form d-none" style="padding: 15px; border: 1px dashed var(--primary); border-radius: 8px; margin-bottom: 15px;">
+                            <h4 id="school-form-title" style="margin-bottom:10px; color: var(--primary);">Add School</h4>
+                            <form id="form-school" onsubmit="saveSchool(event)">
+                                <input type="hidden" id="edit-school-id">
+                                <div class="form-group"><input type="text" id="sch-name" class="form-control" placeholder="Name" required></div>
+                                <div class="form-group"><input type="text" id="sch-loc" class="form-control" placeholder="Location" required></div>
+                                <div class="form-group"><input type="text" id="sch-address" class="form-control" placeholder="Full Address (Optional)"></div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <label>Image</label>
+                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('sch-img-container', 'sch-img', 'sch-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
+                                    </div>
+                                    <div id="sch-img-container" data-mode="file">
+                                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'sch-preview', 'sch-img', 'sch-progress', 'image')">
+                                        <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'sch-img', 'sch-preview', 'image')">
+                                        <div class="progress d-none" id="sch-progress"><div class="progress-bar"></div></div>
+                                    </div>
+                                    <input type="hidden" id="sch-img">
+                                    <img id="sch-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                                </div>
+                                <div class="form-group"><textarea id="sch-desc" class="form-control" rows="3" placeholder="Description..." required></textarea></div>
+                                <button type="submit" class="btn btn-primary btn-small">Save School</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none');">Cancel</button>
+                            </form>
+                        </div>
+                        
+                        <!-- 2. School Notification Form -->
+                        <div id="form-s-notice-wrap" class="school-admin-form d-none" style="padding: 15px; border: 1px dashed var(--secondary); border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="margin-bottom:10px; color: var(--secondary);">Add School Notification</h4>
+                            <form id="form-s-notice" onsubmit="saveSchoolNotice(event)">
+                                <div class="form-group"><select id="s-not-school" class="form-control" required><option value="">Select School</option></select></div>
+                                <div class="form-group"><input type="text" id="s-not-title" class="form-control" placeholder="Notice Title" required></div>
+                                <div class="form-group"><textarea id="s-not-desc" class="form-control" rows="3" placeholder="Notice Details"></textarea></div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <label>Image (Optional)</label>
+                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('s-not-img-container', 's-not-img', 's-not-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                    </div>
+                                    <div id="s-not-img-container" data-mode="file">
+                                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 's-not-preview', 's-not-img', 's-not-progress', 'image')">
+                                        <input type="url" class="form-control link-input d-none" placeholder="URL..." oninput="handleLinkInput(this.value, 's-not-img', 's-not-preview', 'image')">
+                                        <div class="progress d-none" id="s-not-progress"><div class="progress-bar"></div></div>
+                                    </div>
+                                    <input type="hidden" id="s-not-img">
+                                    <img id="s-not-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                                </div>
+                                <button type="submit" class="btn btn-secondary btn-small">Save Notice</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-s-notice'); document.getElementById('form-s-notice-wrap').classList.add('d-none');">Cancel</button>
+                            </form>
+                        </div>
+                        
+                        <!-- 3. Exam Result Form -->
+                        <div id="form-s-result-wrap" class="school-admin-form d-none" style="padding: 15px; border: 1px dashed var(--accent); border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="margin-bottom:10px; color: var(--accent);">Add Exam Result</h4>
+                            <form id="form-s-result" onsubmit="saveSchoolResult(event)">
+                                <div class="form-group"><select id="s-res-school" class="form-control" required><option value="">Select School</option></select></div>
+                                <div class="form-group"><input type="text" id="s-res-title" class="form-control" placeholder="Exam Title (e.g., Mid Term 2026)" required></div>
+                                <div class="form-group">
+                                    <label>Result Format</label>
+                                    <select id="s-res-type" class="form-control" onchange="document.getElementById('s-res-img-wrap').classList.toggle('d-none', this.value==='csv'); document.getElementById('s-res-csv-wrap').classList.toggle('d-none', this.value==='image');">
+                                        <option value="csv">CSV File</option>
+                                        <option value="image">Image (Result Sheet)</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="s-res-csv-wrap" class="form-group">
+                                    <label style="color: var(--primary);">Upload CSV File</label>
+                                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 6px;">
+                                        <strong>CSV Format Info:</strong><br>First row must be headers. Fixed columns are: <code>RollNo, Name, TotalMarks, Status</code> (Status should be Pass or Fail). Any other columns you add (like <code>Math, Science, English</code>) will automatically be treated as subject-wise marks. 
+                                    </p>
+                                    <input type="file" id="s-res-csv" class="form-control" accept=".csv">
+                                </div>
+
+                                <div id="s-res-img-wrap" class="form-group d-none">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <label>Result Image</label>
+                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('s-res-img-container', 's-res-img', 's-res-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle</span>
+                                    </div>
+                                    <div id="s-res-img-container" data-mode="file">
+                                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 's-res-preview', 's-res-img', 's-res-progress', 'image')">
+                                        <input type="url" class="form-control link-input d-none" placeholder="URL..." oninput="handleLinkInput(this.value, 's-res-img', 's-res-preview', 'image')">
+                                        <div class="progress d-none" id="s-res-progress"><div class="progress-bar"></div></div>
+                                    </div>
+                                    <input type="hidden" id="s-res-img">
+                                    <img id="s-res-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                                </div>
+
+                                <button type="submit" class="btn btn-accent btn-small">Save Result</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-s-result'); document.getElementById('form-s-result-wrap').classList.add('d-none');">Cancel</button>
+                            </form>
+                        </div>
+
                         <hr style="margin: 15px 0; border-color: var(--glass-border);">
                         <table class="admin-table"><thead><tr><th>Name</th><th>Loc</th><th>Actions</th></tr></thead><tbody id="admin-schools-list"></tbody></table>
                     </div>
@@ -1269,7 +1417,6 @@
                 
                 const now = audioContextHolder.ctx.currentTime;
                 if (type === 'success') {
-                    // Two short high beeps
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(600, now);
                     osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
@@ -1293,7 +1440,6 @@
                     osc2.stop(now + 0.3);
 
                 } else if (type === 'error' || type === 'failed') {
-                    // Low buzzer sound
                     osc.type = 'sawtooth';
                     osc.frequency.setValueAtTime(150, now);
                     osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
@@ -1382,6 +1528,13 @@
             document.getElementById('admin-overlay').classList.toggle('active');
         }
 
+        function showSchoolAdminForm(type) {
+            document.querySelectorAll('.school-admin-form').forEach(el => el.classList.add('d-none'));
+            if(type === 'school') document.getElementById('form-school-wrap').classList.remove('d-none');
+            if(type === 'notice') document.getElementById('form-s-notice-wrap').classList.remove('d-none');
+            if(type === 'result') document.getElementById('form-s-result-wrap').classList.remove('d-none');
+        }
+
         window.lastListPage = 'page-home';
 
         // MAIN NAVIGATION ROUTER WITH HISTORY API SUPPORT
@@ -1417,7 +1570,10 @@
                 'page-schools': 'Schools',
                 'page-health': 'Health Centres',
                 'page-item-details': 'Details',
-                'page-mla': 'Update Name'
+                'page-mla': 'Update Name',
+                'page-school-notices': 'School Notifications',
+                'page-school-results': 'School Exam Results',
+                'page-school-result-view': 'Result Details'
             };
             
             const dynamicTitle = document.getElementById('dynamic-header-title');
@@ -1443,7 +1599,6 @@
             
             if(document.getElementById('side-menu').classList.contains('active')) toggleMenu();
             
-            // Appends History API accurately preventing repetitive states & handles specific scrolls
             if (!isPopState && targetPage !== 'page-item-details') {
                 const currentUrl = new URL(window.location);
                 if (currentUrl.searchParams.get('page') !== targetPage) {
@@ -1457,12 +1612,9 @@
             
             if (targetPage === 'page-home') runCounters();
         }
-
-        // ================= HISTORY API EVENT LISTENERS (Handles Correct Back Behavior) ================= //
         
         window.addEventListener('popstate', function(event) {
             let modalClosed = false;
-            // Close any open pop-up modals first smoothly
             const dirModal = document.getElementById('dir-modal');
             if (dirModal && dirModal.style.display === 'flex') {
                 dirModal.style.opacity = '0';
@@ -1480,10 +1632,8 @@
                 modalClosed = true;
             }
 
-            // Return strictly to the previous logged internal page
             if (event.state && event.state.page) {
                 if (event.state.page === 'dir-modal' || event.state.page === 'page-item-details') {
-                    // Navigate gracefully avoiding getting stuck in dead end details
                     navigate(event.state.source || 'page-home', null, true);
                 } else {
                     navigate(event.state.page, null, true);
@@ -1497,7 +1647,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const p = urlParams.get('page');
             
-            // Ensures back button always has a destination initialization
             window.history.replaceState({ page: p || 'page-home' }, "", "?page=" + (p || 'page-home'));
 
             if (p === 'details') {
@@ -1549,15 +1698,19 @@
             const hidden = document.getElementById(hiddenId);
             const preview = document.getElementById(previewId);
 
-            fileIn.value = ''; linkIn.value = ''; hidden.value = '';
+            if(fileIn) fileIn.value = ''; 
+            if(linkIn) linkIn.value = ''; 
+            if(hidden) hidden.value = '';
             if(preview) { preview.src = ''; preview.style.display = 'none'; }
 
             if(container.dataset.mode === 'file') {
                 container.dataset.mode = 'link';
-                fileIn.classList.add('d-none'); linkIn.classList.remove('d-none');
+                if(fileIn) fileIn.classList.add('d-none'); 
+                if(linkIn) linkIn.classList.remove('d-none');
             } else {
                 container.dataset.mode = 'file';
-                fileIn.classList.remove('d-none'); linkIn.classList.add('d-none');
+                if(fileIn) fileIn.classList.remove('d-none'); 
+                if(linkIn) linkIn.classList.add('d-none');
             }
         }
 
@@ -1711,7 +1864,6 @@
             }
             try {
                 let emailForReset = identifier;
-                // If it is entirely 10 or more digits, lookup real email associated with mobile
                 if (/^\d{10,}$/.test(identifier)) {
                     const usersSnap = await db.ref('users').orderByChild('phone').equalTo(identifier).once('value');
                     if (usersSnap.exists()) {
@@ -1748,7 +1900,6 @@
                     const phone = document.getElementById('auth-phone').value.trim();
                     if(!phone) throw new Error("Mobile Number is required for registration.");
                     
-                    // Validate if phone is already registered
                     const phoneCheck = await db.ref('users').orderByChild('phone').equalTo(phone).once('value');
                     if(phoneCheck.exists()) throw new Error("This mobile number is already registered.");
                     
@@ -1761,7 +1912,6 @@
                     });
                 } else { 
                     let emailToLogin = identifier;
-                    // If login input is completely digits (mobile number style)
                     if (/^\d{10,}$/.test(identifier)) {
                         const usersSnap = await db.ref('users').orderByChild('phone').equalTo(identifier).once('value');
                         if (usersSnap.exists()) {
@@ -2319,6 +2469,12 @@
             
             const data = {
                 heroImages: heroImages.length > 0 ? heroImages : ['https://images.unsplash.com/photo-1626025176767-742721fdf644?q=80&w=2000&auto=format&fit=crop'],
+                about: {
+                    title: document.getElementById('set-about-title').value,
+                    content: document.getElementById('set-about-content').value,
+                    facts: document.getElementById('set-about-facts').value,
+                    image: document.getElementById('set-about-img').value
+                },
                 footer: {
                     villageName: document.getElementById('set-vname').value, tagline: document.getElementById('set-tagline').value,
                     address: document.getElementById('set-address').value, email: document.getElementById('set-email').value,
@@ -2343,7 +2499,7 @@
                         dynHeroImgCount = 0;
                         data.heroImages.forEach(img => addHeroImageField(img));
                     }
-                } else if (data.heroImage) { // Fallback for old single image data
+                } else if (data.heroImage) { 
                     setHeroBackgrounds([data.heroImage]);
                     const adminHeroContainer = document.getElementById('admin-hero-images-container');
                     if (adminHeroContainer) {
@@ -2352,7 +2508,38 @@
                         addHeroImageField(data.heroImage);
                     }
                 } else {
-                    setHeroBackgrounds([]); // default
+                    setHeroBackgrounds([]); 
+                }
+                
+                // Load About Details
+                if(data.about) {
+                    document.getElementById('set-about-title').value = data.about.title || '';
+                    document.getElementById('set-about-content').value = data.about.content || '';
+                    document.getElementById('set-about-facts').value = data.about.facts || '';
+                    document.getElementById('set-about-img').value = data.about.image || '';
+                    if(data.about.image) {
+                        document.getElementById('about-preview').src = data.about.image;
+                        document.getElementById('about-preview').style.display = 'block';
+                    }
+                    
+                    if(data.about.title || data.about.content) {
+                        const aboutHtml = `
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+                                <div><img src="${data.about.image || 'https://images.unsplash.com/photo-1596704179357-195c808f0294?q=80&w=800&auto=format&fit=crop'}" alt="Explore Landscape" style="width: 100%; border-radius: 10px; box-shadow: var(--shadow);"></div>
+                                <div>
+                                    <h3>${data.about.title || 'History & Geography'}</h3>
+                                    <p style="margin-top: 12px; line-height: 1.7;">${(data.about.content || 'Heirok is a prominent town...').replace(/\n/g, '<br>')}</p>
+                                    <hr style="margin: 15px 0; border-color: var(--glass-border);">
+                                    <h4>Quick Facts</h4>
+                                    <ul style="margin-top: 8px; line-height: 1.8;">
+                                        ${(data.about.facts || 'District: Thoubal, State: Manipur, Language: Meiteilon').split(',').map(f => `<li><i class="fas fa-check-circle" style="color: var(--primary); width: 22px;"></i> ${f.trim()}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                        const aboutCont = document.getElementById('about-content-container');
+                        if (aboutCont) aboutCont.innerHTML = aboutHtml;
+                    }
                 }
                 
                 // Load Footer details
@@ -2761,51 +2948,184 @@
 
             document.getElementById('det-title').innerText = dataObj.name || dataObj.title;
             
-            if (dataObj.location) { document.getElementById('det-loc').innerHTML = `<i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> ${dataObj.location}`; } 
-            else if (dataObj.date) { document.getElementById('det-loc').innerHTML = `<i class="far fa-clock" style="color: var(--primary);"></i> ${dataObj.date} | ${dataObj.type ? dataObj.type.toUpperCase() : ''}`; } 
-            else { document.getElementById('det-loc').innerHTML = ''; }
-
+            let locHtml = '';
+            if (dataObj.location) { 
+                locHtml = `<i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> ${dataObj.location}`; 
+                if(dataObj.address) locHtml += `<br><span style="font-size:0.85rem; opacity:0.8; margin-top:5px; display:inline-block;">${dataObj.address}</span>`;
+            } 
+            else if (dataObj.date) { locHtml = `<i class="far fa-clock" style="color: var(--primary);"></i> ${dataObj.date} | ${dataObj.type ? dataObj.type.toUpperCase() : ''}`; } 
+            
+            document.getElementById('det-loc').innerHTML = locHtml;
             document.getElementById('det-desc').innerHTML = (dataObj.description || dataObj.content || 'No details provided.').replace(/\n/g, '<br>');
             
+            const extraActions = document.getElementById('det-extra-actions');
+            if (type === 'schools') {
+                extraActions.style.display = 'flex';
+                extraActions.style.gap = '10px';
+                extraActions.style.marginTop = '20px';
+                extraActions.style.flexWrap = 'wrap';
+                extraActions.innerHTML = `
+                    <button class="btn btn-secondary" onclick="viewSchoolNotices('${id}', '${dataObj.name.replace(/'/g, "\\'")}')"><i class="fas fa-bullhorn"></i> View Notifications</button>
+                    <button class="btn btn-accent" onclick="viewSchoolResults('${id}', '${dataObj.name.replace(/'/g, "\\'")}')"><i class="fas fa-file-alt"></i> Exam Results</button>
+                `;
+            } else {
+                extraActions.style.display = 'none';
+                extraActions.innerHTML = '';
+            }
+
             const shareUrl = window.location.origin + window.location.pathname + `?page=details&type=${type}&id=${id}`;
             document.getElementById('det-share-btn').onclick = function() {
                 if (navigator.share) { navigator.share({ title: dataObj.title || dataObj.name, url: shareUrl }).catch(console.error); } 
                 else { navigator.clipboard.writeText(shareUrl).then(() => showNotification("Separate link copied to clipboard!", "success")); }
             };
 
-            navigate('page-item-details', null, true); // true forces skip of pushState so we can inject correct item source seamlessly
+            navigate('page-item-details', null, true); 
             const dynTitle = document.getElementById('dynamic-header-title');
             if (dynTitle) dynTitle.innerText = dataObj.name || dataObj.title || 'Details';
 
-            window.history.pushState({ page: 'page-item-details', source: sourcePageId }, "", shareUrl); // proper history push maintaining precise back track
+            window.history.pushState({ page: 'page-item-details', source: sourcePageId }, "", shareUrl);
         }
 
-        // --- SCHOOLS ---
+        // --- SCHOOLS, NOTIFICATIONS & EXAM RESULTS LOGIC ---
         let schoolsData = [];
+        let allSchoolNotices = [];
+        let allSchoolResults = [];
+
         function saveSchool(e) {
             e.preventDefault();
             const id = document.getElementById('edit-school-id').value;
             const data = {
-                name: document.getElementById('sch-name').value, location: document.getElementById('sch-loc').value,
-                image: document.getElementById('sch-img').value, description: document.getElementById('sch-desc').value, timestamp: firebase.database.ServerValue.TIMESTAMP
+                name: document.getElementById('sch-name').value, 
+                location: document.getElementById('sch-loc').value,
+                address: document.getElementById('sch-address').value || '',
+                image: document.getElementById('sch-img').value, 
+                description: document.getElementById('sch-desc').value, 
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('schools/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-school', 'school-form-title', 'Add School'); }); } 
-            else { db.ref('schools').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-school'); }); }
+            if(id) { db.ref('schools/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); }); } 
+            else { db.ref('schools').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-school'); document.getElementById('form-school-wrap').classList.add('d-none'); }); }
         }
         function editSchool(id) {
             const item = schoolsData.find(n => n.id === id);
             if(item) {
-                document.getElementById('edit-school-id').value = id; document.getElementById('sch-name').value = item.name;
-                document.getElementById('sch-loc').value = item.location; document.getElementById('sch-img').value = item.image;
+                showSchoolAdminForm('school');
+                document.getElementById('edit-school-id').value = id; 
+                document.getElementById('sch-name').value = item.name;
+                document.getElementById('sch-loc').value = item.location; 
+                document.getElementById('sch-address').value = item.address || '';
+                document.getElementById('sch-img').value = item.image;
                 const prev = document.getElementById('sch-preview');
                 if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
-                document.getElementById('sch-desc').value = item.description; document.getElementById('school-form-title').innerText = "Edit School";
+                document.getElementById('sch-desc').value = item.description; 
+                document.getElementById('school-form-title').innerText = "Edit School";
             }
         }
+
+        function saveSchoolNotice(e) {
+            e.preventDefault();
+            const data = {
+                schoolId: document.getElementById('s-not-school').value,
+                title: document.getElementById('s-not-title').value,
+                description: document.getElementById('s-not-desc').value || '',
+                image: document.getElementById('s-not-img').value || '',
+                date: new Date().toLocaleDateString(),
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            db.ref('school_notices').push(data).then(() => {
+                showNotification('School Notice Published!', 'success');
+                resetForm('form-s-notice');
+                document.getElementById('form-s-notice-wrap').classList.add('d-none');
+            });
+        }
+
+        function saveSchoolResult(e) {
+            e.preventDefault();
+            const type = document.getElementById('s-res-type').value;
+            const data = {
+                schoolId: document.getElementById('s-res-school').value,
+                title: document.getElementById('s-res-title').value,
+                type: type,
+                date: new Date().toLocaleDateString(),
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            if (type === 'image') {
+                data.image = document.getElementById('s-res-img').value;
+                if(!data.image) return showNotification("Please upload an image.", "error");
+                db.ref('school_results').push(data).then(() => {
+                    showNotification('Result Published!', 'success');
+                    resetForm('form-s-result');
+                    document.getElementById('form-s-result-wrap').classList.add('d-none');
+                });
+            } else {
+                const fileInput = document.getElementById('s-res-csv');
+                if(!fileInput.files.length) return showNotification("Please upload a CSV file.", "error");
+                
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const rows = evt.target.result.split('\n');
+                    let headers = [];
+                    let students = [];
+                    
+                    rows.forEach((row, index) => {
+                        if(!row.trim()) return;
+                        const cols = row.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+                        if(index === 0) {
+                            headers = cols;
+                        } else {
+                            let student = { subjects: {} };
+                            cols.forEach((col, i) => {
+                                const header = headers[i] ? headers[i].toLowerCase().replace(/\s/g, '') : '';
+                                if(header === 'rollno' || header === 'roll') student.rollNo = col;
+                                else if(header === 'name' || header === 'studentname') student.name = col;
+                                else if(header === 'totalmarks' || header === 'total') student.totalMarks = col;
+                                else if(header === 'status' || header === 'result') student.status = col;
+                                else if(headers[i]) student.subjects[headers[i]] = col;
+                            });
+                            if(student.rollNo || student.name) students.push(student);
+                        }
+                    });
+                    
+                    data.students = students;
+                    db.ref('school_results').push(data).then(() => {
+                        showNotification('Result Published from CSV!', 'success');
+                        resetForm('form-s-result');
+                        fileInput.value = '';
+                        document.getElementById('form-s-result-wrap').classList.add('d-none');
+                    });
+                };
+                reader.readAsText(fileInput.files[0]);
+            }
+        }
+
+        db.ref('school_notices').on('value', snap => {
+            allSchoolNotices = [];
+            snap.forEach(child => { allSchoolNotices.push({id: child.key, ...child.val()}); });
+        });
+
+        db.ref('school_results').on('value', snap => {
+            allSchoolResults = [];
+            snap.forEach(child => { allSchoolResults.push({id: child.key, ...child.val()}); });
+        });
+
         db.ref('schools').orderByChild('timestamp').on('value', snap => {
-            const container = document.getElementById('schools-list-container'); const adminList = document.getElementById('admin-schools-list');
-            container.innerHTML = ''; adminList.innerHTML = ''; schoolsData = [];
-            snap.forEach(child => { schoolsData.unshift({ id: child.key, ...child.val() }); });
+            const container = document.getElementById('schools-list-container'); 
+            const adminList = document.getElementById('admin-schools-list');
+            const noticeSelect = document.getElementById('s-not-school');
+            const resultSelect = document.getElementById('s-res-school');
+            
+            container.innerHTML = ''; adminList.innerHTML = ''; 
+            let optionsHTML = '<option value="">Select School</option>';
+            schoolsData = [];
+            
+            snap.forEach(child => { 
+                const s = { id: child.key, ...child.val() };
+                schoolsData.unshift(s); 
+                optionsHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
+
+            if(noticeSelect) noticeSelect.innerHTML = optionsHTML;
+            if(resultSelect) resultSelect.innerHTML = optionsHTML;
 
             document.getElementById('stat-school-count').setAttribute('data-target', schoolsData.length);
             if(document.getElementById('page-home').classList.contains('active')) runCounters();
@@ -2830,6 +3150,138 @@
                 `;
             });
         });
+
+        function viewSchoolNotices(schoolId, schoolName) {
+            navigate('page-school-notices', null, false);
+            document.getElementById('sn-title').innerText = schoolName + " Notices";
+            const list = document.getElementById('school-notices-list');
+            list.innerHTML = '';
+            
+            const notices = allSchoolNotices.filter(n => n.schoolId === schoolId).reverse();
+            if(notices.length === 0) { list.innerHTML = '<p class="text-center text-muted">No notices available.</p>'; return; }
+            
+            notices.forEach(n => {
+                let imgHtml = n.image ? `<img src="${n.image}" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">` : '';
+                list.innerHTML += `
+                    <li style="padding: 15px; border-bottom: 1px solid var(--glass-border); margin-bottom: 10px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                        <h4 style="color: var(--primary); margin-bottom: 5px;">${n.title}</h4>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="far fa-clock"></i> ${n.date}</span>
+                        <p style="margin-top: 10px; font-size: 0.95rem; line-height: 1.6;">${(n.description||'').replace(/\n/g, '<br>')}</p>
+                        ${imgHtml}
+                    </li>
+                `;
+            });
+        }
+
+        function viewSchoolResults(schoolId, schoolName) {
+            navigate('page-school-results', null, false);
+            document.getElementById('sr-title').innerText = schoolName + " Results";
+            const list = document.getElementById('school-results-list');
+            list.innerHTML = '';
+            
+            const results = allSchoolResults.filter(r => r.schoolId === schoolId).reverse();
+            if(results.length === 0) { list.innerHTML = '<p class="text-center text-muted">No exam results available.</p>'; return; }
+            
+            results.forEach(r => {
+                const icon = r.type === 'image' ? 'fa-image' : 'fa-table';
+                list.innerHTML += `
+                    <div class="list-item glass" onclick="openSchoolResult('${r.id}', '${r.title.replace(/'/g, "\\'")}')">
+                        <div style="width: 50px; height: 50px; border-radius: 8px; background: var(--accent); color: var(--dark); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="list-item-content">
+                            <h3 style="color: var(--primary);">${r.title}</h3>
+                            <p><i class="far fa-clock"></i> Published: ${r.date}</p>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--text-muted); margin-left: auto; padding-right: 10px;"></i>
+                    </div>
+                `;
+            });
+        }
+
+        let currentActiveResultData = null;
+        function openSchoolResult(resultId, title) {
+            navigate('page-school-result-view', null, false);
+            document.getElementById('srv-title').innerText = title;
+            
+            const result = allSchoolResults.find(r => r.id === resultId);
+            if(!result) return;
+            currentActiveResultData = result;
+
+            document.getElementById('srv-img-view').classList.add('d-none');
+            document.getElementById('srv-csv-view').classList.add('d-none');
+
+            if(result.type === 'image') {
+                document.getElementById('srv-img-view').classList.remove('d-none');
+                document.getElementById('srv-img').src = result.image;
+            } else {
+                document.getElementById('srv-csv-view').classList.remove('d-none');
+                document.getElementById('srv-search').value = '';
+                document.getElementById('srv-student-result').innerHTML = '<p class="text-center text-muted">Enter your Roll Number or Name to search your result.</p>';
+            }
+        }
+
+        function filterSchoolResult() {
+            const query = document.getElementById('srv-search').value.toLowerCase().trim();
+            const container = document.getElementById('srv-student-result');
+            
+            if(!query || !currentActiveResultData || !currentActiveResultData.students) {
+                container.innerHTML = '<p class="text-center text-muted">Enter your Roll Number or Name to search your result.</p>';
+                return;
+            }
+
+            const matched = currentActiveResultData.students.filter(s => 
+                (s.rollNo && s.rollNo.toLowerCase().includes(query)) || 
+                (s.name && s.name.toLowerCase().includes(query))
+            );
+
+            if(matched.length === 0) {
+                container.innerHTML = '<p class="text-center" style="color: var(--danger);">No results found matching your query.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            matched.forEach(student => {
+                let statusColor = student.status && student.status.toLowerCase() === 'pass' ? 'var(--secondary)' : 'var(--danger)';
+                
+                let subjectsHtml = '';
+                if(student.subjects) {
+                    for(let sub in student.subjects) {
+                        subjectsHtml += `
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(0,0,0,0.1);">
+                                <span style="font-weight: 500; text-transform: capitalize;">${sub}</span>
+                                <span>${student.subjects[sub]}</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                container.innerHTML += `
+                    <div style="background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <div>
+                                <h3 style="color: var(--primary); margin-bottom: 5px;">${student.name || 'Unknown'}</h3>
+                                <p class="text-muted" style="font-size: 0.9rem;">Roll No: <strong>${student.rollNo || 'N/A'}</strong></p>
+                            </div>
+                            ${student.status ? `<div style="background: ${statusColor}; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; text-transform: uppercase;">${student.status}</div>` : ''}
+                        </div>
+                        
+                        <h4 style="margin-bottom: 10px; color: var(--text-main); font-size: 1rem; border-bottom: 2px solid var(--primary); padding-bottom: 5px; display: inline-block;">Marks Statement</h4>
+                        <div style="margin-bottom: 15px;">
+                            ${subjectsHtml}
+                        </div>
+                        
+                        ${student.totalMarks ? `
+                            <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(17, 138, 178, 0.1); border-radius: 6px; font-weight: bold; font-size: 1.1rem; color: var(--primary);">
+                                <span>Total Marks:</span>
+                                <span>${student.totalMarks}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        }
+
 
         // --- HEALTH ---
         let healthData = [];
@@ -3042,14 +3494,13 @@
             dirData = []; snap.forEach(child => { dirData.push({id: child.key, ...child.val()}); }); renderDirectory(dirData);
         });
 
-        // Hide directory using HTML5 pushState integration to close appropriately on back button
         function hideDirDetails(isPopState = false) {
             const modal = document.getElementById('dir-modal');
             if(modal) {
                 modal.style.opacity = '0';
                 setTimeout(() => { modal.style.display = 'none'; }, 200);
                 if (!isPopState) {
-                    window.history.back(); // allows mobile back button behavior to function cleanly
+                    window.history.back(); 
                 }
             }
         }
