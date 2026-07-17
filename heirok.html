@@ -508,6 +508,18 @@
                 <p class="text-muted" style="margin-bottom: 15px; line-height: 1.6;" id="det-loc"><i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> Location</p>
                 <hr style="border-color: var(--glass-border); margin-bottom: 15px;">
                 <div id="det-desc" style="line-height: 1.7;">Description...</div>
+                
+                <!-- Map & Direction -->
+                <div id="det-map-wrapper" style="display:none; margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+                    <h4 style="margin-bottom: 10px; color: var(--primary);">Location Map</h4>
+                    <div class="glass" style="padding: 8px; border-radius: 12px; overflow: hidden;">
+                        <iframe id="det-map-iframe" width="100%" height="250" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                    <a id="det-dir-btn" href="#" target="_blank" class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 10px;">
+                        <i class="fas fa-directions"></i> Get Directions
+                    </a>
+                </div>
+
                 <div id="det-extra-actions" style="display: none;"></div>
             </div>
         </section>
@@ -787,7 +799,16 @@
                                 <audio id="u-mla-aud-preview" controls style="display: none; margin-top: 8px; width: 100%;"></audio>
                             </div>
 
-                            <div class="form-group"><textarea id="u-mla-content" class="form-control" rows="3" placeholder="Post Text..."></textarea></div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                    <label>Post Text</label>
+                                    <select id="u-mla-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                        <option value="text">Plain Text</option>
+                                        <option value="html">HTML</option>
+                                    </select>
+                                </div>
+                                <textarea id="u-mla-content" class="form-control" rows="3" placeholder="Post Text..."></textarea>
+                            </div>
                             <button type="submit" class="btn btn-primary btn-small">Submit for Review</button>
                             <button type="button" class="btn glass btn-small" onclick="resetForm('form-user-post', 'u-post-form-title', 'Submit Update Post'); document.getElementById('u-mla-images-container').innerHTML='';">Cancel</button>
                         </form>
@@ -905,7 +926,13 @@
                                 <input type="text" id="set-about-title" class="form-control" placeholder="e.g. History & Geography">
                             </div>
                             <div class="form-group">
-                                <label>About Content</label>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                    <label>About Content</label>
+                                    <select id="set-about-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                        <option value="text">Plain Text</option>
+                                        <option value="html">HTML</option>
+                                    </select>
+                                </div>
                                 <textarea id="set-about-content" class="form-control" rows="4" placeholder="Description of the village..."></textarea>
                             </div>
                             <div class="form-group">
@@ -994,7 +1021,16 @@
                                     <input type="hidden" id="mlac-img">
                                     <img id="mlac-preview" style="height: 90px; display: none; margin-top: 10px; border-radius: 6px; object-fit:cover;">
                                 </div>
-                                <div class="form-group"><textarea id="mlac-about" class="form-control" rows="2" placeholder="About (Optional)"></textarea></div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <label>About (Optional)</label>
+                                        <select id="mlac-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                            <option value="text">Plain Text</option>
+                                            <option value="html">HTML</option>
+                                        </select>
+                                    </div>
+                                    <textarea id="mlac-about" class="form-control" rows="2" placeholder="About details..."></textarea>
+                                </div>
                                 <button type="submit" class="btn btn-primary btn-small">Save</button>
                                 <button type="button" class="btn glass btn-small" onclick="resetForm('form-mlac', 'mlac-form-title', 'Update Names'); document.getElementById('form-mlac-container').classList.add('d-none');">Cancel</button>
                             </form>
@@ -1052,7 +1088,16 @@
                                     <audio id="mla-aud-preview" controls style="display: none; margin-top: 8px; width: 100%;"></audio>
                                 </div>
 
-                                <div class="form-group"><textarea id="mla-content" class="form-control" rows="3" placeholder="Post Text..."></textarea></div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <label>Post Text</label>
+                                        <select id="mla-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                            <option value="text">Plain Text</option>
+                                            <option value="html">HTML</option>
+                                        </select>
+                                    </div>
+                                    <textarea id="mla-content" class="form-control" rows="3" placeholder="Post Text..."></textarea>
+                                </div>
                                 <button type="submit" class="btn btn-primary btn-small">Publish</button>
                                 <button type="button" class="btn glass btn-small" onclick="resetForm('form-mla', 'mla-form-title', 'Posts'); document.getElementById('form-mla-container').classList.add('d-none'); document.getElementById('admin-mla-images-container').innerHTML='';">Cancel</button>
                             </form>
@@ -1072,7 +1117,14 @@
                                 </select>
                             </div>
                             <div class="form-group"><label>Value</label><input type="number" id="stat-count" class="form-control" required></div>
-                            <div class="form-group"><label>Details</label>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                    <label>Details</label>
+                                    <select id="stat-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                        <option value="text">Plain Text</option>
+                                        <option value="html">HTML</option>
+                                    </select>
+                                </div>
                                 <textarea id="stat-details" class="form-control" rows="5" required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary btn-small">Update</button>
@@ -1096,7 +1148,8 @@
                             <form id="form-school" onsubmit="saveSchool(event)">
                                 <input type="hidden" id="edit-school-id">
                                 <div class="form-group"><input type="text" id="sch-name" class="form-control" placeholder="Name" required></div>
-                                <div class="form-group"><input type="text" id="sch-loc" class="form-control" placeholder="Location" required></div>
+                                <div class="form-group"><input type="text" id="sch-loc" class="form-control" placeholder="Location Name" required></div>
+                                <div class="form-group"><input type="text" id="sch-map-link" class="form-control" placeholder="Google Maps Link (Optional)"></div>
                                 <div class="form-group"><input type="text" id="sch-address" class="form-control" placeholder="Full Address (Optional)"></div>
                                 <div class="form-group">
                                     <div style="display:flex; justify-content:space-between;">
@@ -1111,7 +1164,16 @@
                                     <input type="hidden" id="sch-img">
                                     <img id="sch-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
                                 </div>
-                                <div class="form-group"><textarea id="sch-desc" class="form-control" rows="3" placeholder="Description..." required></textarea></div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <label>Description</label>
+                                        <select id="sch-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                            <option value="text">Plain Text</option>
+                                            <option value="html">HTML</option>
+                                        </select>
+                                    </div>
+                                    <textarea id="sch-desc" class="form-control" rows="3" placeholder="Description..." required></textarea>
+                                </div>
                                 <button type="submit" class="btn btn-primary btn-small">Save School</button>
                                 <button type="button" class="btn glass btn-small" onclick="resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none');">Cancel</button>
                             </form>
@@ -1123,7 +1185,16 @@
                             <form id="form-s-notice" onsubmit="saveSchoolNotice(event)">
                                 <div class="form-group"><select id="s-not-school" class="form-control" required><option value="">Select School</option></select></div>
                                 <div class="form-group"><input type="text" id="s-not-title" class="form-control" placeholder="Notice Title" required></div>
-                                <div class="form-group"><textarea id="s-not-desc" class="form-control" rows="3" placeholder="Notice Details"></textarea></div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <label>Notice Details</label>
+                                        <select id="s-not-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                            <option value="text">Plain Text</option>
+                                            <option value="html">HTML</option>
+                                        </select>
+                                    </div>
+                                    <textarea id="s-not-desc" class="form-control" rows="3" placeholder="Notice Details..."></textarea>
+                                </div>
                                 <div class="form-group">
                                     <div style="display:flex; justify-content:space-between;">
                                         <label>Image (Optional)</label>
@@ -1193,7 +1264,8 @@
                         <form id="form-health" onsubmit="saveHealth(event)" style="margin-top: 15px;">
                             <input type="hidden" id="edit-health-id">
                             <div class="form-group"><input type="text" id="hlth-name" class="form-control" placeholder="Name" required></div>
-                            <div class="form-group"><input type="text" id="hlth-loc" class="form-control" placeholder="Location" required></div>
+                            <div class="form-group"><input type="text" id="hlth-loc" class="form-control" placeholder="Location Name" required></div>
+                            <div class="form-group"><input type="text" id="hlth-map-link" class="form-control" placeholder="Google Maps Link (Optional)"></div>
                             <div class="form-group">
                                 <div style="display:flex; justify-content:space-between;">
                                     <label>Image</label>
@@ -1207,7 +1279,16 @@
                                 <input type="hidden" id="hlth-img">
                                 <img id="hlth-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
                             </div>
-                            <div class="form-group"><textarea id="hlth-desc" class="form-control" rows="3" placeholder="Description..." required></textarea></div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                    <label>Description</label>
+                                    <select id="hlth-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                        <option value="text">Plain Text</option>
+                                        <option value="html">HTML</option>
+                                    </select>
+                                </div>
+                                <textarea id="hlth-desc" class="form-control" rows="3" placeholder="Description..." required></textarea>
+                            </div>
                             <button type="submit" class="btn btn-primary btn-small">Save</button>
                             <button type="button" class="btn glass btn-small" onclick="resetForm('form-health', 'health-form-title', 'Add Health Centre')">Cancel</button>
                         </form>
@@ -1241,7 +1322,16 @@
                                     <input type="hidden" id="not-img">
                                     <img id="not-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
                                 </div>
-                                <div class="form-group"><textarea id="not-content" class="form-control" rows="3" placeholder="Full Details (Opt)"></textarea></div>
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <label>Full Details (Optional)</label>
+                                        <select id="not-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                            <option value="text">Plain Text</option>
+                                            <option value="html">HTML</option>
+                                        </select>
+                                    </div>
+                                    <textarea id="not-content" class="form-control" rows="3" placeholder="Full Details..."></textarea>
+                                </div>
                                 <button type="submit" class="btn btn-primary btn-small">Save</button>
                                 <button type="button" class="btn glass btn-small" onclick="resetForm('form-notices', 'notice-form-title', 'Notices'); document.getElementById('form-notices-container').classList.add('d-none');">Cancel</button>
                             </form>
@@ -1336,7 +1426,16 @@
                                 <select id="proj-status" class="form-control"><option value="Planned">Planned</option><option value="Ongoing">Ongoing</option><option value="Completed">Completed</option></select>
                             </div>
                             <div class="form-group"><input type="text" id="proj-budget" class="form-control" placeholder="Budget (Opt)"></div>
-                            <div class="form-group"><textarea id="proj-desc" class="form-control" rows="2" placeholder="Description"></textarea></div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                    <label>Description</label>
+                                    <select id="proj-format" class="form-control" style="width: auto; padding: 2px 5px; height: auto; font-size: 0.8rem;">
+                                        <option value="text">Plain Text</option>
+                                        <option value="html">HTML</option>
+                                    </select>
+                                </div>
+                                <textarea id="proj-desc" class="form-control" rows="2" placeholder="Description..."></textarea>
+                            </div>
                             <button type="submit" class="btn btn-primary btn-small">Save</button>
                             <button type="button" class="btn glass btn-small" onclick="resetForm('form-projects', 'project-form-title', 'Add Project')">Cancel</button>
                         </form>
@@ -1393,7 +1492,15 @@
 
     <!-- ================= APPLICATION LOGIC ================= -->
     <script>
-        /* 0. AUDIO CONTEXT & CUSTOM NOTIFICATIONS LOGIC */
+        /* 0. UTILITIES, AUDIO CONTEXT & CUSTOM NOTIFICATIONS LOGIC */
+        function renderContent(text, format) {
+            if (!text) return '';
+            if (format === 'html') return text;
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
         const audioContextHolder = { ctx: null, enabled: false };
 
         document.addEventListener('click', () => {
@@ -2259,7 +2366,9 @@
 
             const data = {
                 candId: document.getElementById('u-mla-cand-id').value, title: document.getElementById('u-mla-title').value,
-                content: document.getElementById('u-mla-content').value || '', images: images,
+                content: document.getElementById('u-mla-content').value || '', 
+                contentFormat: document.getElementById('u-mla-format').value,
+                images: images,
                 video: document.getElementById('u-mla-vid').value || '', audio: document.getElementById('u-mla-aud').value || '',
                 date: new Date().toLocaleString(), timestamp: firebase.database.ServerValue.TIMESTAMP
             };
@@ -2333,6 +2442,7 @@
                 document.getElementById('u-mla-cand-id').value = req.data.candId;
                 document.getElementById('u-mla-title').value = req.data.title;
                 document.getElementById('u-mla-content').value = req.data.content || '';
+                document.getElementById('u-mla-format').value = req.data.contentFormat || 'text';
                 
                 document.getElementById('u-mla-images-container').innerHTML = '';
                 if(req.data.images && req.data.images.length > 0) {
@@ -2381,7 +2491,7 @@
                 content.innerHTML = `
                     <strong>Title:</strong> ${req.data.title}<br>
                     <strong>Update Name ID:</strong> ${req.data.candId}<br>
-                    <strong>Content:</strong> ${req.data.content}<br>
+                    <strong>Content:</strong> ${renderContent(req.data.content, req.data.contentFormat)}<br>
                     <strong>Images:</strong> ${req.data.images ? req.data.images.length : 0} attached<br>
                     <strong>Video/Audio:</strong> ${req.data.video ? 'Yes' : 'No'} / ${req.data.audio ? 'Yes' : 'No'}
                 `;
@@ -2472,6 +2582,7 @@
                 about: {
                     title: document.getElementById('set-about-title').value,
                     content: document.getElementById('set-about-content').value,
+                    contentFormat: document.getElementById('set-about-format').value,
                     facts: document.getElementById('set-about-facts').value,
                     image: document.getElementById('set-about-img').value
                 },
@@ -2515,6 +2626,7 @@
                 if(data.about) {
                     document.getElementById('set-about-title').value = data.about.title || '';
                     document.getElementById('set-about-content').value = data.about.content || '';
+                    document.getElementById('set-about-format').value = data.about.contentFormat || 'text';
                     document.getElementById('set-about-facts').value = data.about.facts || '';
                     document.getElementById('set-about-img').value = data.about.image || '';
                     if(data.about.image) {
@@ -2528,7 +2640,7 @@
                                 <div><img src="${data.about.image || 'https://images.unsplash.com/photo-1596704179357-195c808f0294?q=80&w=800&auto=format&fit=crop'}" alt="Explore Landscape" style="width: 100%; border-radius: 10px; box-shadow: var(--shadow);"></div>
                                 <div>
                                     <h3>${data.about.title || 'History & Geography'}</h3>
-                                    <p style="margin-top: 12px; line-height: 1.7;">${(data.about.content || 'Heirok is a prominent town...').replace(/\n/g, '<br>')}</p>
+                                    <div style="margin-top: 12px; line-height: 1.7;">${renderContent(data.about.content || 'Heirok is a prominent town...', data.about.contentFormat)}</div>
                                     <hr style="margin: 15px 0; border-color: var(--glass-border);">
                                     <h4>Quick Facts</h4>
                                     <ul style="margin-top: 8px; line-height: 1.8;">
@@ -2579,6 +2691,7 @@
                 name: document.getElementById('mlac-name').value,
                 image: document.getElementById('mlac-img').value || 'https://ui-avatars.com/api/?name='+document.getElementById('mlac-name').value,
                 about: document.getElementById('mlac-about').value || '',
+                aboutFormat: document.getElementById('mlac-format').value,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             if(id) { db.ref('mla_candidates/'+id).update(data).then(()=>{ showNotification('Updated', 'success'); resetForm('form-mlac', 'mlac-form-title', 'Update Names'); document.getElementById('form-mlac-container').classList.add('d-none'); }); } 
@@ -2592,6 +2705,7 @@
                 document.getElementById('edit-mlac-id').value = id;
                 document.getElementById('mlac-name').value = item.name;
                 document.getElementById('mlac-about').value = item.about || '';
+                document.getElementById('mlac-format').value = item.aboutFormat || 'text';
                 
                 document.getElementById('mlac-img').value = item.image || '';
                 const imgPrev = document.getElementById('mlac-preview');
@@ -2635,7 +2749,7 @@
                     <img src="${c.image}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin-bottom: 15px; background: white;">
                     <h2 style="color: var(--primary); margin-bottom: 10px; font-size: 1.4rem;">${c.name}</h2>
                     <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.6; text-align: left; max-height: 50vh; overflow-y: auto; padding: 10px;">
-                        ${c.about ? c.about.replace(/\n/g, '<br>') : 'No info provided.'}
+                        ${c.about ? renderContent(c.about, c.aboutFormat) : 'No info provided.'}
                     </div>
                 </div>
             `;
@@ -2687,7 +2801,9 @@
 
             const data = {
                 candId: document.getElementById('mla-cand-id').value, title: document.getElementById('mla-title').value,
-                content: document.getElementById('mla-content').value || '', images: images,
+                content: document.getElementById('mla-content').value || '', 
+                contentFormat: document.getElementById('mla-format').value,
+                images: images,
                 video: document.getElementById('mla-vid').value || '', audio: document.getElementById('mla-aud').value || '',
                 date: new Date().toLocaleString(), timestamp: firebase.database.ServerValue.TIMESTAMP
             };
@@ -2701,6 +2817,7 @@
                 document.getElementById('form-mla-container').classList.remove('d-none');
                 document.getElementById('edit-mla-id').value = id; document.getElementById('mla-cand-id').value = item.candId;
                 document.getElementById('mla-title').value = item.title; document.getElementById('mla-content').value = item.content || '';
+                document.getElementById('mla-format').value = item.contentFormat || 'text';
                 
                 document.getElementById('admin-mla-images-container').innerHTML = '';
                 if(item.images && item.images.length > 0) {
@@ -2826,7 +2943,7 @@
                                 ${mediaHTML}
                                 <div class="mla-overlay-bottom">
                                     <h3 style="margin-bottom: 5px; font-size: 1.05rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${post.title}</h3>
-                                    <div id="${textId}" class="mla-text-container">${post.content}</div>
+                                    <div id="${textId}" class="mla-text-container">${renderContent(post.content, post.contentFormat)}</div>
                                     ${post.content.length > 80 ? `<div class="read-more-btn" onclick="toggleReadMore('${textId}')">Read More</div>` : ''}
                                     ${audioHTML}
                                     <p style="font-size: 0.75rem; margin-top: 8px; opacity: 0.7; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${post.date}</p>
@@ -2908,11 +3025,19 @@
         let homeStatsData = {};
         function loadStatCategory() {
             const cat = document.getElementById('stat-category').value;
-            if(homeStatsData[cat]) { document.getElementById('stat-count').value = homeStatsData[cat].count || 0; document.getElementById('stat-details').value = homeStatsData[cat].details || ''; }
+            if(homeStatsData[cat]) { 
+                document.getElementById('stat-count').value = homeStatsData[cat].count || 0; 
+                document.getElementById('stat-details').value = homeStatsData[cat].details || ''; 
+                document.getElementById('stat-format').value = homeStatsData[cat].detailsFormat || 'text'; 
+            }
         }
         function updateStats(e) {
             e.preventDefault(); const cat = document.getElementById('stat-category').value;
-            db.ref('stats/' + cat).set({ count: Number(document.getElementById('stat-count').value), details: document.getElementById('stat-details').value }).then(() => showNotification('Data Updated!', 'success'));
+            db.ref('stats/' + cat).set({ 
+                count: Number(document.getElementById('stat-count').value), 
+                details: document.getElementById('stat-details').value,
+                detailsFormat: document.getElementById('stat-format').value
+            }).then(() => showNotification('Data Updated!', 'success'));
         }
 
         db.ref('stats').on('value', snap => {
@@ -2921,19 +3046,19 @@
                 if(homeStatsData.population) {
                     document.getElementById('stat-pop-count').setAttribute('data-target', homeStatsData.population.count);
                     document.getElementById('pub-pop-count').innerText = homeStatsData.population.count;
-                    document.getElementById('pub-pop-details').innerHTML = homeStatsData.population.details.replace(/\n/g, '<br>');
+                    document.getElementById('pub-pop-details').innerHTML = renderContent(homeStatsData.population.details, homeStatsData.population.detailsFormat);
                 }
                 if(homeStatsData.agri) {
                     document.getElementById('stat-agri-count').setAttribute('data-target', homeStatsData.agri.count);
                     document.getElementById('pub-agri-count').innerText = homeStatsData.agri.count;
-                    document.getElementById('pub-agri-details').innerHTML = homeStatsData.agri.details.replace(/\n/g, '<br>');
+                    document.getElementById('pub-agri-details').innerHTML = renderContent(homeStatsData.agri.details, homeStatsData.agri.detailsFormat);
                 }
                 if(document.getElementById('page-home').classList.contains('active')) runCounters();
                 if(document.getElementById('tab-stats') && !document.getElementById('tab-stats').classList.contains('d-none')) { loadStatCategory(); }
             } else {
                 db.ref('stats').set({
-                    population: { count: 9574, details: "Heirok Part I recorded a population of roughly 9,574 in 2011..." },
-                    agri: { count: 85, details: "Over 85% of the land is actively used for agriculture." }
+                    population: { count: 9574, details: "Heirok Part I recorded a population of roughly 9,574 in 2011...", detailsFormat: 'text' },
+                    agri: { count: 85, details: "Over 85% of the land is actively used for agriculture.", detailsFormat: 'text' }
                 });
             }
         });
@@ -2956,8 +3081,30 @@
             else if (dataObj.date) { locHtml = `<i class="far fa-clock" style="color: var(--primary);"></i> ${dataObj.date} | ${dataObj.type ? dataObj.type.toUpperCase() : ''}`; } 
             
             document.getElementById('det-loc').innerHTML = locHtml;
-            document.getElementById('det-desc').innerHTML = (dataObj.description || dataObj.content || 'No details provided.').replace(/\n/g, '<br>');
             
+            const content = dataObj.description || dataObj.content || 'No details provided.';
+            const format = dataObj.descFormat || dataObj.contentFormat || 'text';
+            document.getElementById('det-desc').innerHTML = renderContent(content, format);
+            
+            // Render Map if location/mapLink exists
+            const mapWrapper = document.getElementById('det-map-wrapper');
+            let mapQuery = dataObj.mapLink || dataObj.location;
+            
+            if (mapQuery) {
+                mapWrapper.style.display = 'block';
+                let dirUrl = mapQuery.startsWith('http') ? mapQuery : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
+                let iframeSrc = '';
+                if (mapQuery.startsWith('http') && mapQuery.includes('embed')) {
+                    iframeSrc = mapQuery;
+                } else {
+                    iframeSrc = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&t=k&z=15&output=embed`;
+                }
+                document.getElementById('det-map-iframe').src = iframeSrc;
+                document.getElementById('det-dir-btn').href = dirUrl;
+            } else {
+                mapWrapper.style.display = 'none';
+            }
+
             const extraActions = document.getElementById('det-extra-actions');
             if (type === 'schools') {
                 extraActions.style.display = 'flex';
@@ -2997,9 +3144,11 @@
             const data = {
                 name: document.getElementById('sch-name').value, 
                 location: document.getElementById('sch-loc').value,
+                mapLink: document.getElementById('sch-map-link').value || '',
                 address: document.getElementById('sch-address').value || '',
                 image: document.getElementById('sch-img').value, 
                 description: document.getElementById('sch-desc').value, 
+                descFormat: document.getElementById('sch-format').value,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             if(id) { db.ref('schools/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); }); } 
@@ -3012,11 +3161,13 @@
                 document.getElementById('edit-school-id').value = id; 
                 document.getElementById('sch-name').value = item.name;
                 document.getElementById('sch-loc').value = item.location; 
+                document.getElementById('sch-map-link').value = item.mapLink || '';
                 document.getElementById('sch-address').value = item.address || '';
                 document.getElementById('sch-img').value = item.image;
                 const prev = document.getElementById('sch-preview');
                 if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
                 document.getElementById('sch-desc').value = item.description; 
+                document.getElementById('sch-format').value = item.descFormat || 'text';
                 document.getElementById('school-form-title').innerText = "Edit School";
             }
         }
@@ -3027,6 +3178,7 @@
                 schoolId: document.getElementById('s-not-school').value,
                 title: document.getElementById('s-not-title').value,
                 description: document.getElementById('s-not-desc').value || '',
+                descFormat: document.getElementById('s-not-format').value,
                 image: document.getElementById('s-not-img').value || '',
                 date: new Date().toLocaleDateString(),
                 timestamp: firebase.database.ServerValue.TIMESTAMP
@@ -3166,7 +3318,7 @@
                     <li style="padding: 15px; border-bottom: 1px solid var(--glass-border); margin-bottom: 10px; background: rgba(0,0,0,0.02); border-radius: 8px;">
                         <h4 style="color: var(--primary); margin-bottom: 5px;">${n.title}</h4>
                         <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="far fa-clock"></i> ${n.date}</span>
-                        <p style="margin-top: 10px; font-size: 0.95rem; line-height: 1.6;">${(n.description||'').replace(/\n/g, '<br>')}</p>
+                        <div style="margin-top: 10px; font-size: 0.95rem; line-height: 1.6;">${renderContent(n.description, n.descFormat)}</div>
                         ${imgHtml}
                     </li>
                 `;
@@ -3289,8 +3441,13 @@
             e.preventDefault();
             const id = document.getElementById('edit-health-id').value;
             const data = {
-                name: document.getElementById('hlth-name').value, location: document.getElementById('hlth-loc').value,
-                image: document.getElementById('hlth-img').value, description: document.getElementById('hlth-desc').value, timestamp: firebase.database.ServerValue.TIMESTAMP
+                name: document.getElementById('hlth-name').value, 
+                location: document.getElementById('hlth-loc').value,
+                mapLink: document.getElementById('hlth-map-link').value || '',
+                image: document.getElementById('hlth-img').value, 
+                description: document.getElementById('hlth-desc').value, 
+                descFormat: document.getElementById('hlth-format').value,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             if(id) { db.ref('health/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-health', 'health-form-title', 'Add Health Centre'); }); } 
             else { db.ref('health').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-health'); }); }
@@ -3298,11 +3455,16 @@
         function editHealth(id) {
             const item = healthData.find(n => n.id === id);
             if(item) {
-                document.getElementById('edit-health-id').value = id; document.getElementById('hlth-name').value = item.name;
-                document.getElementById('hlth-loc').value = item.location; document.getElementById('hlth-img').value = item.image;
+                document.getElementById('edit-health-id').value = id; 
+                document.getElementById('hlth-name').value = item.name;
+                document.getElementById('hlth-loc').value = item.location; 
+                document.getElementById('hlth-map-link').value = item.mapLink || '';
+                document.getElementById('hlth-img').value = item.image;
                 const prev = document.getElementById('hlth-preview');
                 if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
-                document.getElementById('hlth-desc').value = item.description; document.getElementById('health-form-title').innerText = "Edit Health Centre";
+                document.getElementById('hlth-desc').value = item.description; 
+                document.getElementById('hlth-format').value = item.descFormat || 'text';
+                document.getElementById('health-form-title').innerText = "Edit Health Centre";
             }
         }
         db.ref('health').orderByChild('timestamp').on('value', snap => {
@@ -3341,7 +3503,9 @@
             const id = document.getElementById('edit-notice-id').value;
             const data = {
                 title: document.getElementById('not-title').value, type: document.getElementById('not-type').value,
-                image: document.getElementById('not-img').value || '', content: document.getElementById('not-content').value || '',
+                image: document.getElementById('not-img').value || '', 
+                content: document.getElementById('not-content').value || '',
+                contentFormat: document.getElementById('not-format').value || 'text',
                 date: new Date().toLocaleDateString(), timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             if(id) { db.ref('notices/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-notices', 'notice-form-title', 'Notices'); document.getElementById('form-notices-container').classList.add('d-none'); }); } 
@@ -3355,7 +3519,9 @@
                 document.getElementById('not-type').value = item.type; document.getElementById('not-img').value = item.image || '';
                 const preview = document.getElementById('not-preview');
                 if(item.image) { preview.src = item.image; preview.style.display = 'block'; } else { preview.style.display = 'none'; }
-                document.getElementById('not-content').value = item.content || ''; document.getElementById('notice-form-title').innerText = "Edit Notice";
+                document.getElementById('not-content').value = item.content || ''; 
+                document.getElementById('not-format').value = item.contentFormat || 'text';
+                document.getElementById('notice-form-title').innerText = "Edit Notice";
             }
         }
         db.ref('notices').orderByChild('timestamp').limitToLast(15).on('value', snap => {
@@ -3653,7 +3819,9 @@
             const id = document.getElementById('edit-project-id').value;
             const data = {
                 title: document.getElementById('proj-title').value, status: document.getElementById('proj-status').value,
-                budget: document.getElementById('proj-budget').value || 'Not Disclosed', description: document.getElementById('proj-desc').value || ''
+                budget: document.getElementById('proj-budget').value || 'Not Disclosed', 
+                description: document.getElementById('proj-desc').value || '',
+                descFormat: document.getElementById('proj-format').value || 'text'
             };
             if(id) { db.ref('projects/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-projects', 'project-form-title', 'Add Development Project'); }); } 
             else { db.ref('projects').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-projects'); }); }
@@ -3664,7 +3832,9 @@
                 document.getElementById('edit-project-id').value = id; document.getElementById('proj-title').value = item.title;
                 document.getElementById('proj-status').value = item.status;
                 document.getElementById('proj-budget').value = item.budget !== 'Not Disclosed' ? item.budget : '';
-                document.getElementById('proj-desc').value = item.description || ''; document.getElementById('project-form-title').innerText = "Edit Project";
+                document.getElementById('proj-desc').value = item.description || ''; 
+                document.getElementById('proj-format').value = item.descFormat || 'text';
+                document.getElementById('project-form-title').innerText = "Edit Project";
             }
         }
         db.ref('projects').on('value', snap => {
@@ -3681,7 +3851,7 @@
                             <span class="badge" style="background: ${statusColor}; color: ${item.status === 'Ongoing' ? '#000' : '#fff'}; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">${item.status}</span>
                         </div>
                         <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 8px;"><strong>Budget:</strong> ${item.budget}</p>
-                        <p class="text-muted" style="font-size: 0.8rem;">${item.description}</p>
+                        <div class="text-muted" style="font-size: 0.8rem;">${renderContent(item.description, item.descFormat)}</div>
                     </div>`;
                 adminList.innerHTML += `
                     <tr><td>${item.title}</td><td>${item.status}</td>
