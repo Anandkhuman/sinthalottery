@@ -213,10 +213,13 @@
         
         .list-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 10px; cursor: pointer; transition: var(--transition); margin-bottom: 12px; }
         .list-item:hover { transform: translateX(4px); box-shadow: var(--shadow); background: var(--primary); color: white; }
-        .list-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .list-item-content { flex-grow: 1; }
         .list-item-content h3 { font-size: 1rem; margin-bottom: 4px; }
         .list-item-content p { font-size: 0.85rem; opacity: 0.8; }
         .list-item:hover .list-item-content p { color: white; }
+
+        .list-item-media { width: 60px; height: 60px; border-radius: 8px; flex-shrink: 0; position: relative; overflow: hidden; background: var(--primary); }
+        .list-item-media img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; transition: opacity 0.8s; }
 
         .notice-ticker { display: flex; align-items: center; background: var(--primary); color: white; padding: 8px 15px; border-radius: 8px; margin-bottom: 25px; font-size: 0.9rem; }
         .ticker-title { font-weight: 700; margin-right: 15px; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
@@ -276,7 +279,7 @@
             .hero-title { font-size: 2.2rem; }
             .side-menu { width: 240px; right: -240px; }
             .list-item { flex-direction: column; text-align: center; }
-            .list-item img { width: 100%; height: 120px; }
+            .list-item-media { width: 100%; height: 120px; }
             #page-mla { height: calc(100vh - var(--header-height)) !important; height: calc(100dvh - var(--header-height)) !important; }
             .mla-overlay-bottom { padding-bottom: 75px; }
             .mla-overlay-right { bottom: 85px; }
@@ -500,11 +503,9 @@
         <!-- ================= ITEM DETAILS PAGE ================= -->
         <section id="page-item-details" class="page-section content-page d-none container">
             <div class="glass" style="padding: 30px; overflow: hidden;">
-                <!-- Auto-changing carousel for multiple images -->
-                <div id="det-img-carousel" style="position: relative; width: 100%; height: 300px; border-radius: 10px; margin-bottom: 15px; display: none; overflow: hidden;"></div>
-                <!-- Standard single image view -->
-                <img id="det-img" src="" alt="Image" style="width: 100%; height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                
+                <div id="det-img-carousel" style="width: 100%; height: 300px; border-radius: 10px; margin-bottom: 15px; overflow: hidden; position: relative; display: none;">
+                </div>
+                <img id="det-img-single" src="" alt="Image" style="width: 100%; height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
                     <h2 id="det-title" style="color: var(--primary); margin-bottom: 8px;">Title</h2>
                     <button id="det-share-btn" class="btn btn-primary btn-small" style="flex-shrink: 0;"><i class="fas fa-share-alt"></i> Share</button>
@@ -1157,8 +1158,8 @@
                                 
                                 <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
                                     <label style="display:block; margin-bottom:8px; font-weight:600;">Images</label>
-                                    <div id="sch-images-container"></div>
-                                    <button type="button" class="btn glass btn-small" onclick="addMlaImageField('sch-images-container')"><i class="fas fa-plus"></i> Add Image</button>
+                                    <div id="admin-sch-images-container"></div>
+                                    <button type="button" class="btn glass btn-small" onclick="addMlaImageField('admin-sch-images-container')"><i class="fas fa-plus"></i> Add Image</button>
                                 </div>
                                 
                                 <div class="form-group">
@@ -1172,7 +1173,7 @@
                                     <textarea id="sch-desc" class="form-control" rows="3" placeholder="Description..." required></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-small">Save School</button>
-                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('sch-images-container').innerHTML='';">Cancel</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('admin-sch-images-container').innerHTML='';">Cancel</button>
                             </form>
                         </div>
                         
@@ -1266,8 +1267,8 @@
                             
                             <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
                                 <label style="display:block; margin-bottom:8px; font-weight:600;">Images</label>
-                                <div id="hlth-images-container"></div>
-                                <button type="button" class="btn glass btn-small" onclick="addMlaImageField('hlth-images-container')"><i class="fas fa-plus"></i> Add Image</button>
+                                <div id="admin-hlth-images-container"></div>
+                                <button type="button" class="btn glass btn-small" onclick="addMlaImageField('admin-hlth-images-container')"><i class="fas fa-plus"></i> Add Image</button>
                             </div>
 
                             <div class="form-group">
@@ -1281,7 +1282,7 @@
                                 <textarea id="hlth-desc" class="form-control" rows="3" placeholder="Description..." required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary btn-small">Save</button>
-                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-health', 'health-form-title', 'Add Health Centre'); document.getElementById('hlth-images-container').innerHTML='';">Cancel</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-health', 'health-form-title', 'Add Health Centre'); document.getElementById('admin-hlth-images-container').innerHTML='';">Cancel</button>
                         </form>
                         <hr style="margin: 15px 0; border-color: var(--glass-border);">
                         <table class="admin-table"><thead><tr><th>Name</th><th>Loc</th><th>Actions</th></tr></thead><tbody id="admin-health-list"></tbody></table>
@@ -1710,6 +1711,17 @@
             
             if (targetPage === 'page-home') runCounters();
         }
+
+        function openDetailsPageById(id, type, sourcePageId) {
+            let dataObj = null;
+            if (type === 'schools') dataObj = schoolsData.find(x => x.id === id);
+            else if (type === 'health') dataObj = healthData.find(x => x.id === id);
+            else if (type === 'notices') dataObj = noticesData.find(x => x.id === id);
+            
+            if (dataObj) {
+                openDetailsPage(dataObj, sourcePageId, type, id);
+            }
+        }
         
         window.addEventListener('popstate', function(event) {
             let modalClosed = false;
@@ -1865,7 +1877,7 @@
             reader.readAsDataURL(file);
         }
 
-        /* DYNAMIC MULTIPLE IMAGE LOGIC (For Posts, Hero, School, Health) */
+        /* DYNAMIC MULTIPLE IMAGE LOGIC */
         let dynImageCount = 0;
         function addMlaImageField(containerId, initialVal = '') {
             dynImageCount++;
@@ -1906,6 +1918,23 @@
                 </div>
             `;
             document.getElementById('admin-hero-images-container').insertAdjacentHTML('beforeend', html);
+        }
+
+        function startCarousels() {
+            if(window.globalCarouselIntervals) window.globalCarouselIntervals.forEach(clearInterval);
+            window.globalCarouselIntervals = [];
+            document.querySelectorAll('.post-img-carousel, .list-img-carousel').forEach(carousel => {
+                const imgs = carousel.querySelectorAll('.carousel-img');
+                if(imgs.length > 1) {
+                    let idx = 0;
+                    const intv = setInterval(() => {
+                        if(imgs[idx]) imgs[idx].style.opacity = '0';
+                        idx = (idx + 1) % imgs.length;
+                        if(imgs[idx]) imgs[idx].style.opacity = '1';
+                    }, 3000);
+                    window.globalCarouselIntervals.push(intv);
+                }
+            });
         }
 
         /* 4. COUNTER ANIMATION */
@@ -2192,16 +2221,20 @@
         
         function resetForm(formId, titleId, originalTitle) {
             const form = document.getElementById(formId);
-            form.reset();
-            const editIdField = form.querySelector('input[type="hidden"]');
-            if(editIdField) editIdField.value = '';
+            if(form) form.reset();
+            if(form) {
+                const editIdField = form.querySelector('input[type="hidden"]');
+                if(editIdField) editIdField.value = '';
+            }
             if(titleId) document.getElementById(titleId).innerText = originalTitle;
             
-            form.querySelectorAll('.link-input, .file-input').forEach(el => el.value = '');
-            form.querySelectorAll('img, video, audio').forEach(media => { media.style.display = 'none'; media.src = ''; });
-            form.querySelectorAll('input[type="hidden"]').forEach(inp => {
-                if(inp.id.includes('img') || inp.id.includes('photo') || inp.id.includes('vid') || inp.id.includes('aud')) inp.value = '';
-            });
+            if(form) {
+                form.querySelectorAll('.link-input, .file-input').forEach(el => el.value = '');
+                form.querySelectorAll('img, video, audio').forEach(media => { media.style.display = 'none'; media.src = ''; });
+                form.querySelectorAll('input[type="hidden"]').forEach(inp => {
+                    if(inp.id.includes('img') || inp.id.includes('photo') || inp.id.includes('vid') || inp.id.includes('aud')) inp.value = '';
+                });
+            }
             
             if(formId === 'form-directory') {
                 const familyList = document.getElementById('d-family-list');
@@ -2881,7 +2914,7 @@
         }
 
         function sharePost(title, postId) {
-            const shareUrl = window.location.origin + window.location.pathname + '?page=mla&post=' + postId;
+            const shareUrl= window.location.origin + window.location.pathname + '?page=mla&post=' + postId;
             if (navigator.share) { navigator.share({ title: `Check out this update: ${title}`, url: shareUrl }).catch(console.error); } 
             else { navigator.clipboard.writeText(shareUrl).then(() => showNotification("Separate link for this post copied to clipboard!", "success")); }
         }
@@ -2950,20 +2983,7 @@
                 });
             }
 
-            if(window.carouselIntervals) window.carouselIntervals.forEach(clearInterval);
-            window.carouselIntervals = [];
-            document.querySelectorAll('.post-img-carousel').forEach(carousel => {
-                const imgs = carousel.querySelectorAll('.carousel-img');
-                if(imgs.length > 1) {
-                    let idx = 0;
-                    const intv = setInterval(() => {
-                        imgs[idx].style.opacity = '0';
-                        idx = (idx + 1) % imgs.length;
-                        imgs[idx].style.opacity = '1';
-                    }, 3000);
-                    window.carouselIntervals.push(intv);
-                }
-            });
+            startCarousels();
 
             if (mlaSwiperInstance) mlaSwiperInstance.destroy();
             mlaSwiperInstance = new Swiper('.mla-swiper', { 
@@ -3055,51 +3075,26 @@
         });
 
         // --- ITEM DETAILS PAGE RENDERER (For Schools, Health & Notices) ---
-        let detCarouselInterval = null;
-
-        function openItemDetails(type, id, overrideSourcePage = null) {
-            let dataList = [];
-            let sourcePage = '';
-            if (type === 'schools') { dataList = schoolsData; sourcePage = 'page-schools'; }
-            if (type === 'health') { dataList = healthData; sourcePage = 'page-health'; }
-            if (type === 'notices') { dataList = noticesData; sourcePage = 'page-notices'; }
-            
-            if (overrideSourcePage) sourcePage = overrideSourcePage;
-
-            const item = dataList.find(i => i.id === id);
-            if(item) {
-                openDetailsPage(item, sourcePage, type, id);
-            }
-        }
-        
         function openDetailsPage(dataObj, sourcePageId, type, id) {
             window.lastListPage = sourcePageId;
-            const detImg = document.getElementById('det-img');
-            const detCarousel = document.getElementById('det-img-carousel');
+            const singleImg = document.getElementById('det-img-single');
+            const carouselBox = document.getElementById('det-img-carousel');
             
-            if (window.detCarouselInterval) clearInterval(window.detCarouselInterval);
-            
-            if (dataObj.images && dataObj.images.length > 1) {
-                detImg.style.display = 'none';
-                detCarousel.style.display = 'block';
-                detCarousel.innerHTML = dataObj.images.map((img, i) => `<img src="${img}" class="det-carousel-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:${i===0?1:0}; transition:opacity 0.8s ease-in-out;">`).join('');
-                
-                let idx = 0;
-                const imgs = detCarousel.querySelectorAll('.det-carousel-img');
-                window.detCarouselInterval = setInterval(() => {
-                    if(imgs.length > 0) {
-                        imgs[idx].style.opacity = '0';
-                        idx = (idx + 1) % imgs.length;
-                        imgs[idx].style.opacity = '1';
-                    }
-                }, 3000);
-            } else if (dataObj.image || (dataObj.images && dataObj.images.length === 1)) {
-                detCarousel.style.display = 'none';
-                detImg.style.display = 'block';
-                detImg.src = dataObj.image || dataObj.images[0];
-            } else {
-                detCarousel.style.display = 'none';
-                detImg.style.display = 'none';
+            singleImg.style.display = 'none';
+            carouselBox.style.display = 'none';
+            carouselBox.innerHTML = '';
+
+            if (dataObj.images && dataObj.images.length > 0) {
+                carouselBox.style.display = 'block';
+                carouselBox.innerHTML = `
+                    <div class="post-img-carousel" style="width:100%; height:100%; position:relative;">
+                        ${dataObj.images.map((img, i) => `<img src="${img}" class="carousel-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:${i===0?1:0}; transition:opacity 0.8s;">`).join('')}
+                    </div>
+                `;
+                startCarousels();
+            } else if (dataObj.image) { 
+                singleImg.src = dataObj.image; 
+                singleImg.style.display = 'block'; 
             }
 
             document.getElementById('det-title').innerText = dataObj.name || dataObj.title;
@@ -3172,8 +3167,8 @@
             e.preventDefault();
             const id = document.getElementById('edit-school-id').value;
             const images = [];
-            document.querySelectorAll('#sch-images-container .multi-image-hidden').forEach(inp => { if(inp.value) images.push(inp.value); });
-
+            document.querySelectorAll('#admin-sch-images-container .multi-image-hidden').forEach(inp => { if(inp.value) images.push(inp.value); });
+            
             const data = {
                 name: document.getElementById('sch-name').value, 
                 location: document.getElementById('sch-loc').value,
@@ -3183,9 +3178,10 @@
                 descFormat: document.getElementById('sch-format').value,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('schools/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('sch-images-container').innerHTML='';}); } 
-            else { db.ref('schools').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-school'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('sch-images-container').innerHTML='';}); }
+            if(id) { db.ref('schools/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('admin-sch-images-container').innerHTML=''; }); } 
+            else { db.ref('schools').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-school'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('admin-sch-images-container').innerHTML=''; }); }
         }
+        
         function editSchool(id) {
             const item = schoolsData.find(n => n.id === id);
             if(item) {
@@ -3195,11 +3191,11 @@
                 document.getElementById('sch-loc').value = item.location; 
                 document.getElementById('sch-map-link').value = item.mapLink || '';
                 
-                document.getElementById('sch-images-container').innerHTML = '';
+                document.getElementById('admin-sch-images-container').innerHTML = '';
                 if(item.images && item.images.length > 0) {
-                    item.images.forEach(img => addMlaImageField('sch-images-container', img));
+                    item.images.forEach(img => addMlaImageField('admin-sch-images-container', img));
                 } else if(item.image) {
-                    addMlaImageField('sch-images-container', item.image);
+                    addMlaImageField('admin-sch-images-container', item.image);
                 }
 
                 document.getElementById('sch-desc').value = item.description; 
@@ -3321,10 +3317,20 @@
             if(schoolsData.length===0) container.innerHTML = '<p class="text-muted text-center">No schools listed yet.</p>';
             
             schoolsData.forEach(item => {
-                let firstImage = (item.images && item.images.length > 0) ? item.images[0] : (item.image || '');
+                let mediaHTML = '';
+                if(item.images && item.images.length > 0) {
+                    mediaHTML = `<div class="list-img-carousel list-item-media">
+                        ${item.images.map((img, i) => `<img src="${img}" class="carousel-img" style="opacity:${i===0?1:0};">`).join('')}
+                    </div>`;
+                } else if(item.image) {
+                    mediaHTML = `<div class="list-item-media"><img src="${item.image}"></div>`;
+                } else {
+                    mediaHTML = `<div class="list-item-media"><i class="fas fa-school" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;"></i></div>`;
+                }
+
                 container.innerHTML += `
-                    <div class="list-item glass" onclick="openItemDetails('schools', '${item.id}')">
-                        <img src="${firstImage}" alt="Img" onerror="this.style.display='none'">
+                    <div class="list-item glass" onclick="openDetailsPageById('${item.id}', 'schools', 'page-schools')">
+                        ${mediaHTML}
                         <div class="list-item-content">
                             <h3>${item.name}</h3><p><i class="fas fa-map-marker-alt"></i> ${item.location}</p>
                         </div>
@@ -3337,6 +3343,7 @@
                     </tr>
                 `;
             });
+            startCarousels();
         });
 
         function viewSchoolNotices(schoolId, schoolName) {
@@ -3477,8 +3484,8 @@
             e.preventDefault();
             const id = document.getElementById('edit-health-id').value;
             const images = [];
-            document.querySelectorAll('#hlth-images-container .multi-image-hidden').forEach(inp => { if(inp.value) images.push(inp.value); });
-
+            document.querySelectorAll('#admin-hlth-images-container .multi-image-hidden').forEach(inp => { if(inp.value) images.push(inp.value); });
+            
             const data = {
                 name: document.getElementById('hlth-name').value, 
                 location: document.getElementById('hlth-loc').value,
@@ -3488,9 +3495,10 @@
                 descFormat: document.getElementById('hlth-format').value,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('health/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-health', 'health-form-title', 'Add Health Centre'); document.getElementById('hlth-images-container').innerHTML='';}); } 
-            else { db.ref('health').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-health'); document.getElementById('hlth-images-container').innerHTML='';}); }
+            if(id) { db.ref('health/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-health', 'health-form-title', 'Add Health Centre'); document.getElementById('admin-hlth-images-container').innerHTML=''; }); } 
+            else { db.ref('health').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-health'); document.getElementById('admin-hlth-images-container').innerHTML=''; }); }
         }
+        
         function editHealth(id) {
             const item = healthData.find(n => n.id === id);
             if(item) {
@@ -3499,11 +3507,11 @@
                 document.getElementById('hlth-loc').value = item.location; 
                 document.getElementById('hlth-map-link').value = item.mapLink || '';
                 
-                document.getElementById('hlth-images-container').innerHTML = '';
+                document.getElementById('admin-hlth-images-container').innerHTML = '';
                 if(item.images && item.images.length > 0) {
-                    item.images.forEach(img => addMlaImageField('hlth-images-container', img));
+                    item.images.forEach(img => addMlaImageField('admin-hlth-images-container', img));
                 } else if(item.image) {
-                    addMlaImageField('hlth-images-container', item.image);
+                    addMlaImageField('admin-hlth-images-container', item.image);
                 }
 
                 document.getElementById('hlth-desc').value = item.description; 
@@ -3522,10 +3530,20 @@
             if(healthData.length===0) container.innerHTML = '<p class="text-muted text-center">No health centres listed yet.</p>';
             
             healthData.forEach(item => {
-                let firstImage = (item.images && item.images.length > 0) ? item.images[0] : (item.image || '');
+                let mediaHTML = '';
+                if(item.images && item.images.length > 0) {
+                    mediaHTML = `<div class="list-img-carousel list-item-media">
+                        ${item.images.map((img, i) => `<img src="${img}" class="carousel-img" style="opacity:${i===0?1:0};">`).join('')}
+                    </div>`;
+                } else if(item.image) {
+                    mediaHTML = `<div class="list-item-media"><img src="${item.image}"></div>`;
+                } else {
+                    mediaHTML = `<div class="list-item-media"><i class="fas fa-hospital" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:24px;"></i></div>`;
+                }
+
                 container.innerHTML += `
-                    <div class="list-item glass" onclick="openItemDetails('health', '${item.id}')">
-                        <img src="${firstImage}" alt="Img" onerror="this.style.display='none'">
+                    <div class="list-item glass" onclick="openDetailsPageById('${item.id}', 'health', 'page-health')">
+                        ${mediaHTML}
                         <div class="list-item-content">
                             <h3>${item.name}</h3><p><i class="fas fa-map-marker-alt"></i> ${item.location}</p>
                         </div>
@@ -3538,6 +3556,7 @@
                     </tr>
                 `;
             });
+            startCarousels();
         });
 
         // --- NOTICES ---
@@ -3581,7 +3600,7 @@
                 const color = n.type === 'urgent' ? 'var(--danger)' : 'var(--primary)';
                 
                 list.innerHTML += `
-                    <li style="padding: 12px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='inherit';" onclick="openItemDetails('notices', '${n.id}', 'page-notices')">
+                    <li style="padding: 12px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='inherit';" onclick="openDetailsPageById('${n.id}', 'notices', 'page-notices')">
                         <div>
                             <span class="badge" style="background: ${color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">${n.type.toUpperCase()}</span>
                             <strong style="font-size: 0.95rem;">${n.title}</strong>
@@ -3590,7 +3609,7 @@
                     </li>
                 `;
                 
-                tickerText += ` <span style="margin: 0 30px; cursor: pointer;" onclick="openItemDetails('notices', '${n.id}', 'page-home')">• <strong style="color: ${n.type === 'urgent' ? '#ffd166' : 'inherit'}">${n.type.toUpperCase()}</strong>: ${n.title} (${n.date})</span> `;
+                tickerText += ` <span style="margin: 0 30px; cursor: pointer;" onclick="openDetailsPageById('${n.id}', 'notices', 'page-home')">• <strong style="color: ${n.type === 'urgent' ? '#ffd166' : 'inherit'}">${n.type.toUpperCase()}</strong>: ${n.title} (${n.date})</span> `;
                 
                 adminList.innerHTML += `
                     <tr><td>${n.title}</td><td>${n.type}</td>
