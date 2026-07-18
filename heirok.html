@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +14,7 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
     <style>
         /* ==========================================================================
            CSS VARIABLES & THEMING
@@ -498,7 +500,11 @@
         <!-- ================= ITEM DETAILS PAGE ================= -->
         <section id="page-item-details" class="page-section content-page d-none container">
             <div class="glass" style="padding: 30px; overflow: hidden;">
+                <!-- Auto-changing carousel for multiple images -->
+                <div id="det-img-carousel" style="position: relative; width: 100%; height: 300px; border-radius: 10px; margin-bottom: 15px; display: none; overflow: hidden;"></div>
+                <!-- Standard single image view -->
                 <img id="det-img" src="" alt="Image" style="width: 100%; height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
                     <h2 id="det-title" style="color: var(--primary); margin-bottom: 8px;">Title</h2>
                     <button id="det-share-btn" class="btn btn-primary btn-small" style="flex-shrink: 0;"><i class="fas fa-share-alt"></i> Share</button>
@@ -1148,20 +1154,13 @@
                                 <div class="form-group"><input type="text" id="sch-name" class="form-control" placeholder="Name" required></div>
                                 <div class="form-group"><input type="text" id="sch-loc" class="form-control" placeholder="Location Name" required></div>
                                 <div class="form-group"><input type="text" id="sch-map-link" class="form-control" placeholder="Google Maps Link (Optional)"></div>
-                                <div class="form-group"><input type="text" id="sch-address" class="form-control" placeholder="Full Address (Optional)"></div>
-                                <div class="form-group">
-                                    <div style="display:flex; justify-content:space-between;">
-                                        <label>Image</label>
-                                        <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('sch-img-container', 'sch-img', 'sch-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
-                                    </div>
-                                    <div id="sch-img-container" data-mode="file">
-                                        <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'sch-preview', 'sch-img', 'sch-progress', 'image')">
-                                        <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'sch-img', 'sch-preview', 'image')">
-                                        <div class="progress d-none" id="sch-progress"><div class="progress-bar"></div></div>
-                                    </div>
-                                    <input type="hidden" id="sch-img">
-                                    <img id="sch-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                                
+                                <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
+                                    <label style="display:block; margin-bottom:8px; font-weight:600;">Images</label>
+                                    <div id="sch-images-container"></div>
+                                    <button type="button" class="btn glass btn-small" onclick="addMlaImageField('sch-images-container')"><i class="fas fa-plus"></i> Add Image</button>
                                 </div>
+                                
                                 <div class="form-group">
                                     <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                                         <label>Description</label>
@@ -1173,7 +1172,7 @@
                                     <textarea id="sch-desc" class="form-control" rows="3" placeholder="Description..." required></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-small">Save School</button>
-                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none');">Cancel</button>
+                                <button type="button" class="btn glass btn-small" onclick="resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('sch-images-container').innerHTML='';">Cancel</button>
                             </form>
                         </div>
                         
@@ -1264,19 +1263,13 @@
                             <div class="form-group"><input type="text" id="hlth-name" class="form-control" placeholder="Name" required></div>
                             <div class="form-group"><input type="text" id="hlth-loc" class="form-control" placeholder="Location Name" required></div>
                             <div class="form-group"><input type="text" id="hlth-map-link" class="form-control" placeholder="Google Maps Link (Optional)"></div>
-                            <div class="form-group">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <label>Image</label>
-                                    <span style="font-size:0.8rem; cursor:pointer; color:var(--primary);" onclick="toggleMediaInput('hlth-img-container', 'hlth-img', 'hlth-preview', 'image')"><i class="fas fa-exchange-alt"></i> Toggle Link/File</span>
-                                </div>
-                                <div id="hlth-img-container" data-mode="file">
-                                    <input type="file" class="form-control file-input" accept="image/*" onchange="handleMediaUpload(event, 'hlth-preview', 'hlth-img', 'hlth-progress', 'image')">
-                                    <input type="url" class="form-control link-input d-none" placeholder="Paste Image URL..." oninput="handleLinkInput(this.value, 'hlth-img', 'hlth-preview', 'image')">
-                                    <div class="progress d-none" id="hlth-progress"><div class="progress-bar"></div></div>
-                                </div>
-                                <input type="hidden" id="hlth-img">
-                                <img id="hlth-preview" src="" style="height: 90px; display: none; margin-top: 8px; border-radius: 6px; object-fit:cover;">
+                            
+                            <div class="form-group" style="padding:10px; border:1px solid var(--glass-border); border-radius:6px; background:rgba(0,0,0,0.02);">
+                                <label style="display:block; margin-bottom:8px; font-weight:600;">Images</label>
+                                <div id="hlth-images-container"></div>
+                                <button type="button" class="btn glass btn-small" onclick="addMlaImageField('hlth-images-container')"><i class="fas fa-plus"></i> Add Image</button>
                             </div>
+
                             <div class="form-group">
                                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                                     <label>Description</label>
@@ -1288,7 +1281,7 @@
                                 <textarea id="hlth-desc" class="form-control" rows="3" placeholder="Description..." required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary btn-small">Save</button>
-                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-health', 'health-form-title', 'Add Health Centre')">Cancel</button>
+                            <button type="button" class="btn glass btn-small" onclick="resetForm('form-health', 'health-form-title', 'Add Health Centre'); document.getElementById('hlth-images-container').innerHTML='';">Cancel</button>
                         </form>
                         <hr style="margin: 15px 0; border-color: var(--glass-border);">
                         <table class="admin-table"><thead><tr><th>Name</th><th>Loc</th><th>Actions</th></tr></thead><tbody id="admin-health-list"></tbody></table>
@@ -1872,7 +1865,7 @@
             reader.readAsDataURL(file);
         }
 
-        /* DYNAMIC MULTIPLE IMAGE LOGIC (For Posts & Hero) */
+        /* DYNAMIC MULTIPLE IMAGE LOGIC (For Posts, Hero, School, Health) */
         let dynImageCount = 0;
         function addMlaImageField(containerId, initialVal = '') {
             dynImageCount++;
@@ -3062,19 +3055,58 @@
         });
 
         // --- ITEM DETAILS PAGE RENDERER (For Schools, Health & Notices) ---
+        let detCarouselInterval = null;
+
+        function openItemDetails(type, id, overrideSourcePage = null) {
+            let dataList = [];
+            let sourcePage = '';
+            if (type === 'schools') { dataList = schoolsData; sourcePage = 'page-schools'; }
+            if (type === 'health') { dataList = healthData; sourcePage = 'page-health'; }
+            if (type === 'notices') { dataList = noticesData; sourcePage = 'page-notices'; }
+            
+            if (overrideSourcePage) sourcePage = overrideSourcePage;
+
+            const item = dataList.find(i => i.id === id);
+            if(item) {
+                openDetailsPage(item, sourcePage, type, id);
+            }
+        }
+        
         function openDetailsPage(dataObj, sourcePageId, type, id) {
             window.lastListPage = sourcePageId;
             const detImg = document.getElementById('det-img');
+            const detCarousel = document.getElementById('det-img-carousel');
             
-            if (dataObj.image) { detImg.src = dataObj.image; detImg.style.display = 'block'; } 
-            else { detImg.style.display = 'none'; }
+            if (window.detCarouselInterval) clearInterval(window.detCarouselInterval);
+            
+            if (dataObj.images && dataObj.images.length > 1) {
+                detImg.style.display = 'none';
+                detCarousel.style.display = 'block';
+                detCarousel.innerHTML = dataObj.images.map((img, i) => `<img src="${img}" class="det-carousel-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:${i===0?1:0}; transition:opacity 0.8s ease-in-out;">`).join('');
+                
+                let idx = 0;
+                const imgs = detCarousel.querySelectorAll('.det-carousel-img');
+                window.detCarouselInterval = setInterval(() => {
+                    if(imgs.length > 0) {
+                        imgs[idx].style.opacity = '0';
+                        idx = (idx + 1) % imgs.length;
+                        imgs[idx].style.opacity = '1';
+                    }
+                }, 3000);
+            } else if (dataObj.image || (dataObj.images && dataObj.images.length === 1)) {
+                detCarousel.style.display = 'none';
+                detImg.style.display = 'block';
+                detImg.src = dataObj.image || dataObj.images[0];
+            } else {
+                detCarousel.style.display = 'none';
+                detImg.style.display = 'none';
+            }
 
             document.getElementById('det-title').innerText = dataObj.name || dataObj.title;
             
             let locHtml = '';
             if (dataObj.location) { 
                 locHtml = `<i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> ${dataObj.location}`; 
-                if(dataObj.address) locHtml += `<br><span style="font-size:0.85rem; opacity:0.8; margin-top:5px; display:inline-block;">${dataObj.address}</span>`;
             } 
             else if (dataObj.date) { locHtml = `<i class="far fa-clock" style="color: var(--primary);"></i> ${dataObj.date} | ${dataObj.type ? dataObj.type.toUpperCase() : ''}`; } 
             
@@ -3139,18 +3171,20 @@
         function saveSchool(e) {
             e.preventDefault();
             const id = document.getElementById('edit-school-id').value;
+            const images = [];
+            document.querySelectorAll('#sch-images-container .multi-image-hidden').forEach(inp => { if(inp.value) images.push(inp.value); });
+
             const data = {
                 name: document.getElementById('sch-name').value, 
                 location: document.getElementById('sch-loc').value,
                 mapLink: document.getElementById('sch-map-link').value || '',
-                address: document.getElementById('sch-address').value || '',
-                image: document.getElementById('sch-img').value, 
+                images: images, 
                 description: document.getElementById('sch-desc').value, 
                 descFormat: document.getElementById('sch-format').value,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('schools/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); }); } 
-            else { db.ref('schools').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-school'); document.getElementById('form-school-wrap').classList.add('d-none'); }); }
+            if(id) { db.ref('schools/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-school', 'school-form-title', 'Add School'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('sch-images-container').innerHTML='';}); } 
+            else { db.ref('schools').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-school'); document.getElementById('form-school-wrap').classList.add('d-none'); document.getElementById('sch-images-container').innerHTML='';}); }
         }
         function editSchool(id) {
             const item = schoolsData.find(n => n.id === id);
@@ -3160,10 +3194,14 @@
                 document.getElementById('sch-name').value = item.name;
                 document.getElementById('sch-loc').value = item.location; 
                 document.getElementById('sch-map-link').value = item.mapLink || '';
-                document.getElementById('sch-address').value = item.address || '';
-                document.getElementById('sch-img').value = item.image;
-                const prev = document.getElementById('sch-preview');
-                if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+                
+                document.getElementById('sch-images-container').innerHTML = '';
+                if(item.images && item.images.length > 0) {
+                    item.images.forEach(img => addMlaImageField('sch-images-container', img));
+                } else if(item.image) {
+                    addMlaImageField('sch-images-container', item.image);
+                }
+
                 document.getElementById('sch-desc').value = item.description; 
                 document.getElementById('sch-format').value = item.descFormat || 'text';
                 document.getElementById('school-form-title').innerText = "Edit School";
@@ -3283,10 +3321,10 @@
             if(schoolsData.length===0) container.innerHTML = '<p class="text-muted text-center">No schools listed yet.</p>';
             
             schoolsData.forEach(item => {
-                const safeData = encodeURIComponent(JSON.stringify(item));
+                let firstImage = (item.images && item.images.length > 0) ? item.images[0] : (item.image || '');
                 container.innerHTML += `
-                    <div class="list-item glass" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-schools', 'schools', '${item.id}')">
-                        <img src="${item.image}" alt="Img" onerror="this.style.display='none'">
+                    <div class="list-item glass" onclick="openItemDetails('schools', '${item.id}')">
+                        <img src="${firstImage}" alt="Img" onerror="this.style.display='none'">
                         <div class="list-item-content">
                             <h3>${item.name}</h3><p><i class="fas fa-map-marker-alt"></i> ${item.location}</p>
                         </div>
@@ -3438,17 +3476,20 @@
         function saveHealth(e) {
             e.preventDefault();
             const id = document.getElementById('edit-health-id').value;
+            const images = [];
+            document.querySelectorAll('#hlth-images-container .multi-image-hidden').forEach(inp => { if(inp.value) images.push(inp.value); });
+
             const data = {
                 name: document.getElementById('hlth-name').value, 
                 location: document.getElementById('hlth-loc').value,
                 mapLink: document.getElementById('hlth-map-link').value || '',
-                image: document.getElementById('hlth-img').value, 
+                images: images, 
                 description: document.getElementById('hlth-desc').value, 
                 descFormat: document.getElementById('hlth-format').value,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            if(id) { db.ref('health/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-health', 'health-form-title', 'Add Health Centre'); }); } 
-            else { db.ref('health').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-health'); }); }
+            if(id) { db.ref('health/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-health', 'health-form-title', 'Add Health Centre'); document.getElementById('hlth-images-container').innerHTML='';}); } 
+            else { db.ref('health').push(data).then(()=>{ showNotification('Added successfully', 'success'); resetForm('form-health'); document.getElementById('hlth-images-container').innerHTML='';}); }
         }
         function editHealth(id) {
             const item = healthData.find(n => n.id === id);
@@ -3457,9 +3498,14 @@
                 document.getElementById('hlth-name').value = item.name;
                 document.getElementById('hlth-loc').value = item.location; 
                 document.getElementById('hlth-map-link').value = item.mapLink || '';
-                document.getElementById('hlth-img').value = item.image;
-                const prev = document.getElementById('hlth-preview');
-                if(item.image) { prev.src = item.image; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+                
+                document.getElementById('hlth-images-container').innerHTML = '';
+                if(item.images && item.images.length > 0) {
+                    item.images.forEach(img => addMlaImageField('hlth-images-container', img));
+                } else if(item.image) {
+                    addMlaImageField('hlth-images-container', item.image);
+                }
+
                 document.getElementById('hlth-desc').value = item.description; 
                 document.getElementById('hlth-format').value = item.descFormat || 'text';
                 document.getElementById('health-form-title').innerText = "Edit Health Centre";
@@ -3476,10 +3522,10 @@
             if(healthData.length===0) container.innerHTML = '<p class="text-muted text-center">No health centres listed yet.</p>';
             
             healthData.forEach(item => {
-                const safeData = encodeURIComponent(JSON.stringify(item));
+                let firstImage = (item.images && item.images.length > 0) ? item.images[0] : (item.image || '');
                 container.innerHTML += `
-                    <div class="list-item glass" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-health', 'health', '${item.id}')">
-                        <img src="${item.image}" alt="Img" onerror="this.style.display='none'">
+                    <div class="list-item glass" onclick="openItemDetails('health', '${item.id}')">
+                        <img src="${firstImage}" alt="Img" onerror="this.style.display='none'">
                         <div class="list-item-content">
                             <h3>${item.name}</h3><p><i class="fas fa-map-marker-alt"></i> ${item.location}</p>
                         </div>
@@ -3533,10 +3579,9 @@
             let tickerText = '';
             noticesData.forEach(n => {
                 const color = n.type === 'urgent' ? 'var(--danger)' : 'var(--primary)';
-                const safeData = encodeURIComponent(JSON.stringify(n));
                 
                 list.innerHTML += `
-                    <li style="padding: 12px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='inherit';" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-notices', 'notices', '${n.id}')">
+                    <li style="padding: 12px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='inherit';" onclick="openItemDetails('notices', '${n.id}', 'page-notices')">
                         <div>
                             <span class="badge" style="background: ${color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">${n.type.toUpperCase()}</span>
                             <strong style="font-size: 0.95rem;">${n.title}</strong>
@@ -3545,7 +3590,7 @@
                     </li>
                 `;
                 
-                tickerText += ` <span style="margin: 0 30px; cursor: pointer;" onclick="openDetailsPage(JSON.parse(decodeURIComponent('${safeData}')), 'page-home', 'notices', '${n.id}')">• <strong style="color: ${n.type === 'urgent' ? '#ffd166' : 'inherit'}">${n.type.toUpperCase()}</strong>: ${n.title} (${n.date})</span> `;
+                tickerText += ` <span style="margin: 0 30px; cursor: pointer;" onclick="openItemDetails('notices', '${n.id}', 'page-home')">• <strong style="color: ${n.type === 'urgent' ? '#ffd166' : 'inherit'}">${n.type.toUpperCase()}</strong>: ${n.title} (${n.date})</span> `;
                 
                 adminList.innerHTML += `
                     <tr><td>${n.title}</td><td>${n.type}</td>
