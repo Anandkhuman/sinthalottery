@@ -178,7 +178,7 @@
         .form-control { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--glass-border); background: var(--bg-main); color: var(--text-main); outline: none; font-size: 0.9rem; }
         .form-control:focus { border-color: var(--primary); }
 
-        .progress { width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress { width: 100%; height: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; margin-top: 5px; }
         .progress-bar { height: 100%; background: var(--secondary); width: 0%; transition: width 0.3s; }
 
         /* ==========================================================================
@@ -861,6 +861,7 @@
                             <h4>Upload via CSV</h4>
                             <p style="font-size: 0.8rem; margin-bottom: 8px;">Format: Name, Mobile, Category, Address, ImageURL, DOB, Email, Aadhar</p>
                             <input type="file" id="u-csv-file" accept=".csv" class="form-control" style="margin-bottom: 8px;">
+                            <div class="progress d-none" id="u-csv-progress-wrapper" style="margin-bottom: 8px;"><div class="progress-bar" id="u-csv-progress-bar"></div></div>
                             <button class="btn btn-secondary btn-small" style="background: var(--secondary); color: white; border: none;" onclick="uploadUserCSV()">Upload & Submit Requests</button>
                         </div>
                     </div>
@@ -1231,6 +1232,7 @@
                                         <strong>CSV Format Info:</strong><br>First row must be headers. Fixed columns are: <code>RollNo, Name, TotalMarks, Status</code> (Status should be Pass or Fail). Any other columns you add (like <code>Math, Science, English</code>) will automatically be treated as subject-wise marks. 
                                     </p>
                                     <input type="file" id="s-res-csv" class="form-control" accept=".csv">
+                                    <div class="progress d-none" id="s-res-csv-progress"><div class="progress-bar" id="s-res-csv-progress-bar"></div></div>
                                 </div>
 
                                 <div id="s-res-img-wrap" class="form-group d-none">
@@ -1373,7 +1375,18 @@
                         <div style="margin: 15px 0; padding: 12px; border: 1px dashed var(--primary); border-radius: 8px;">
                             <h4>Upload via CSV</h4>
                             <p style="font-size: 0.8rem; margin-bottom: 8px;">Format: Name, Mobile, Category, Address, ImageURL, DOB, Email, Aadhar</p>
+                            
+                            <div style="margin-bottom: 10px; display: flex; gap: 15px; font-size: 0.9rem;">
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    <input type="radio" name="csv-upload-type" value="add" checked> Add More
+                                </label>
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    <input type="radio" name="csv-upload-type" value="replace"> Replace All Data
+                                </label>
+                            </div>
+                    
                             <input type="file" id="csv-file" accept=".csv" class="form-control" style="margin-bottom: 8px;">
+                            <div class="progress d-none" id="csv-progress-wrapper" style="margin-bottom: 8px;"><div class="progress-bar" id="csv-progress-bar"></div></div>
                             <button class="btn btn-secondary btn-small" style="background: var(--secondary); color: white; border: none;" onclick="uploadCSV()">Upload CSV</button>
                         </div>
                         <hr style="margin: 15px 0; border-color: var(--glass-border);">
@@ -1800,7 +1813,7 @@
             }
         });
 
-        /* 3. UPLOAD / LINK MEDIA TOGGLE LOGIC */
+        /* 3. UPLOAD / LINK MEDIA TOGGLE LOGIC & PROGRESS TRACKING */
         function toggleMediaInput(containerId, hiddenId, previewId, type) {
             const container = document.getElementById(containerId);
             const fileIn = container.querySelector('.file-input');
@@ -1832,6 +1845,7 @@
             }
         }
 
+        // Live Upload Progress Handling for File inputs
         function handleMediaUpload(event, previewId, hiddenId, progressId, type) {
             const file = event.target.files[0];
             if(!file) return;
@@ -1846,11 +1860,22 @@
                 event.target.value = ''; return;
             }
 
-            progress.classList.remove('d-none'); progressBar.style.width = '10%'; 
+            progress.classList.remove('d-none'); 
+            progressBar.style.width = '0%'; 
             
             const reader = new FileReader();
+            
+            // Progress tracker so user knows kitna baki hai (how much is left)
+            reader.onprogress = function(e) {
+                if(e.lengthComputable) {
+                    let percentLoaded = (e.loaded / e.total) * 100;
+                    // For images we leave 10% space for resizing overhead via canvas
+                    if(type === 'image') percentLoaded = percentLoaded * 0.9;
+                    progressBar.style.width = percentLoaded + '%'; 
+                }
+            };
+
             reader.onload = function(e) {
-                progressBar.style.width = '60%'; 
                 if (type === 'image') {
                     const img = new Image();
                     img.onload = function() {
@@ -2339,7 +2364,7 @@
             
             myReqs.forEach(req => {
                 let statusColor = req.status === 'approved' ? 'var(--secondary)' : (req.status === 'rejected' ? 'var(--danger)' : 'var(--accent)');
-                let title = req.type === 'post' ? req.data.title : req.data.name;
+                let title = req.type === 'post' ? req.data.title : (req.data.name || 'Unknown');
                 list.innerHTML += `
                     <tr>
                         <td>${title}</td>
@@ -2362,7 +2387,7 @@
             if(pendingReqs.length === 0) { list.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No pending requests.</td></tr>'; return; }
             
             pendingReqs.forEach(req => {
-                let title = req.type === 'post' ? req.data.title : req.data.name;
+                let title = req.type === 'post' ? req.data.title : (req.data.name || 'Unknown');
                 let userName = 'Unknown';
                 db.ref(`users/${req.uid}`).once('value').then(s => { 
                     userName = s.exists() ? s.val().name : 'Unknown User'; 
@@ -2413,12 +2438,13 @@
                 if(n && r) family.push({name: n, relation: r});
             });
 
+            const nameValue = document.getElementById('u-d-name').value;
             const data = {
-                name: document.getElementById('u-d-name').value, category: document.getElementById('u-d-cat').value,
+                name: nameValue, category: document.getElementById('u-d-cat').value,
                 phone: document.getElementById('u-d-phone').value, address: document.getElementById('u-d-address').value || '',
                 image: document.getElementById('u-d-img').value || '', dob: document.getElementById('u-d-dob').value || '',
                 email: document.getElementById('u-d-email').value || '', aadhar: document.getElementById('u-d-aadhar').value || '',
-                family: family, nameLowerCase: document.getElementById('u-d-name').value.toLowerCase()
+                family: family, nameLowerCase: nameValue.toLowerCase()
             };
 
             const payload = { uid: auth.currentUser.uid, type: 'directory', status: 'pending', remarks: '', timestamp: firebase.database.ServerValue.TIMESTAMP, data: data };
@@ -2430,28 +2456,59 @@
         function uploadUserCSV() {
             const fileInput = document.getElementById('u-csv-file');
             if(!fileInput.files.length) return showNotification("Please select a CSV file.", "error");
+            
+            const progressWrapper = document.getElementById('u-csv-progress-wrapper');
+            const progressBar = document.getElementById('u-csv-progress-bar');
+            progressWrapper.classList.remove('d-none');
+            progressBar.style.width = '0%';
+
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onprogress = function(e) {
+                if(e.lengthComputable) {
+                    progressBar.style.width = ((e.loaded / e.total) * 40) + '%';
+                }
+            };
+            
+            reader.onload = async function(e) {
+                progressBar.style.width = '50%';
                 const rows = e.target.result.split('\n');
+                let updates = {};
                 let count = 0;
+                
                 rows.forEach((row, index) => {
                     if(index === 0 || !row.trim()) return;
                     const cols = row.split(',');
-                    if(cols.length >= 3) {
+                    if(cols.length >= 1) { // Gracefully parse even missing cols
+                        const name = cols[0]?.trim() || 'Unknown';
                         const data = {
-                            name: cols[0]?.trim() || '', phone: cols[1]?.trim() || '', category: cols[2]?.trim() || '',
+                            name: name, phone: cols[1]?.trim() || '', category: cols[2]?.trim() || 'Uncategorized',
                             address: cols[3]?.trim() || '', image: cols[4]?.trim() || '', dob: cols[5]?.trim() || '',
-                            email: cols[6]?.trim() || '', aadhar: cols[7]?.trim() || '', nameLowerCase: (cols[0]||'').trim().toLowerCase(),
+                            email: cols[6]?.trim() || '', aadhar: cols[7]?.trim() || '', nameLowerCase: name.toLowerCase(),
                             family: []
                         };
-                        const payload = { uid: auth.currentUser.uid, type: 'directory', status: 'pending', remarks: '', timestamp: firebase.database.ServerValue.TIMESTAMP, data: data };
-                        db.ref('requests').push(payload);
+                        let key = db.ref('requests').push().key;
+                        updates[key] = { uid: auth.currentUser.uid, type: 'directory', status: 'pending', remarks: '', timestamp: firebase.database.ServerValue.TIMESTAMP, data: data };
                         count++;
                     }
                 });
-                showNotification(`Successfully submitted ${count} contact requests from CSV.`, "success"); 
-                fileInput.value = '';
-                switchAdminTab('tab-my-requests');
+                
+                progressBar.style.width = '70%'; // DB Prep
+                try {
+                    if(count > 0) {
+                        await db.ref('requests').update(updates);
+                    }
+                    progressBar.style.width = '100%';
+                    showNotification(`Successfully submitted ${count} contact requests from CSV.`, "success"); 
+                    fileInput.value = '';
+                    switchAdminTab('tab-my-requests');
+                } catch(error) {
+                    showNotification("Error: " + error.message, "error");
+                } finally {
+                    setTimeout(() => {
+                        progressWrapper.classList.add('d-none');
+                        progressBar.style.width = '0%';
+                    }, 1000);
+                }
             };
             reader.readAsText(fileInput.files[0]);
         }
@@ -2486,9 +2543,9 @@
             else if(req.type === 'directory') {
                 switchAdminTab('tab-submit-dir');
                 document.getElementById('u-edit-req-dir-id').value = reqId;
-                document.getElementById('u-d-name').value = req.data.name;
-                document.getElementById('u-d-cat').value = req.data.category;
-                document.getElementById('u-d-phone').value = req.data.phone;
+                document.getElementById('u-d-name').value = req.data.name || '';
+                document.getElementById('u-d-cat').value = req.data.category || '';
+                document.getElementById('u-d-phone').value = req.data.phone || '';
                 document.getElementById('u-d-address').value = req.data.address || '';
                 document.getElementById('u-d-dob').value = req.data.dob || '';
                 document.getElementById('u-d-email').value = req.data.email || '';
@@ -2521,10 +2578,10 @@
                 `;
             } else {
                 content.innerHTML = `
-                    <strong>Name:</strong> ${req.data.name}<br>
-                    <strong>Category:</strong> ${req.data.category}<br>
-                    <strong>Phone:</strong> ${req.data.phone}<br>
-                    <strong>Address:</strong> ${req.data.address}<br>
+                    <strong>Name:</strong> ${req.data.name || 'Unknown'}<br>
+                    <strong>Category:</strong> ${req.data.category || 'N/A'}<br>
+                    <strong>Phone:</strong> ${req.data.phone || 'N/A'}<br>
+                    <strong>Address:</strong> ${req.data.address || 'N/A'}<br>
                     <strong>Family Members:</strong> ${req.data.family ? req.data.family.length : 0}
                 `;
             }
@@ -3245,8 +3302,20 @@
                 const fileInput = document.getElementById('s-res-csv');
                 if(!fileInput.files.length) return showNotification("Please upload a CSV file.", "error");
                 
+                const progressWrapper = document.getElementById('s-res-csv-progress');
+                const progressBar = document.getElementById('s-res-csv-progress-bar');
+                progressWrapper.classList.remove('d-none');
+                progressBar.style.width = '0%';
+                
                 const reader = new FileReader();
+                reader.onprogress = function(evt) {
+                    if (evt.lengthComputable) {
+                        progressBar.style.width = ((evt.loaded / evt.total) * 50) + '%';
+                    }
+                };
+
                 reader.onload = function(evt) {
+                    progressBar.style.width = '60%';
                     const rows = evt.target.result.split('\n');
                     let headers = [];
                     let students = [];
@@ -3260,6 +3329,7 @@
                             let student = { subjects: {} };
                             cols.forEach((col, i) => {
                                 const header = headers[i] ? headers[i].toLowerCase().replace(/\s/g, '') : '';
+                                if(!header || !col) return; // Skip completely empty cells
                                 if(header === 'rollno' || header === 'roll') student.rollNo = col;
                                 else if(header === 'name' || header === 'studentname') student.name = col;
                                 else if(header === 'totalmarks' || header === 'total') student.totalMarks = col;
@@ -3271,11 +3341,14 @@
                     });
                     
                     data.students = students;
+                    progressBar.style.width = '90%';
                     db.ref('school_results').push(data).then(() => {
+                        progressBar.style.width = '100%';
                         showNotification('Result Published from CSV!', 'success');
                         resetForm('form-s-result');
                         fileInput.value = '';
                         document.getElementById('form-s-result-wrap').classList.add('d-none');
+                        setTimeout(() => progressWrapper.classList.add('d-none'), 1000);
                     });
                 };
                 reader.readAsText(fileInput.files[0]);
@@ -3663,7 +3736,8 @@
                 phone: document.getElementById('d-phone').value, address: document.getElementById('d-address').value || '',
                 image: document.getElementById('d-img').value || '', dob: document.getElementById('d-dob').value || '',
                 email: document.getElementById('d-email').value || '', aadhar: document.getElementById('d-aadhar').value || '',
-                family: family, nameLowerCase: document.getElementById('d-name').value.toLowerCase()
+                family: family, nameLowerCase: document.getElementById('d-name').value.toLowerCase(),
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             };
 
             if(id) { db.ref('directory/'+id).update(data).then(()=>{ showNotification('Updated successfully', 'success'); resetForm('form-directory', 'dir-form-title', 'Add to Directory'); }); } 
@@ -3676,7 +3750,7 @@
                 document.getElementById('edit-dir-id').value = id; 
                 document.getElementById('d-name').value = item.name;
                 document.getElementById('d-cat').value = item.category; 
-                document.getElementById('d-phone').value = item.phone;
+                document.getElementById('d-phone').value = item.phone || '';
                 document.getElementById('d-address').value = item.address || ''; 
                 document.getElementById('d-dob').value = item.dob || '';
                 document.getElementById('d-email').value = item.email || '';
@@ -3694,32 +3768,86 @@
             }
         }
 
+        // BATCH UPLOAD WITH ADD OR REPLACE LOGIC - FIXES PAGE HANGING
         function uploadCSV() {
             const fileInput = document.getElementById('csv-file');
             if(!fileInput.files.length) return showNotification("Please select a CSV file.", "error");
+            
+            const uploadType = document.querySelector('input[name="csv-upload-type"]:checked').value; // 'add' or 'replace'
+            
+            const progressWrapper = document.getElementById('csv-progress-wrapper');
+            const progressBar = document.getElementById('csv-progress-bar');
+            progressWrapper.classList.remove('d-none');
+            progressBar.style.width = '0%';
+
             const reader = new FileReader();
-            reader.onload = function(e) {
+            
+            reader.onprogress = function(e) {
+                if(e.lengthComputable) progressBar.style.width = ((e.loaded / e.total) * 40) + '%';
+            };
+
+            reader.onload = async function(e) {
+                progressBar.style.width = '50%'; // Read complete, parsing start
                 const rows = e.target.result.split('\n');
+                let updates = {};
                 let count = 0;
+                
                 rows.forEach((row, index) => {
                     if(index === 0 || !row.trim()) return;
                     const cols = row.split(',');
-                    if(cols.length >= 3) {
-                        db.ref('directory').push({
-                            name: cols[0]?.trim() || '', phone: cols[1]?.trim() || '', category: cols[2]?.trim() || '',
-                            address: cols[3]?.trim() || '', image: cols[4]?.trim() || '', dob: cols[5]?.trim() || '',
-                            email: cols[6]?.trim() || '', aadhar: cols[7]?.trim() || '', nameLowerCase: (cols[0]||'').trim().toLowerCase()
-                        });
+                    if(cols.length >= 1) { // Process even if some cells are blank
+                        const name = cols[0]?.trim() || '';
+                        if (!name) return; // Skip if name is completely empty
+                        
+                        const data = {
+                            name: name,
+                            phone: cols[1]?.trim() || '',
+                            category: cols[2]?.trim() || 'Uncategorized',
+                            address: cols[3]?.trim() || '',
+                            image: cols[4]?.trim() || '',
+                            dob: cols[5]?.trim() || '',
+                            email: cols[6]?.trim() || '',
+                            aadhar: cols[7]?.trim() || '',
+                            nameLowerCase: name.toLowerCase(),
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        };
+                        
+                        // Generate a new push key manually for batch updating
+                        let key = db.ref('directory').push().key;
+                        updates[key] = data;
                         count++;
                     }
                 });
-                showNotification(`Successfully uploaded ${count} contacts from CSV.`, "success"); fileInput.value = '';
+                
+                progressBar.style.width = '80%'; // Preparing to write to DB
+                
+                try {
+                    if (uploadType === 'replace') {
+                        // Replaces the entire directory node with the newly uploaded CSV data
+                        await db.ref('directory').set(updates); 
+                    } else {
+                        // Appends the new records to existing ones using multi-path update
+                        await db.ref('directory').update(updates); 
+                    }
+                    progressBar.style.width = '100%';
+                    showNotification(`Successfully ${uploadType === 'replace' ? 'replaced with' : 'added'} ${count} contacts from CSV.`, "success"); 
+                    fileInput.value = '';
+                } catch(error) {
+                    showNotification("Error updating database: " + error.message, "error");
+                } finally {
+                    setTimeout(() => {
+                        progressWrapper.classList.add('d-none');
+                        progressBar.style.width = '0%';
+                    }, 1000);
+                }
             };
             reader.readAsText(fileInput.files[0]);
         }
 
         db.ref('directory').on('value', snap => {
-            dirData = []; snap.forEach(child => { dirData.push({id: child.key, ...child.val()}); }); renderDirectory(dirData);
+            dirData = []; 
+            snap.forEach(child => { dirData.push({id: child.key, ...child.val()}); }); 
+            renderDirectory(dirData);
         });
 
         function hideDirDetails(isPopState = false) {
@@ -3768,6 +3896,7 @@
                 familyHTML += `</ul>`;
             }
 
+            // Graceful handling of empty/blank cells, they simply won't render.
             modal.innerHTML = `
                 <div class="glass animate__animated animate__zoomIn" style="background:var(--bg-main); width:100%; max-width:400px; max-height:90vh; overflow-y:auto; border-radius:12px; position:relative; padding:30px 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
                     <i class="fas fa-share-alt" onclick="shareDirectory('${item.id}', '${item.name.replace(/'/g, "\\'")}')" style="position:absolute; top:15px; right:55px; font-size:16px; color:var(--primary); cursor:pointer; background:rgba(17, 138, 178, 0.1); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:0.2s;"></i>
@@ -3775,7 +3904,7 @@
                     
                     ${imgHTML}
                     <h2 style="text-align:center; color:var(--primary); margin-bottom:5px; font-size:1.4rem;">${item.name}</h2>
-                    <p style="text-align:center; font-weight:600; color:var(--secondary); margin-bottom:20px; font-size:0.95rem;">${item.category}</p>
+                    <p style="text-align:center; font-weight:600; color:var(--secondary); margin-bottom:20px; font-size:0.95rem;">${item.category || 'Uncategorized'}</p>
                     
                     <div style="line-height:2; font-size:0.9rem; background:rgba(0,0,0,0.03); padding:15px; border-radius:8px;">
                         ${item.phone ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-phone" style="width:20px; text-align:center; color:var(--primary);"></i> <a href="tel:${item.phone}" style="font-weight:500;">${item.phone}</a></div>` : ''}
@@ -3783,6 +3912,7 @@
                         ${item.address ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-map-marker-alt" style="width:20px; text-align:center; color:var(--secondary);"></i> <span>${item.address}</span></div>` : ''}
                         ${item.dob ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-birthday-cake" style="width:20px; text-align:center; color:var(--accent);"></i> <span>${item.dob}</span></div>` : ''}
                         ${item.aadhar ? `<div style="display:flex; gap:12px; align-items:center;"><i class="fas fa-id-card" style="width:20px; text-align:center; color:var(--text-muted);"></i> <span>${item.aadhar}</span></div>` : ''}
+                        ${!item.phone && !item.email && !item.address && !item.dob && !item.aadhar ? `<div style="text-align:center; color:var(--text-muted); font-size: 0.8rem;">No contact details provided.</div>` : ''}
                     </div>
                     ${familyHTML}
                 </div>
@@ -3802,6 +3932,7 @@
             data.forEach(item => {
                 let imgHTML = item.image ? `<img src="${item.image}" style="width:75px; height:75px; border-radius:50%; object-fit:cover; border: 2px solid var(--primary);">` : `<div style="width:75px; height:75px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:30px;">${item.name.charAt(0)}</div>`;
 
+                // Address & Phone gracefully skipped if empty
                 container.innerHTML += `
                     <div class="card glass" style="cursor:pointer; display:flex; flex-direction:row; gap:15px; align-items:center; padding:15px;" onclick="showDirDetails('${item.id}', true)">
                         <div style="flex-shrink:0;">
@@ -3809,15 +3940,15 @@
                         </div>
                         <div style="flex-grow:1; overflow:hidden;">
                             <h3 class="card-title" style="margin-bottom: 4px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h3>
-                            <p class="text-muted" style="margin-bottom: 4px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="fas fa-tag"></i> ${item.category}</p>
+                            ${item.category ? `<p class="text-muted" style="margin-bottom: 4px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="fas fa-tag"></i> ${item.category}</p>` : ''}
                             ${item.address ? `<p class="text-muted" style="margin-bottom: 8px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="fas fa-map-marker-alt"></i> ${item.address}</p>` : ''}
-                            <a href="tel:${item.phone}" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem; display: inline-flex;" onclick="event.stopPropagation();"><i class="fas fa-phone-alt"></i> Call</a>
+                            ${item.phone ? `<a href="tel:${item.phone}" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem; display: inline-flex;" onclick="event.stopPropagation();"><i class="fas fa-phone-alt"></i> Call</a>` : ''}
                         </div>
                     </div>`;
                 
                 if(adminList) {
                     adminList.innerHTML += `
-                        <tr><td>${item.name}</td><td>${item.category}</td><td>${item.phone}</td>
+                        <tr><td>${item.name}</td><td>${item.category || 'N/A'}</td><td>${item.phone || '-'}</td>
                             <td class="action-btns"><button class="btn btn-small btn-primary" onclick="editDirectory('${item.id}')"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-small btn-danger" onclick="deleteItem('directory', '${item.id}')"><i class="fas fa-trash"></i></button></td>
                         </tr>`;
@@ -3827,7 +3958,7 @@
 
         function filterDirectory() {
             const query = document.getElementById('dir-search').value.toLowerCase();
-            renderDirectory(dirData.filter(d => d.nameLowerCase.includes(query) || d.category.toLowerCase().includes(query)));
+            renderDirectory(dirData.filter(d => (d.nameLowerCase && d.nameLowerCase.includes(query)) || (d.category && d.category.toLowerCase().includes(query))));
         }
 
         // --- PANCHAYAT ---
